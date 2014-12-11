@@ -1,0 +1,43 @@
+<layers>
+    <layer name="WebMercator Tiles">
+        <property value="Relief" name="Base Map"/>
+        <property value="1.0" name="Opacity"/>
+        <property value="True" name="Visibility"/>
+    </layer>
+    <layer name="Pod And Carrier">
+        <property value="175,255,200" name="Carrier Color"/>
+        <property value="1.0" name="Carrier Opacity"/>
+        <property value="25.0" name="Carrier Thickness"/>
+        <property value="True" name="Carrier Visibility"/>
+        <property value="255,255,0" name="Footprint Color"/>
+        <property value="100,175,255" name="Footprint Distance Color"/>
+        <property value="10.0" name="Footprint Distance Thickness"/>
+        <property value="0.5" name="Footprint Opacity"/>
+        <property value="2.0" name="Footprint Thickness"/>
+        <property value="True" name="Footprint Visibility"/>
+        <property value="0,255,0" name="FootprintReal Color"/>
+        <property value="100,175,255" name="FootprintReal Distance Color"/>
+        <property value="10.0" name="FootprintReal Distance Thickness"/>
+        <property value="0.5" name="FootprintReal Opacity"/>
+        <property value="2.0" name="FootprintReal Thickness"/>
+        <property value="False" name="FootprintReal Visibility"/>
+        <property value="255,255,255" name="LethalCircle Color"/>
+        <property value="1.0" name="LethalCircle Opacity"/>
+        <property value="2.0" name="LethalCircle Thickness"/>
+        <property value="True" name="LethalCircle Visibility"/>
+        <property value="255,0,0" name="LineOfSight Color"/>
+        <property value="0.5" name="LineOfSight Opacity"/>
+        <property value="3.0" name="LineOfSight Thickness"/>
+        <property value="True" name="LineOfSight Visibility"/>
+        <property value="0,0,0" name="SpeedVector Color"/>
+        <property value="2" name="SpeedVector Forecast (s)"/>
+        <property value="1.0" name="SpeedVector Opacity"/>
+        <property value="1.0" name="SpeedVector Thickness"/>
+        <property value="True" name="SpeedVector Visibility"/>
+        <property value="0,0,0" name="Trajectory Color"/>
+        <property value="120" name="Trajectory Duration (s)"/>
+        <property value="1.0" name="Trajectory Opacity"/>
+        <property value="2.0" name="Trajectory Thickness"/>
+        <property value="True" name="Trajectory Visibility"/>
+    </layer>
+</layers>

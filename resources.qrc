@@ -1,0 +1,31 @@
+<RCC>
+  <qresource prefix="icons/24x24">
+    <file alias="settings">ressources/icons/png/24x24/edit.png</file>
+    <file alias="unlock">ressources/icons/png/24x24/unlock.png</file>
+    <file alias="lock">ressources/icons/png/24x24/lock.png</file>
+    <file alias="quit">ressources/icons/png/24x24/remove.png</file>
+    <file alias="home">ressources/icons/png/24x24/home.png</file>
+    <file alias="previous">ressources/icons/png/24x24/previous.png</file>
+    <file alias="next">ressources/icons/png/24x24/next.png</file>
+    <file alias="save">ressources/icons/png/24x24/floppy_disc.png</file>
+  </qresource>
+  <qresource prefix="icons/32x32">
+    <file alias="kingdom">ressources/icons/png/32x32/chart.png</file>
+    <file alias="all">ressources/icons/png/32x32/users.png</file>
+    <file alias="selected">ressources/icons/png/32x32/user_accept.png</file>
+    <file alias="map">ressources/icons/png/32x32/globe.png</file>
+    <file alias="fiche_royaume">ressources/icons/png/32x32/application.png</file>
+    <file alias="fiche_perso">ressources/icons/png/32x32/image.png</file>
+    <file alias="filtered">ressources/icons/png/32x32/user_search.png</file>
+  </qresource>
+  <qresource prefix="textures">
+    <file alias="saphir">ressources/textures/saphir.jpg</file>
+    <file alias="emeraude">ressources/textures/emeraude.jpg</file>
+    <file alias="onyx">ressources/textures/onyx.jpg</file>
+    <file alias="citrine">ressources/textures/citrine.jpg</file>
+    <file alias="rubis">ressources/textures/rubis2.jpg</file>
+  </qresource>
+  <qresource prefix="background">
+    <file alias="grec">ressources/background/grec.jpg</file>
+  </qresource>
+</RCC>
