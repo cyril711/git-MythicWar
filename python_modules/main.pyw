@@ -1,10 +1,9 @@
-from PyQt5.QtWidgets import (QAction, QApplication, QFileDialog)
-from python_modules.Model.univers import Univers
-from python_modules.View.main_window import MainWindow
+from PyQt5.QtWidgets import QApplication
+from python_modules.model.univers import Univers
+from python_modules.main_view.main_window import MainWindow
 import sys
 from python_modules.utils.resourceLoader import ResourceLoader
 from python_modules.utils.thumbnail_generator import ThumbnailGenerator
-from PyQt5.Qt import QSettings
 from python_modules.resources_rc import *
 from python_modules.config import Config
 if __name__ == '__main__':

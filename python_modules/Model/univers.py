@@ -1,9 +1,9 @@
-from python_modules.Model.faction import Faction
-from python_modules.Model.empire import Empire
-from python_modules.Model.kingdom import Kingdom
-from python_modules.Model.warrior import Warrior
-from python_modules.Model.groupe import Groupe
-from python_modules.Model.temple import Temple
+from python_modules.model.faction import Faction
+from python_modules.model.empire import Empire
+from python_modules.model.kingdom import Kingdom
+from python_modules.model.warrior import Warrior
+from python_modules.model.groupe import Groupe
+from python_modules.model.temple import Temple
 from python_modules.utils.database import DatabaseManager
 from PyQt5.Qt import qDebug, QIcon, qWarning, QPointF, QFile
 from PyQt5.QtCore import QObject, pyqtSignal
