@@ -9,32 +9,72 @@ from python_modules.config import Config
 
 
 class RankWidget (QtWidgets.QWidget):
-    def __init__ (self,parent):
+    def __init__ (self,warrior,parent):
         super(RankWidget, self).__init__(parent)    
+        self.texture = QPixmap()
+        self.stars = []
+        self.warrior = warrior
+        self.initialized = False
+        self.rank = 4#self.warrior.attribs['rank']
+        self.setMouseTracking(True)
+
+
+
+        self.updateGeom()
+
+    def updateGeom (self):
+
+        
+        if self.rank == 5 : 
+            self.texture = QColor("yellow")
+        elif self.rank == 4 : 
+            self.texture = QColor("blue")
+        elif self.rank == 3 : 
+            self.texture = QColor("green")
+        elif self.rank == 2 : 
+            self.texture = QColor("red")
+        elif self.rank == 1 : 
+            self.texture = QColor("gray")
+
+        self.initialized = True
 
     def paintEvent (self,event):    
+        if self.initialized == True : 
+            painter = QPainter(self)
+           
+            #painter.setPen(QtCore.Qt.NoPen)
+            brush = QBrush (self.texture)
+            nb_stars = 5
+    
+            for s in range (nb_stars):
+                starPath = QPainterPath()
+                starPath.moveTo(QtCore.QPointF(20,10))
+                for  i in range (5):
+                    starPath.lineTo(10 + 10 * math.cos(0.8 * i * math.pi),10 + 10 * math.sin(0.8 * i * math.pi))
+                starPath.closeSubpath()
+                starPath.setFillRule(QtCore.Qt.WindingFill)
+                painter.translate(QtCore.QPointF(20,0))
+                if (nb_stars-s) > self.rank :
+                    print ('i no',self.rank)
+                    painter.setBrush(QtCore.Qt.NoBrush)
+                else:
+                    print ('yes')
+                    painter.setBrush(brush)
+                painter.drawPath(starPath)
+                self.stars.append(starPath)
+           # painter.setBrush(QtCore.Qt.NoBrush)
+    def mouseMoveEvent(self,event):
+        print ('oooot')
+        for i in range (len(self.stars)):
+            if (5-i) > 2:#self.warrior.attribs['rank']:
+                if self.stars[i].contains(event.pos):
+                    print ('event pos',event.pos)
+                    self.rank = i
+                    self.updateGeom()
+        
 
-        painter = QPainter(self)
-         #brush.setTexture(QPixmap("C:/Users/cyril/Documents/Travail/Workspace/MythicWar/ressources/background/gold.png"))
-        texture = QPixmap("C:/Users/cyril/Documents/Travail/Workspace/MythicWar/ressources/background/gold.png")
-        if texture.isNull():
-            print ('pb gold texture')
-
-        painter.setPen(QtCore.Qt.NoPen)
-        brush = QBrush (texture)
-        painter.setBrush(brush)
-        nb_stars = 5
-
-        for s in range (nb_stars):
-            starPath = QPainterPath()
-            starPath.moveTo(QtCore.QPointF(20,10))
-            for  i in range (5):
-                starPath.lineTo(10 + 10 * math.cos(0.8 * i * math.pi),10 + 10 * math.sin(0.8 * i * math.pi))
-            starPath.closeSubpath()
-            starPath.setFillRule(QtCore.Qt.WindingFill)
-            painter.translate(QtCore.QPointF(30,0))
-            painter.drawPath(starPath)
-       # painter.setBrush(QtCore.Qt.NoBrush)
+        
+        
 
 class ProfilHeroWidget (QtWidgets.QWidget):
         
@@ -140,21 +180,33 @@ class BookWarriorPage ( QWidget):
             pass
         profil_widget = ProfilHeroWidget(self.ui.picture_widget)
         profil_widget.setWarrior(self.warrior)
-        self.ui.picture_layout.addWidget(profil_widget)
+        self.ui.picture_layout_2.addWidget(profil_widget)
         kingdom_name = self.warrior.kingdom().name
         empire_name = self.warrior.empire().name
         faction_name = self.warrior.faction().name
         self.ui.label_faction.setText(faction_name)
         self.ui.label_empire.setText(empire_name)
         self.ui.label_royaume.setText(kingdom_name)
-        self.ui.label_avancement.setText(str(self.warrior.kingdom().avancement()))
-        rank_widget = RankWidget(self.ui.rank_widget)
+        self.ui.progressBar_HP.setStyleSheet("  QProgressBar {border-radius: 5px;} QProgressBar::chunk {     background-color: #05B8CC;width: 20px;}")
+ #       self.ui.progressBar_MP.setStyleSheet(" QProgressBar::chunk {background-color: blue; }")
+       # self.ui.progressBar_HP.setStyleSheet(" QProgressBar {background-color: #green; };QProgressBar::chunk {background-color: #red; }")
+        #self.ui.label_avancement.setText(str(self.warrior.kingdom().avancement()))
+        self.ui.progressBar_HP.setAlignment(QtCore.Qt.AlignCenter)
+        hp_percent = float(self.warrior.attribs['HP'] / self.warrior.attribs['HP_max'])* 100
+        mp_percent = float(self.warrior.attribs['MP'] / self.warrior.attribs['MP_max'])* 100
+        self.ui.progressBar_HP.setValue(int(hp_percent))
+        self.ui.progressBar_MP.setValue(int(mp_percent))
+        rank_widget = RankWidget(warrior,self.ui.rank_widget)
         self.ui.layout_rank.addWidget(rank_widget)
         #self.profil_layout.insertWidget(0,profil_widget)
         self.connections ()
     def connections (self):
         self.ui.warrior_description.textChanged.connect(self.onModification)
         self.ui.warrior_techniques.textChanged.connect(self.onModification)
+        
+    def mousePressEvent(self, event):
+        print ('q')
+        return super(BookWarriorPage,self).mouseMoveEvent(event)
         
     def onModification (self):
         print ('modification')

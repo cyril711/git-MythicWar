@@ -78,6 +78,10 @@ class WarriorLayout ( QWidget,Ui_WarriorLayout):
        # self.setStyleSheet('BookWarriorPageN{background-image: url(:/background/grec)}')
         self.horizontalLayout.insertWidget(1,self.new_page)
 
+#     def mouseMoveEvent(self, event):
+#         super(WarriorLayout,self).mouseMoveEvent(event)
+#         print ('oooooooooooo')
+#         return super(WarriorLayout,self).mouseMoveEvent(event)
 
 
     def goPreviousWarrior(self):

@@ -12,13 +12,13 @@ if __name__ == '__main__':
 
     app = QApplication(sys.argv)
     settings = Config("config.ini")
+
 #      settings.setValue("all",{"kingdom":0,"empire":1})
 #      settings.endGroup()
 
 #     rl = ResourceLoader("../ressources/images/La_Guerre_Mythique")
 #     rl.kingdomLoader("Lumiere", "Grec", "Artemis")
-    #tg = ThumbnailGenerator("../ressources/images/La_Guerre_Mythique")
-    #tg.generateFor1Kingdom("Lumiere", "Grec", "Artemis")
+
     #rl.finish()
     filename = ""
     univers = Univers(filename)

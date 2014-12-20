@@ -30,7 +30,7 @@ class DatabaseManager (QtCore.QObject):
             except IOError :
                 QtCore.qDebug("not able to copy file")
                 pass
-        self.database.setDatabaseName(self.database_name)
+        self.database.setDatabaseName(temp_filename)
         if not self.database.open():
             QtCore.qDebug("Database not OPen")
                  
@@ -76,31 +76,32 @@ class DatabaseManager (QtCore.QObject):
         
 
     def update (self,table_name,attributes,condition= None):
-        query = QtSql.QSqlQuery(self.database)
-        query_str = "UPDATE "+str(table_name)+" SET "
-        attrib = ""
-        first = True
-        for key in attributes.keys():
-            if not first :
-                attrib+= ", "
-            attrib+=str(key)+"=?"
-            first = False
-        query_str+=attrib
-        if condition != None : 
-            query_str+=" WHERE "+str(condition)
-        query_str+=" ;"       
-        query.prepare(query_str)
-        for value in attributes.values():
-            query.addBindValue(value)
-
-        if self.verbose == True :
-            QtCore.qDebug(query_str)
-#             for value in attributes.values():
-#                 value = '"'+str(value)+'"'                
-#                 print (value)
-       # q_str = 'UPDATE gm_perso SET RepresentativPic= "images/La_Guerre_Mythique/Grec/Hephaistos/Picture/Cyclopes_Forgerons/Zuali/Zuali.jpg", Leader= "False", Latitude= "48.858093", Longitude= "2.294694", Level="0", Place="0" WHERE IDPerso=1114 ;'
-        if not query.exec_():
-            QtCore.qDebug(query.lastError().text())
+        if len(attributes)!= 0:
+            query = QtSql.QSqlQuery(self.database)
+            query_str = "UPDATE "+str(table_name)+" SET "
+            attrib = ""
+            first = True
+            for key in attributes.keys():
+                if not first :
+                    attrib+= ", "
+                attrib+=str(key)+"=?"
+                first = False
+            query_str+=attrib
+            if condition != None : 
+                query_str+=" WHERE "+str(condition)
+            query_str+=" ;"       
+            query.prepare(query_str)
+            for value in attributes.values():
+                query.addBindValue(value)
+    
+            if self.verbose == True :
+                QtCore.qDebug(query_str)
+    #             for value in attributes.values():
+    #                 value = '"'+str(value)+'"'                
+    #                 print (value)
+           # q_str = 'UPDATE gm_perso SET RepresentativPic= "images/La_Guerre_Mythique/Grec/Hephaistos/Picture/Cyclopes_Forgerons/Zuali/Zuali.jpg", Leader= "False", Latitude= "48.858093", Longitude= "2.294694", Level="0", Place="0" WHERE IDPerso=1114 ;'
+            if not query.exec_():
+                QtCore.qDebug(query.lastError().text())
 
 
     def createTable (self,table_name,attribs):

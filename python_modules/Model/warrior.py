@@ -13,6 +13,8 @@ class Warrior (QObject):
         self.leader = attribs['leader']
         self.latitude = attribs['latitude']
         self.longitude = attribs['longitude']
+        if attribs['rank']=='':
+            attribs['rank'] = self.parent.attribs['rank']
         groupe_name = self.parent.name
         self.settings = Config().instance.settings
         if self.masterGroupe() != None : 
@@ -23,7 +25,13 @@ class Warrior (QObject):
         faction_name = self.faction().name
         basepath = self.settings.value("global/resources_path")
         self.thumb = QPixmap(basepath+"/"+faction_name+"/"+empire_name+"/"+kingdom_name+"/Picture/"+groupe_name+"/"+self.name+"/portrait_thumbnail.jpg")
-       # print ('pixmap_name:',basepath+"/"+faction_name+"/"+empire_name+"/"+kingdom_name+"/Picture/"+groupe_name+"/"+self.name+"/portrait_thumbnail.jpg")
+#         self.setDefaultValue()
+#     
+#     
+#     # initialise a des valeurs par defaults les champs non renseignes
+#     def setDefaultValue(self):
+#         if self.attribs['HP_max'] == '':
+#             self.attribs['HP_max'] = 
     def masterGroupe (self):
         if self.parent.isSub():
             return self.parent.parent
@@ -32,21 +40,12 @@ class Warrior (QObject):
 
     def getDictAttributes (self):
         attribs = {}
-        attribs['RepresentativPic'] = self.attribs['picture']
-        
-        attribs['Latitude'] = 48.858093#self.attribs['latitude']
-        attribs['Longitude'] = 2.294694#self.attribs['longitude']
-        if self.attribs['place']!= '':
-            attribs['Place'] = self.attribs['place']
-        else:
-            attribs['Place'] = 0
-        if self.attribs['Level'] != '':
-            attribs['Level'] = self.attribs['Level']
-        else:
-            attribs['Level'] = 0
-
-        attribs['Leader'] = self.attribs['leader']
-        return attribs
+        for key,value in zip (self.attribs.keys(),self.attribs.values()):
+            attribs[key] = value
+        attribs['leader'] = self.leader
+        attribs['latitude'] = self.latitude
+        attribs['longitude'] = self.longitude
+        return self.attribs
 
     def setSelected (self, flag):
         if flag != self.selected :

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'python_modules/View/explorer.ui'
+# Form implementation generated from reading ui file 'python_modules/main_view/explorer.ui'
 #
-# Created: Tue Dec  9 22:08:15 2014
+# Created: Sat Dec 20 22:14:13 2014
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!

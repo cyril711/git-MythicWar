@@ -15,9 +15,9 @@ class Kingdom :
         
     def getDictAttributes (self):
         attribs = {}
-        attribs['Armee'] = self.attribs['armee']
-        attribs['Description'] = self.attribs["description"]
-        attribs['Couleur'] = str(self.color.red())+','+str(self.color.green())+','+str(self.color.blue())+','+str(self.color.alpha())
+        attribs['armee'] = self.attribs['armee']
+        attribs['description'] = self.attribs["description"]
+        attribs['couleur'] = str(self.color.red())+','+str(self.color.green())+','+str(self.color.blue())+','+str(self.color.alpha())
         return attribs 
     
     def avancement (self):

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'python_modules/View/main_window.ui'
+# Form implementation generated from reading ui file 'python_modules/main_view/main_window.ui'
 #
-# Created: Tue Dec  9 22:08:12 2014
+# Created: Sat Dec 20 22:14:10 2014
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -76,8 +76,8 @@ class Ui_MainWindow(object):
         self.actionLock = QtWidgets.QAction(MainWindow)
         self.actionLock.setCheckable(True)
         icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap(":/icons/24x24/lock"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         icon3.addPixmap(QtGui.QPixmap(":/icons/24x24/unlock"), QtGui.QIcon.Selected, QtGui.QIcon.Off)
+        icon3.addPixmap(QtGui.QPixmap(":/icons/24x24/lock"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         icon3.addPixmap(QtGui.QPixmap(":/icons/24x24/unlock"), QtGui.QIcon.Active, QtGui.QIcon.On)
         self.actionLock.setIcon(icon3)
         self.actionLock.setObjectName("actionLock")
@@ -112,11 +112,17 @@ class Ui_MainWindow(object):
         icon7.addPixmap(QtGui.QPixmap(":/icons/24x24/settings"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionSettings.setIcon(icon7)
         self.actionSettings.setObjectName("actionSettings")
+        self.actionReset_attributes = QtWidgets.QAction(MainWindow)
+        self.actionReset_attributes.setObjectName("actionReset_attributes")
+        self.actionAdd_Kingdom = QtWidgets.QAction(MainWindow)
+        self.actionAdd_Kingdom.setObjectName("actionAdd_Kingdom")
         self.menuFIle.addAction(self.actionLoad)
         self.menuFIle.addAction(self.actionSave_2)
         self.menuFIle.addAction(self.actionSave_As)
         self.menuTools.addAction(self.actionGenerate_Thumbnail)
         self.menuTools.addAction(self.actionLaunch_SQlite)
+        self.menuTools.addAction(self.actionReset_attributes)
+        self.menuTools.addAction(self.actionAdd_Kingdom)
         self.menubar.addAction(self.menuFIle.menuAction())
         self.menubar.addAction(self.menuTools.menuAction())
         self.toolBar.addAction(self.actionLock)
@@ -151,5 +157,7 @@ class Ui_MainWindow(object):
         self.actionGenerate_Thumbnail.setText(_translate("MainWindow", "Generate Thumbnail"))
         self.actionLaunch_SQlite.setText(_translate("MainWindow", "Launch SQlite"))
         self.actionSettings.setText(_translate("MainWindow", "settings"))
+        self.actionReset_attributes.setText(_translate("MainWindow", "Reset attributes"))
+        self.actionAdd_Kingdom.setText(_translate("MainWindow", "Add Kingdom"))
 
 import resources_rc

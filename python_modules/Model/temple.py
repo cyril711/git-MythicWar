@@ -24,10 +24,10 @@ class Temple:
                 background = background+","
             lvl = lvl+key
             background = background+value
-        attribs['Levels'] = lvl
-        attribs['Background'] = background
-        attribs['Latitude'] = self.position.x()
-        attribs['Longitude'] = self.position.y()
+        attribs['levels'] = lvl
+        attribs['backgrounds'] = background
+        attribs['latitude'] = self.position.x()
+        attribs['longitude'] = self.position.y()
         return attribs
     def setOwner (self,kingdom):
         self.owner = kingdom

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'python_modules/View/warrior_layout.ui'
+# Form implementation generated from reading ui file 'python_modules/view/view_heros/warrior_layout.ui'
 #
-# Created: Tue Dec  9 22:08:14 2014
+# Created: Sat Dec 20 22:14:12 2014
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!

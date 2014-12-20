@@ -5,11 +5,10 @@ class Faction:
         self.id = id_i
         self.name = name
         self.empires= {}
+        self.attribs = attribs
         
     def addEmpire (self, empire):
         self.empires[empire.name] = empire
         
-    def getDictAttributes(self):
-        attribs = {}
-        
-        return attribs
+    def getDictAttributes(self):  
+        return self.attribs

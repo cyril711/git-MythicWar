@@ -125,16 +125,16 @@ class Univers (QObject):
         print ("sauvegarde")
         for temple in self.temples.values() :
             attribs = temple.getDictAttributes ()
-            self.database.update("gm_temple",attribs,"IDTemple="+str(temple.id))
-#         for faction in self.factions.values() :
-#             #attribs = faction.getDictAttributes ()
-#             #self.database.update("gm_faction",attribs,"IDFaction="+str(faction.id))
-#             for empire in faction.empires.values():
-#                 #attribs = empire.getDictAttributes ()
-#                 #self.database.update("gm_empire",attribs,"IDEmpire="+str(empire.id))
-#                 for kingdom in empire.kingdoms.values():
-#                     attribs = kingdom.getDictAttributes ()
-#                     self.database.update("gm_kingdom",attribs,"IDKingdom="+str(kingdom.id))
+            self.database.update("gm_temple",attribs,"ID="+str(temple.id))
+        for faction in self.factions.values() :
+            attribs = faction.getDictAttributes ()
+            self.database.update("gm_faction",attribs,"ID="+str(faction.id))
+            for empire in faction.empires.values():
+                attribs = empire.getDictAttributes ()
+                self.database.update("gm_empire",attribs,"IDEmpire="+str(empire.id))
+                for kingdom in empire.kingdoms.values():
+                    attribs = kingdom.getDictAttributes ()
+                    self.database.update("gm_kingdom",attribs,"IDKingdom="+str(kingdom.id))
 #                     for groupe in kingdom.groupes.values():
 #                         attribs = groupe.getDictAttributes ()
 #                         self.database.update("gm_groupes",attribs,"IDGroupe="+str(groupe.id))
@@ -143,10 +143,10 @@ class Univers (QObject):
 #                             self.database.update("gm_groupes",attribs,"IDGroupe="+str(groupe.id))
 #                             for perso in sub_groupe.warriors.values():
 #                                 attribs = perso.getDictAttributes ()
-#                                 self.database.update("gm_perso",attribs,"IDPerso="+str(perso.id))
+#                                 self.database.update("gm_perso",attribs,"ID="+str(perso.id))
 #                         for perso in groupe.warriors.values():
 #                             attribs = perso.getDictAttributes ()
-#                             self.database.update("gm_perso",attribs,"IDPerso="+str(perso.id))
+#                             self.database.update("gm_perso",attribs,"ID="+str(perso.id))
         db_name = self.database.database.databaseName()
         try :
             QFile.remove(self.settings.value("global/database"))
@@ -158,80 +158,105 @@ class Univers (QObject):
             qWarning("sauvegarde reussit")
         else:
             qDebug("Echec sauvegarde")
+            print ('kkk',db_name,self.settings.value("global/database"))
     def loadFromFile (self, filename):
         qWarning("debut chargement de la bdd")
-        temples_sqlite = self.database.select("*", "gm_temple",False,None,"IDTemple ASC")
+        temples_sqlite = self.database.select("*", "gm_temple",False,None,"ID ASC")
         while temples_sqlite.next():
             level_dict = {}
-            for name,background in zip(temples_sqlite.value("Levels").split(','),temples_sqlite.value("Background").split(',')):
+            for name,background in zip(temples_sqlite.value("levels").split(','),temples_sqlite.value("backgrounds").split(',')):
                 level_dict[name] = background
-            print ('temple :',temples_sqlite.value("Name"),temples_sqlite.value("Latitude"),temples_sqlite.value("Longitude"))
-            pos = QPointF(float(temples_sqlite.value("Latitude")),float(temples_sqlite.value("Longitude")))
-            temple = Temple(temples_sqlite.value("IDTemple"), temples_sqlite.value("Name"),pos,level_dict)
+            print ('temple :',temples_sqlite.value("name"),temples_sqlite.value("latitude"),temples_sqlite.value("longitude"))
+            pos = QPointF(float(temples_sqlite.value("latitude")),float(temples_sqlite.value("longitude")))
+            temple = Temple(temples_sqlite.value("ID"), temples_sqlite.value("name"),pos,level_dict)
             self.addTemple (temple)
-        faction_sqlite = self.database.select("*", "gm_faction",False,None,"IDFaction ASC")
+        faction_sqlite = self.database.select("*", "gm_faction",False,None,"ID ASC")
         while faction_sqlite.next():
             attribs = {} 
-
-            faction = Faction(faction_sqlite.value("IDFaction"), faction_sqlite.value("Name"),attribs)
+            print ('add Faction : ',faction_sqlite.value("name"))
+            faction = Faction(faction_sqlite.value("ID"), faction_sqlite.value("name"),attribs)
             self.addFaction(faction)
-            empire_sqlite = self.database.select("*", "gm_empire",False, "Faction=="+str(faction_sqlite.value("IDFaction")),"IDEmpire ASC")         
+            empire_sqlite = self.database.select("*", "gm_empire",False, "ID_faction=="+str(faction_sqlite.value("ID")),"ID ASC")         
             while empire_sqlite.next():
                 attribs = {}
-                empire = Empire(empire_sqlite.value("IDEmpire"), empire_sqlite.value("Name"),attribs,faction)
+                print ('add Empire: ',empire_sqlite.value("name"))
+                empire = Empire(empire_sqlite.value("ID"), empire_sqlite.value("name"),attribs,faction)
                 faction.addEmpire(empire)
-                kingdom_sqlite = self.database.select("*", "gm_kingdom",False,"IDEmpire=="+str(empire_sqlite.value("Faction")),"IDKingdom ASC")
+                kingdom_sqlite = self.database.select("*", "gm_kingdom",False,"ID_empire=="+str(empire_sqlite.value("ID")),"ID ASC")
                 while kingdom_sqlite.next():
-                    attribs = {'armee':kingdom_sqlite.value("Armee"),'description':kingdom_sqlite.value("Description"),'red':int(kingdom_sqlite.value("Couleur").split(",")[0]),'green':int(kingdom_sqlite.value("Couleur").split(",")[1]),'blue':int(kingdom_sqlite.value("Couleur").split(",")[2]),'alpha':int(kingdom_sqlite.value("Couleur").split(",")[3])}
-                    kingdom = Kingdom(kingdom_sqlite.value("IDKingdom"), kingdom_sqlite.value("Name"),attribs,empire)
+                    attribs = {'armee':kingdom_sqlite.value("armee"),'description':kingdom_sqlite.value("description"),'red':int(kingdom_sqlite.value("couleur").split(",")[0]),'green':int(kingdom_sqlite.value("couleur").split(",")[1]),'blue':int(kingdom_sqlite.value("couleur").split(",")[2]),'alpha':int(kingdom_sqlite.value("couleur").split(",")[3])}
+                    kingdom = Kingdom(kingdom_sqlite.value("ID"), kingdom_sqlite.value("name"),attribs,empire)
                     empire.addKingdom(kingdom)
-                    for t in kingdom_sqlite.value("Temples").split(','):
+                    for t in kingdom_sqlite.value("temples").split(','):
                         if t in self.temples: 
                             self.temples[t].setOwner(kingdom)      
-                    groupe_sqlite = self.database.select("*", "gm_groupe",False,"IDKingdom=="+str(kingdom_sqlite.value("IDKingdom"))+" and Parent==0","IDGroupe ASC")
+                    groupe_sqlite = self.database.select("*", "gm_groupe",False,"ID_kingdom=="+str(kingdom_sqlite.value("ID"))+" and parent==0","ID ASC")
                     while groupe_sqlite.next():
-                        attribs = {'description':groupe_sqlite.value("Description"),'color':groupe_sqlite.value("color")}
-                        groupe = Groupe(groupe_sqlite.value("IDGroupe"), groupe_sqlite.value("Name"),attribs,kingdom)
+                        attribs = {'description':groupe_sqlite.value("description"),'color':groupe_sqlite.value("color"),'rank':groupe_sqlite.value("rank")}
+                        groupe = Groupe(groupe_sqlite.value("ID"), groupe_sqlite.value("name"),attribs,kingdom)
                         kingdom.addGroupe(groupe)        
-                        warrior_sqlite = self.database.select("*", "gm_perso",False,"IDGroup=="+str(groupe_sqlite.value("IDGroupe")),"IDPerso ASC")
+                        warrior_sqlite = self.database.select("*", "gm_perso",False,"ID_group=="+str(groupe_sqlite.value("ID")),"ID ASC")
                         while warrior_sqlite.next():
                             attribs = {}
-                            attribs['picture'] = warrior_sqlite.value("RepresentativPic") 
-                            attribs['latitude'] = warrior_sqlite.value("Latitude") 
-                            attribs['longitude'] = warrior_sqlite.value("Longitude") 
-                            attribs['place'] = warrior_sqlite.value("Place")
-                            attribs['Level'] = warrior_sqlite.value("Level") 
-                            attribs['leader'] = bool(warrior_sqlite.value("Leader")) 
-                            warrior = Warrior(warrior_sqlite.value("IDPerso"), warrior_sqlite.value("Name"),attribs, groupe)
+                            attribs['picture'] = warrior_sqlite.value("representativ_pic") 
+                            attribs['latitude'] = warrior_sqlite.value("latitude") 
+                            attribs['longitude'] = warrior_sqlite.value("longitude") 
+                            attribs['place'] = warrior_sqlite.value("place")
+                            attribs['level'] = warrior_sqlite.value("level") 
+                            attribs['leader'] = bool(warrior_sqlite.value("leader")) 
+                            attribs['rank'] = bool(warrior_sqlite.value("rank"))
+#                             attribs['HP'] = bool(warrior_sqlite.value("HP"))
+#                             attribs['MP'] = bool(warrior_sqlite.value("MP"))
+#                             attribs['HP_max'] = bool(warrior_sqlite.value("HP_max"))
+#                             attribs['MP_max'] = bool(warrior_sqlite.value("MP_max"))
+#                             attribs['ATK'] = bool(warrior_sqlite.value("ATK"))
+#                             attribs['DEF'] = bool(warrior_sqlite.value("DEF"))
+#                             attribs['MATK'] = bool(warrior_sqlite.value("MATK"))
+#                             attribs['MDEF'] = bool(warrior_sqlite.value("MDEF"))
+#                             attribs['AGL'] = bool(warrior_sqlite.value("AGL"))
+#                             attribs['LUCK'] = bool(warrior_sqlite.value("LUCK"))
+                            warrior = Warrior(warrior_sqlite.value("ID"), warrior_sqlite.value("name"),attribs, groupe)
                             groupe.addWarrior(warrior)
                             warrior.selection_changed.connect(self.onSelectionChanged)
-                            if warrior_sqlite.value("Place")!= '':
-                                self.temples[int(warrior_sqlite.value("Place"))].addHeros(warrior)
+                            if warrior_sqlite.value("place")!= '':
+                                self.temples[int(warrior_sqlite.value("place"))].addHeros(warrior)
 
         #gestion des sous groupes
-        groupe_sqlite = self.database.select("*", "gm_groupe",False,"Parent!= 0","IDGroupe ASC")
+        groupe_sqlite = self.database.select("*", "gm_groupe",False,"parent!= 0","ID ASC")
         while groupe_sqlite.next():
-            attribs = {'description':groupe_sqlite.value("Description"),'color':groupe_sqlite.value("color")}
-            parent_groupe = self.findGroupeFromID(groupe_sqlite.value("Parent"))
-            groupe = Groupe(groupe_sqlite.value("IDGroupe"), groupe_sqlite.value("Name"),attribs,parent_groupe,True)
-            warrior_sqlite = self.database.select("*", "gm_perso",False,"IDGroup=="+str(groupe_sqlite.value("IDGroupe")),"IDPerso ASC")
+            attribs = {'description':groupe_sqlite.value("description"),'color':groupe_sqlite.value("color"),'rank':groupe_sqlite.value("rank")}
+            parent_groupe = self.findGroupeFromID(groupe_sqlite.value("parent"))
+            groupe = Groupe(groupe_sqlite.value("ID"), groupe_sqlite.value("name"),attribs,parent_groupe,True)
+            warrior_sqlite = self.database.select("*", "gm_perso",False,"ID_group=="+str(groupe_sqlite.value("ID")),"ID ASC")
             while warrior_sqlite.next():
                 attribs = {}
-                attribs['picture'] = warrior_sqlite.value("RepresentativPic") 
-                attribs['latitude'] = warrior_sqlite.value("Latitude") 
-                attribs['longitude'] = warrior_sqlite.value("Longitude")
-                attribs['place'] = warrior_sqlite.value("Place")
-                attribs['Level'] = warrior_sqlite.value("Level")
-                attribs['leader'] = bool(warrior_sqlite.value("Leader"))
-                warrior = Warrior(warrior_sqlite.value("IDPerso"), warrior_sqlite.value("Name"),attribs, groupe)
+                attribs['picture'] = warrior_sqlite.value("representativ_pic") 
+                attribs['latitude'] = warrior_sqlite.value("latitude") 
+                attribs['longitude'] = warrior_sqlite.value("longitude")
+                attribs['place'] = warrior_sqlite.value("place")
+                attribs['level'] = warrior_sqlite.value("level")
+                attribs['leader'] = bool(warrior_sqlite.value("leader"))
+                attribs['rank'] = bool(warrior_sqlite.value("rank"))
+#                 attribs['HP'] = bool(warrior_sqlite.value("HP"))
+#                 attribs['MP'] = bool(warrior_sqlite.value("MP"))
+#                 attribs['HPmax'] = bool(warrior_sqlite.value("HPmax"))
+#                 attribs['MPmax'] = bool(warrior_sqlite.value("MPmax"))
+#                 attribs['ATK'] = bool(warrior_sqlite.value("ATK"))
+#                 attribs['DEF'] = bool(warrior_sqlite.value("DEF"))
+#                 attribs['MATK'] = bool(warrior_sqlite.value("MATK"))
+#                 attribs['MDEF'] = bool(warrior_sqlite.value("MDEF"))
+#                 attribs['AGL'] = bool(warrior_sqlite.value("AGL"))
+#                 attribs['LUCK'] = bool(warrior_sqlite.value("LUCK"))
+                warrior = Warrior(warrior_sqlite.value("ID"), warrior_sqlite.value("name"),attribs, groupe)
                 groupe.addWarrior(warrior)
-                if warrior_sqlite.value("Place"):
-                    self.temples[int(warrior_sqlite.value("Place"))].addHeros(warrior)
+                if warrior_sqlite.value("place"):
+                    self.temples[int(warrior_sqlite.value("place"))].addHeros(warrior)
                     
             if parent_groupe != None : 
                 parent_groupe.addSubGroupe(groupe)
         #warrior_sqlite = self.database.select("*", "gm_perso",False,"IDPerso=="+str(125))
         qWarning("Fin chargement de la bdd")
+
             
     def findGroupeFromID (self, ident): 
         for faction in self.factions.values() :
@@ -247,8 +272,8 @@ class Univers (QObject):
             for empire in faction.empires.values():
                 for kingdom in empire.kingdoms.values():
                     if kingdom.id == id_kingdom :
-                        kingdom.attribs['lat'] = lat 
-                        kingdom.attribs['lon'] = lon
+                        kingdom.attribs['latitude'] = lat 
+                        kingdom.attribs['longitude'] = lon
                     
     def addFaction (self, faction):
         self.factions[faction.name] = faction

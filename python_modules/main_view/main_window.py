@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QAction, QMainWindow
+from PyQt5.QtWidgets import QAction, QMainWindow, QWidget
 from PyQt5.Qt import  QKeySequence,QDialog
 from python_modules.main_view.explorer_view import ExplorerWidget
 from python_modules.view.view_map.map_view import MapWindow
@@ -8,7 +8,8 @@ from python_modules.view.view_heros.warrior_layout import WarriorLayout
 from python_modules.config import Config
 from python_modules.main_view.dialog_save import DialogSave
 from python_modules.main_view.dialog_settings import DialogSettings
-
+from python_modules.main_view.dialog_thumb_generator import DialogThumbGenerator
+from python_modules.utils.thumbnail_generator import ThumbnailGenerator
 class MainWindow(QMainWindow,Ui_MainWindow):
     
     def __init__(self, univers):
@@ -55,6 +56,9 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.actionLock.toggled.connect(self.onLock)
         self.actionSave.triggered.connect(self.onSave)
         self.actionSettings.triggered.connect(self.onEditSettings)
+        self.actionReset_attributes.triggered.connect(self.onResetAttributes)
+        #self.actionAdd_Kingdom.triggered.connect(self.onAddKingdom)
+        self.actionGenerate_Thumbnail.triggered.connect(self.onGenerateThumbnail)
         #self.explorerDock = ExplorerDockWidget(self.univers)
         #self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.explorerDock)
         #self.showFullScreen()
@@ -64,6 +68,29 @@ class MainWindow(QMainWindow,Ui_MainWindow):
        
         self.setWindowTitle("Mythic War")
 
+
+    def onGenerateThumbnail(self):
+        dlg = DialogThumbGenerator(self.univers,self)
+        if dlg.exec_() == QDialog.Accepted :
+           # try : 
+            faction = dlg.currentFaction.name
+            empire = dlg.currentEmpire.name
+            kingdom = dlg.currentKingdom.name
+#             except AttributeError : 
+#                 faction = empire = kingdom = ''
+            print ('Thumb generator faction',faction)
+            tg = ThumbnailGenerator(self.settings.value("global/resources_path"))
+            tg.generateFor1Kingdom(faction,empire,kingdom)
+        else :
+            dlg.close()
+        
+            
+
+    def onResetAttributes (self):
+        pass
+    
+    def onAddKingdom (self):
+        pass
     def onGoToWarriorPage (self):
         self.tabWidget.setCurrentIndex(2)
     def onModificationsHeros (self,id_heros):
