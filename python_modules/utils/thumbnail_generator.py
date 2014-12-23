@@ -1,194 +1,128 @@
-from PyQt5.Qt import  QXmlStreamWriter, QFile, QImage, qDebug
+from PyQt5.Qt import  QImage, qDebug, QMessageLogger
 import os
-from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtWidgets import QProgressDialog
 
-class ThumbnailGenerator ():
+
+from python_modules.utils.sqlite_model import SqliteModel
+from python_modules.config import Config
+
+class ThumbnailGenerator (SqliteModel):
     def __init__(self,basepath):
-        self.dir = None
-        self.basepath = basepath
-#         self.low_ext = "-low"
-#         self.midle_ext = "-mid"
-        self.stop = False
+        super(ThumbnailGenerator,self).__init__(basepath)
         self.thumb_width = 100
         self.thumb_ext = "portrait_thumbnail"
-        self.portrait_ext = "portrait"
+        self.portrait_ext = "portrait"        
+        # resultats info
+        self.nb_echec_thumb_creation = ["echecs de creation de miniatures",0]
+        self.nb_success_thumb_creation = ["miniatures crees",0]
+        self.nb_rename = ["images renomees",0]
+        self.nb_rename_failed = ["echecs de renommage",0]
+
+
     def setParameters (self, thumb_width):
         self.thumb_width = thumb_width
         
-    def estimateNbPerso (self, fullpath):
 
-        nombre_heros = 0
-        try:
-            list_data = os.listdir (fullpath)
-            find = False
-            for data in list_data : 
-                if data == "Picture" :
-                    find = True
-                    break
-            if find == True :
-                fullpath = os.path.join(fullpath,"Picture")
-                list_group = os.listdir (fullpath)
-                for group in list_group : 
-                    currentPath = os.path.join(fullpath,group)
-                    if group[0] != '~' :                   
-                        list_perso = os.listdir (currentPath)
-                        if os.path.isdir(os.path.join(currentPath,list_perso[0])):
-                            list_perso_tmp = os.listdir(os.path.join(currentPath,list_perso[0]))
-                            if os.path.isdir(os.path.join(currentPath,list_perso[0],list_perso_tmp[0])):
-                                sub_group = list_perso[0]
-                                currentPath = os.path.join(currentPath,sub_group)
-                                list_perso = os.listdir(currentPath)
-                        for perso in list_perso:
-                            if (perso [0] != '~') and (os.path.isdir(os.path.join(currentPath,perso))):
-                                nombre_heros+=1
-        except FileNotFoundError :
-            pass        
-
-        return nombre_heros
 
     def onCanceled (self):
         self.stop = True
 
-    def generateFor1Kingdom (self,faction,empire,kingdom):
-        self.faction = faction
-        self.empire = empire
-        self.kingdom = kingdom
-        self.nb_echec_thumb_creation = 0
-        self.nb_success_thumb_creation = 0
-        self.nb_rename = 0
-        self.nb_rename_failed = 0
-        self.sucess = False
-        self.echec_list = []
-        self.fullPath = os.path.join(self.basepath,faction,empire,kingdom) 
-        total_perso = self.estimateNbPerso(self.fullPath)
-        progress = QProgressDialog ("Creation des miniatures","Cancel",0,total_perso)
-        progress.setWindowModality(QtCore.Qt.WindowModal)
-        progress.canceled.connect(self.onCanceled)
-        
-        nb_perso = 0
 
-        try:
-            list_data = os.listdir (self.fullPath)
+
+    def createThumb (self,path_to_perso):
+
+        list_pic = os.listdir (path_to_perso)
+        if len(list_pic) > 0 : 
             find = False
-         
-            for data in list_data : 
-                if data == "Picture" :
-                    find = True
-                    break
-            if find == True :
-                self.fullPath = self.fullPath+"\\"+"Picture"
-                list_group = os.listdir (self.fullPath)
-                for group in list_group : 
-                    currentPath = self.fullPath +"\\"+group
-                    if group[0] != '~' :
-                     #   print ("Group Name Th generator: ", group)                    
-                        list_perso = os.listdir (currentPath)
-                        if os.path.isdir(currentPath+"\\"+list_perso[0]):
-                            list_perso_tmp = os.listdir(currentPath+"\\"+list_perso[0])
-                            if os.path.isdir(currentPath+"\\"+list_perso[0]+"\\"+list_perso_tmp[0]):
-                                sub_group = list_perso[0]
-                                currentPath = currentPath + "\\"+sub_group
-                                list_perso = os.listdir(currentPath)
-                    #            print ('sub groupe',sub_group)
-                        else:
-                            print(' not dir')
-                        for perso in list_perso:
-                            if (perso [0] != '~') and (os.path.isdir(currentPath+"\\"+perso)):
-                                list_pic = os.listdir (currentPath+"\\"+perso)
-                            #    print ('perso',perso)
-                                if len(list_pic) > 0 : 
-                                    find = False
-                                    #indice = 0
-                                    for pic in list_pic :
-                                        self.sucess = True
-                                        if self.thumb_ext not in pic : 
-                                            if "portrait" in pic :
-                                                find = True    
-                                                thumbnail = QImage(currentPath+"\\"+perso+"\\"+pic)
-                                                if (thumbnail.isNull()):
-                                                    print ('IMAGE NULL',currentPath+"\\"+perso+"\\"+pic)
-                                                thumbnail = thumbnail.scaledToWidth(self.thumb_width)
-                                                pic_basename = pic.split(".")
-                                                result = thumbnail.save(currentPath+"\\"+perso+"\\"+self.thumb_ext+".jpg")
-                                                try:
-                                                    gg = os.rename(currentPath+"\\"+perso+"\\"+pic, currentPath+"\\"+perso+"\\"+self.portrait_ext+".jpg")
-#                                                     print ("IN ",currentPath+"\\"+perso+"\\"+pic)
-#                                                     print ("OUT ",currentPath+"\\"+perso+"\\"+self.portrait_ext+".jpg")
-#                                                     print ('resultat rename = ',gg)
-                                                    self.nb_rename+=1
-                                                except FileExistsError :
-                                                    self.nb_rename_failed+=1
-                                                    pass
-                                                print (currentPath+"\\"+perso+"\\"+self.thumb_ext+".jpg")
-                                                if result == False :
-                                                    self.nb_echec_thumb_creation += 1
-                                                    try : 
-                                                        print (perso)
-                                                        qDebug("Echec de la creation de la miniature :"+currentPath+"\\"+perso+"\\"+pic_basename[0]+self.thumb_ext+"."+pic_basename[1])
-                                                        self.echec_list.append(currentPath+"\\"+perso+"\\"+self.thumb_ext+".jpg")
-                                                        
-                                                    except UnicodeEncodeError :
-                                                        qDebug("echec sauvegarde ****")
+            for pic in list_pic :
+                self.success = True
+                if self.thumb_ext not in pic : 
+                    if "portrait" in pic :
+                        find = True    
+                        thumbnail = QImage(os.path.join(path_to_perso,pic))
+                        if (thumbnail.isNull()):
+                            print ('IMAGE NULL',os.path.join(path_to_perso,pic))
+                        thumbnail = thumbnail.scaledToWidth(self.thumb_width)
+                        pic_basename = pic.split(".")
+                        result = thumbnail.save(os.path.join(path_to_perso,self.thumb_ext+".jpg"))
+                            
+                        try:
+                            os.rename(os.path.join(path_to_perso,pic),os.path.join(path_to_perso,self.portrait_ext+".jpg"))
+                            self.nb_rename[1] = self.nb_rename[1]+1
+                        except FileExistsError :
+                            self.nb_rename_failed[1] = self.nb_rename_failed[1]+1
+                            pass
+                        if result == False :
+                            self.nb_echec_thumb_creation[1] = self.nb_echec_thumb_creation[1]+ 1
+                            try : 
+                                qDebug("Echec de la creation de la miniature :"+os.path.join(path_to_perso,self.thumb_ext+".jpg"))
+                                self.echec_list.append("FAILED save"+str(os.path.join(path_to_perso,self.thumb_ext+".jpg")))
+                                
+                            except UnicodeEncodeError :
+                                qDebug("echec sauvegarde ****")
 
-                                                else:
-                                                    self.nb_success_thumb_creation += 1
-                                            else :
-                                                pass 
-                                    if find == False : 
-                                        find2 = False
-                                        for pic in list_pic :
-                                            if self.thumb_ext not in pic :
-                                                find2 = True
-                                                break
-                                        if find2 == True :  
-                                            thumbnail = QImage(currentPath+"\\"+perso+"\\"+pic)
-                                            thumbnail = thumbnail.scaledToWidth(self.thumb_width)
-                                            pic_basename = pic.split(".")
-                                            result = thumbnail.save(currentPath+"\\"+perso+"\\"+self.thumb_ext+".jpg")
-                                            if result == False : 
-                                                try : 
-                                                    qDebug("Echec de la creation de la miniature :"+currentPath+"\\"+perso+"\\"+pic_basename[0]+self.thumb_ext+"."+pic_basename[1])
-                                                    self.echec_list.append(currentPath+"\\"+perso+"\\"+pic_basename[0]+self.thumb_ext+"."+pic_basename[1])
-                                                except UnicodeEncodeError :
-                                                    qDebug("echec sauvegarde ****")
-                                                self.nb_echec_thumb_creation += 1
-                                            else:
-                                                self.nb_success_thumb_creation += 1
-                                            try:
-                                                gg = os.rename(currentPath+"\\"+perso+"\\"+pic, currentPath+"\\"+perso+"\\"+self.portrait_ext+".jpg")
-                                                self.nb_rename+=1
-                                            except FileExistsError :
-                                                self.nb_rename_failed+=1
-                                                pass
-                                        else: 
-                                            qDebug("no portrait found")
-                                else :
-                                    pass
-                            nb_perso +=1
-                            progress.setValue(nb_perso)
+                        else:
+                            self.nb_success_thumb_creation[1] = self.nb_success_thumb_creation[1]+1
+                    else :
+                        pass 
+            #une image principale n existe pas
+            if find == False : 
+                #on fait l hypothese que portrai_ext et thumb_ext contienne tous 2 le mot "portrait"
+                thumbnail = QImage(os.path.join(path_to_perso,pic))
+                thumbnail = thumbnail.scaledToWidth(self.thumb_width)
+                pic_basename = pic.split(".")
+                result = thumbnail.save(os.path.join(path_to_perso,self.thumb_ext+".jpg"))
+                if result == False : 
+                    try : 
+                        qDebug("Echec de la creation de la miniature :"+str(os.path.join(path_to_perso,self.thumb_ext+".jpg")))
+                        self.echec_list.append("FAILED save"+str(os.path.join(path_to_perso,self.thumb_ext+".jpg")))
+                    except UnicodeEncodeError :
+                        qDebug("echec sauvegarde ****")
+                    self.nb_echec_thumb_creation[1] = self.nb_echec_thumb_creation[1]+1
+                else:
+                    self.nb_success_thumb_creation[1] = self.nb_success_thumb_creation[1] + 1
+                try:
+                    os.rename(os.path.join(path_to_perso,pic), os.path.join(path_to_perso,self.portrait_ext+".jpg"))
+                    self.nb_rename[1] = self.nb_rename[1] + 1
+                except FileExistsError :
+                    self.nb_rename_failed[1] = self.nb_rename_failed[1] + 1
+                    pass
+            else: 
+                self.echec_list.append("FAILED no portrait found"+str(path_to_perso))
+
+
+
+    def process (self,faction,empire,kingdom):
+        #QMessageLogger(str(Config().instance.settings.value("global/log"),0,"DEBUT CREATION THUMBS ("+faction+","+empire+","+kingdom+")"))
+        super(ThumbnailGenerator,self).process(faction,empire,kingdom)
+        nb_perso = 0
+        try:
+            if os.path.exists(self.fullPath):
+                list_group = list(filter(self.isValid,os.listdir (self.fullPath)))
+                for group in list_group : 
+                    currentPath = os.path.join(self.fullPath ,group)              
+                    list_perso = os.listdir (currentPath)
+                    if os.path.isdir(currentPath+"\\"+list_perso[0]):
+                        list_perso_tmp = os.listdir(os.path.join(currentPath,list_perso[0]))
+                        if os.path.isdir(os.path.join(currentPath,list_perso[0],list_perso_tmp[0])):
+                            sub_group = list_perso[0]
+                            currentPath = currentPath + "\\"+sub_group
+                            list_perso = os.listdir(currentPath)
+                    else:
+                        print(' not dir')
+                    for perso in list(filter(self.isValid,list_perso)):
+                        path_to_perso = os.path.join(currentPath,perso)
+                        self.createThumb(path_to_perso)
+                        nb_perso +=1
+                        self.progress.setValue(nb_perso)
+                        if self.stop == True :
+                            break
+                    if self.stop == True :
+                        break
+                            
         except FileNotFoundError :
             pass
-        progress.setValue(total_perso)
-        self.showResultInfos()
-        
-    def showResultInfos (self):
-        msgBox = QtWidgets.QMessageBox()
-       # msgBox.setIcon(QtWidgets.QMessageBox.Information);
-        #msgBox.setStandardButton()
-        if self.sucess == True :
-            msgBox.setIcon( 1)
-            msgBox.setText("Generation de miniatures details : ("+self.faction+"-"+self.empire+"-"+self.kingdom+")");
-
-            #information 
-        else:
-            #warning
-            msgBox.setIcon( 2)
-            msgBox.setText("Attention : il semblerait que les champs ne soient pas correctement renseignes ou que l arborescence des fichiers de nsoit pas bonne")
-        msgBox.setInformativeText("<p><br>"+str(self.nb_success_thumb_creation)+" : miniatures crees <br>"+str(self.nb_echec_thumb_creation)+" : echec creation miniature<br>"+str(self.nb_rename)+" : fichiers renomes<br>"+str(self.nb_rename_failed)+" : echec de renomage</p>");        
-        if len(self.echec_list) != 0:
-            detailed_text = ''
-            for text in self.echec_list :
-                detailed_text = detailed_text + " \n " + text
-            msgBox.setDetailedText(detailed_text)
-        msgBox.exec_()
+        self.progress.setValue(self.total_heros)
+        result_info = [self.nb_success_thumb_creation,self.nb_echec_thumb_creation,self.nb_rename,self.nb_rename_failed]
+        self.showResultInfos(result_info)
+        #QMessageLogger(str(Config().instance.settings.value("global/log"),0,"FIN CREATION THUMB"))
+ 

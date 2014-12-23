@@ -21,8 +21,8 @@ if __name__ == '__main__':
 
     #rl.finish()
     filename = ""
-    univers = Univers(filename)
-    mainWin = MainWindow(univers)
+
+    mainWin = MainWindow()
     mainWin.show()
     mainWin.showMaximized()
     sys.exit(app.exec_())

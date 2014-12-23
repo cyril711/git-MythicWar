@@ -31,8 +31,8 @@ class KingdomLayout ( QWidget):
         for value in self.model.factions.values() :
             faction.append(value)
         self.kingdom_homepage = BookWorldHomepage (self,self.ui.stackedWidget)
-
-        self.kingdom_homepage.setLeftPage(faction[0].name, faction[1].name, faction[0].empires, faction[1].empires)
+        if len(faction)!= 0:
+            self.kingdom_homepage.setLeftPage(faction[0].name, faction[1].name, faction[0].empires, faction[1].empires)
         self.ui.stackedWidget.removeWidget(self.ui.page)
         self.ui.stackedWidget.removeWidget(self.ui.page_2)
         self.ui.stackedWidget.addWidget(self.kingdom_homepage)

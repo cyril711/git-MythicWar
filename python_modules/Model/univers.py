@@ -5,27 +5,29 @@ from python_modules.model.warrior import Warrior
 from python_modules.model.groupe import Groupe
 from python_modules.model.temple import Temple
 from python_modules.utils.database import DatabaseManager
-from PyQt5.Qt import qDebug, QIcon, qWarning, QPointF, QFile
+from PyQt5.Qt import qDebug, QIcon, qWarning, QPointF, QFile, QProgressDialog
 from PyQt5.QtCore import QObject, pyqtSignal
 from python_modules.config import Config
 from random import randint
 import math
+from PyQt5 import QtCore, QtWidgets
 class Univers (QObject):
     #selection_changed = pyqtSignal()
     selection_updated = pyqtSignal()
     filtered_changed = pyqtSignal()
     askForHerosPage = pyqtSignal(Warrior)
-    def __init__ (self,filename,parent=None):
+    def __init__ (self,filename,progressBar,parent=None):
         super(Univers,self).__init__(parent)
-
+        self.progress = progressBar
         self.settings = Config().instance.settings
         self.factions = {}
         self.temples = {}
-        self.database = DatabaseManager(self.settings.value("global/database"))
+        self.filename = filename
+        self.database = DatabaseManager(self.filename)
         self.database.createConnection()
         self.database.setVerbose(False)
         
-        self.loadFromFile(filename)
+        self.loadFromFile()
         self.currentFaction = None
         self.currentEmpire = None
         self.currentKingdom= None
@@ -159,7 +161,15 @@ class Univers (QObject):
         else:
             qDebug("Echec sauvegarde")
             print ('kkk',db_name,self.settings.value("global/database"))
-    def loadFromFile (self, filename):
+    def loadFromFile (self):
+        all_sqlite = self.database.select("*", "gm_perso",False,None)
+        nb_total = 0
+        while all_sqlite.next():
+            nb_total+=1
+        nb_heros_added = 0
+        self.progress.setLabelText("Etape 1/2 : Chargement de la base de donnee")
+        self.progress.setMinimum (0)
+        self.progress.setMaximum (nb_total*2)
         qWarning("debut chargement de la bdd")
         temples_sqlite = self.database.select("*", "gm_temple",False,None,"ID ASC")
         while temples_sqlite.next():
@@ -216,6 +226,8 @@ class Univers (QObject):
 #                             attribs['AGL'] = bool(warrior_sqlite.value("AGL"))
 #                             attribs['LUCK'] = bool(warrior_sqlite.value("LUCK"))
                             warrior = Warrior(warrior_sqlite.value("ID"), warrior_sqlite.value("name"),attribs, groupe)
+                            nb_heros_added+=1
+                            self.progress.setValue(nb_heros_added)
                             groupe.addWarrior(warrior)
                             warrior.selection_changed.connect(self.onSelectionChanged)
                             if warrior_sqlite.value("place")!= '':
@@ -248,6 +260,8 @@ class Univers (QObject):
 #                 attribs['AGL'] = bool(warrior_sqlite.value("AGL"))
 #                 attribs['LUCK'] = bool(warrior_sqlite.value("LUCK"))
                 warrior = Warrior(warrior_sqlite.value("ID"), warrior_sqlite.value("name"),attribs, groupe)
+                nb_heros_added+=1
+                self.progress.setValue(nb_heros_added)
                 groupe.addWarrior(warrior)
                 if warrior_sqlite.value("place"):
                     self.temples[int(warrior_sqlite.value("place"))].addHeros(warrior)
@@ -255,7 +269,46 @@ class Univers (QObject):
             if parent_groupe != None : 
                 parent_groupe.addSubGroupe(groupe)
         #warrior_sqlite = self.database.select("*", "gm_perso",False,"IDPerso=="+str(125))
+        self.progress.setValue(nb_total)
         qWarning("Fin chargement de la bdd")
+
+    def showResultInfos (self):
+        msgBox = QtWidgets.QMessageBox()
+        if len(self.factions) == 0:
+            msgBox.setIcon( 2)
+            msgBox.setText("Attention la base de donne semble etre vide: ("+self.filename+")");
+        else:
+            #warning
+            msgBox.setIcon( 1)
+            msgBox.setText("Chargement effectue avec success")
+        nb_faction=nb_empire=nb_kingdom=nb_groupe=nb_sub_group=nb_perso=0
+        for faction in self.factions.values() :
+            nb_faction+=1
+            for empire in faction.empires.values():
+                nb_empire+=1
+                for kingdom in empire.kingdoms.values():
+                    nb_kingdom+=1
+                    for groupe in kingdom.groupes.values():
+                        nb_groupe+=1
+                        for sub_groupe in groupe.sub_groupes:
+                            nb_sub_group+=1
+                            for perso in sub_groupe.warriors.values():
+                                nb_perso+=1
+                        for perso in groupe.warriors.values():
+                            nb_perso+=1
+        
+
+        informative_text = "<p>Le model charge contient : "
+        informative_text = "<br>"+str(nb_faction)+" : factions"
+        informative_text+="<br>"+str(nb_empire)+" : empires"
+        informative_text+="<br>"+str(nb_kingdom)+" : kingdoms"
+        informative_text+="<br>"+str(nb_groupe)+" : groupes"
+        informative_text+="<br>"+str(nb_sub_group)+" : sous groupes"
+        informative_text+="<br>"+str(nb_perso)+" : heros </p>"
+        msgBox.setInformativeText(informative_text);
+
+        msgBox.exec_()
+
 
             
     def findGroupeFromID (self, ident): 

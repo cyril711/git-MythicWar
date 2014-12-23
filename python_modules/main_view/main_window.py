@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QAction, QMainWindow, QWidget
-from PyQt5.Qt import  QKeySequence,QDialog
+from PyQt5.Qt import  QKeySequence,QDialog, QProgressDialog
 from python_modules.main_view.explorer_view import ExplorerWidget
 from python_modules.view.view_map.map_view import MapWindow
 from python_modules.view.view_kingdom.kingdom_layout import KingdomLayout
@@ -10,44 +10,71 @@ from python_modules.main_view.dialog_save import DialogSave
 from python_modules.main_view.dialog_settings import DialogSettings
 from python_modules.main_view.dialog_thumb_generator import DialogThumbGenerator
 from python_modules.utils.thumbnail_generator import ThumbnailGenerator
+from python_modules.main_view.dialog_kingdom_import import DialogKingdomImport
+from python_modules.utils.export_to_sqlite import ExportToSqlite
+from python_modules.model.univers import Univers
+import os
+from PyQt5 import QtWidgets, QtCore
 class MainWindow(QMainWindow,Ui_MainWindow):
     
-    def __init__(self, univers):
+    def __init__(self):
         super(MainWindow, self).__init__()
         self.setupUi(self)
-        #self.setFixedSize(QSize(1200,1080))
-        self.univers = univers
+        self.setWindowTitle("Mythic War")
         self.settings = Config().instance.settings
+        self.msgBox = QtWidgets.QMessageBox()
+
+        self.progress = QProgressDialog ()
+        self.progress.setWindowModality(QtCore.Qt.WindowModal)        
+        filename = None
+        if os.path.exists(self.settings.value("global/current_database")):
+            filename = self.settings.value("global/current_database")
+        elif os.path.exists(self.settings.value("global/default_database")):
+            filename = self.settings.value("global/default_database")
+        if filename != None :
+            print ('filename',filename)
+            self.init(filename)
+        else:
+            self.msgBox.setIcon( 3)
+            self.msgBox.setText("Impossible de charger le model de base de donnee, l'application va se fermer");
+            self.msgBox.exec_()
+            #information 
+  
+ 
+    def init(self,filename):
+        self.univers = Univers(filename,self.progress)
         self.modified_royaumes =[]
         self.modified_groupes = []
         self.modified_heros = []
-        #self.centralwidget.setStyleSheet("#centralwidget{background-image: url(:/textures/saphir)}")
-        #self.centralwidget.setAttribute(QtCore.Qt.WA_TranslucentBackground,True)
-        #self.stackedWidget = QStackedWidget(self)
-        #self.setCentralWidget(self.stackedWidget)
-        #self.centralwidget.setWindowOpacity(0.5) 
+
+        nb_etapes= 4
+        avancement = self.progress.value()
+        step = avancement/nb_etapes
+        self.progress.setLabelText("Etape 2/2 : Interface - Kingdom Layout")
         self.kingdomLayout = KingdomLayout(self.univers,self.kingdoms)
         self.setStyleSheet("background-color: rgb(22, 249, 200);")
-#         self.tabWidget.setAttribute(QtCore.Qt.WA_TranslucentBackground,True)
-#         self.tabWidget.setWindowOpacity(0.5)
-# 
-#         
-#         self.kingdoms.setAttribute(QtCore.Qt.WA_TranslucentBackground,True)
-#         self.tabWidget.setWindowOpacity(0.5)
-        self.k_layout.addWidget(self.kingdomLayout)
+        self.k_layout.addWidget(self.kingdomLayout)        
+        self.progress.setValue(self.progress.value()+step)
 
+        self.progress.setLabelText("Etape 2/2 : Interface - Warrior Layout")
         self.warriorLayout = WarriorLayout(self.univers,self.warriors)
         self.w_layout.addWidget (self.warriorLayout)
-        
-        
+        self.progress.setValue(self.progress.value()+step)
+
+        self.progress.setLabelText("Etape 2/2 : Interface - Map")
         self.map = MapWindow(self.univers)
         self.map_layout.addWidget (self.map)
+        self.progress.setValue(self.progress.value()+step)        
 
-        
-        self.explorerWidget = ExplorerWidget(self.univers)
-        #self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.profilDock)        
+        self.progress.setLabelText("Etape 2/2 : Interface - Explorer")
+        self.explorerWidget = ExplorerWidget(self.univers)        
         self.explorerWidget.setParent(self.explorer_content)
-#         self.explorer_content = self.explorerWidget
+        self.progress.setValue(self.progress.value()+step)
+        self.connections()
+        self.univers.showResultInfos()
+
+       
+    def connections(self):
         self.univers.askForHerosPage.connect(self.onGoToWarriorPage)
         self.warriorLayout.modified.connect(self.onModificationsHeros)
         self.kingdomLayout.modifiedGroupe.connect(self.onModificationsGroupes)
@@ -57,30 +84,18 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.actionSave.triggered.connect(self.onSave)
         self.actionSettings.triggered.connect(self.onEditSettings)
         self.actionReset_attributes.triggered.connect(self.onResetAttributes)
-        #self.actionAdd_Kingdom.triggered.connect(self.onAddKingdom)
+        self.actionAdd_Kingdom.triggered.connect(self.onAddKingdom)
         self.actionGenerate_Thumbnail.triggered.connect(self.onGenerateThumbnail)
-        #self.explorerDock = ExplorerDockWidget(self.univers)
-        #self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.explorerDock)
-        #self.showFullScreen()
-            
-        #self.univers.selection_changed.connect (self.profilWidget.onSelectionChange)
-        #self.mapView = MapView (self.stackedWidget)
-       
-        self.setWindowTitle("Mythic War")
-
 
     def onGenerateThumbnail(self):
         dlg = DialogThumbGenerator(self.univers,self)
         if dlg.exec_() == QDialog.Accepted :
-           # try : 
             faction = dlg.currentFaction.name
             empire = dlg.currentEmpire.name
             kingdom = dlg.currentKingdom.name
-#             except AttributeError : 
-#                 faction = empire = kingdom = ''
             print ('Thumb generator faction',faction)
             tg = ThumbnailGenerator(self.settings.value("global/resources_path"))
-            tg.generateFor1Kingdom(faction,empire,kingdom)
+            tg.process(faction,empire,kingdom)
         else :
             dlg.close()
         
@@ -90,7 +105,21 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         pass
     
     def onAddKingdom (self):
-        pass
+        dlg = DialogKingdomImport(self.univers,self)
+        if dlg.exec_() == QDialog.Accepted :
+            faction = dlg.factioName()
+            empire = dlg.empireName()
+            kingdom = dlg.kingdomName()
+            dlg.validate()
+            
+            tg = ExportToSqlite(self.settings.value("global/resources_path"))
+            tg.setDefaultValues(dlg.defaults_values)
+            tg.process(faction,empire,kingdom)
+        else :
+            dlg.close()
+        
+
+
     def onGoToWarriorPage (self):
         self.tabWidget.setCurrentIndex(2)
     def onModificationsHeros (self,id_heros):
