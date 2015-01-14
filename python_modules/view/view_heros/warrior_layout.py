@@ -14,10 +14,12 @@ class WarriorLayout ( QWidget,Ui_WarriorLayout):
         self.model = model
         #self.widget.setStyleSheet("#widget{background-image: url(:/textures/saphir)}")
         self.connections()
-        self.init()
+        self.homepage = None
+        self.init(model)
         self.ind_warrior = 0
+
         self.selection = []
-        self.preset_all_button.click()
+
         self.new_page = None
         self.editable = False
 
@@ -50,13 +52,16 @@ class WarriorLayout ( QWidget,Ui_WarriorLayout):
     def onPresetAll (self):
         self.selection = self.model.allWarriors()
         self.homepage.setRightContent(self.selection)
-    def init (self):
+    def init (self,model):
+        self.model = model
         #lecture du fichier de config pour charger les presets
-        
+        if self.homepage != None :
+            self.horizontalLayout.removeWidget(self.homepage)
+            self.homepage.setParent(None)
         self.homepage = BookWarriorHomepage(self.model,self)
         self.homepage.setLeftPage()
         self.horizontalLayout.insertWidget(1,self.homepage)
-
+        self.preset_all_button.click()
 #         self.homepage.setLeftPage("config.xml")
         #self.central_widget = self.homepage
         

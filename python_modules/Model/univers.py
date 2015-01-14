@@ -16,15 +16,13 @@ class Univers (QObject):
     selection_updated = pyqtSignal()
     filtered_changed = pyqtSignal()
     askForHerosPage = pyqtSignal(Warrior)
-    def __init__ (self,filename,progressBar,parent=None):
+    def __init__ (self,database,progressBar,parent=None):
         super(Univers,self).__init__(parent)
         self.progress = progressBar
         self.settings = Config().instance.settings
         self.factions = {}
         self.temples = {}
-        self.filename = filename
-        self.database = DatabaseManager(self.filename)
-        self.database.createConnection()
+        self.database = database
         self.database.setVerbose(False)
         
         self.loadFromFile()
@@ -40,6 +38,19 @@ class Univers (QObject):
         for color in colors :
             icon = QIcon(":/textures/"+color)
             self.groupe_color_icons[color] = icon            
+
+        self.test = "iiii"
+
+
+    def clear (self):
+        self.factions = {}
+        self.temples = {}
+        self.currentFaction = None
+        self.currentEmpire = None
+        self.currentKingdom= None
+        self.currentGroupe= None     
+        self.selected_Warriors = []
+        self.filtered_Warriors = []
             
     def setCurrentFaction (self, faction):
         self.currentFaction  = faction
@@ -60,7 +71,7 @@ class Univers (QObject):
         self.first_selected = (self.first_selected - 1)% len(self.selected_Warriors)    
 
     def onSelectionChanged (self, flag,warrior):
-
+        print ('OPOPOP')
         if (warrior in self.selected_Warriors) and (flag == False):
             self.selected_Warriors.remove(warrior)
             print ('remove from selected warriors',warrior.name)
@@ -123,7 +134,7 @@ class Univers (QObject):
         self.filtered_changed.emit()                          
         return self.filtered_Warriors
     
-    def save (self):
+    def save (self,filename = None):
         print ("sauvegarde")
         for temple in self.temples.values() :
             attribs = temple.getDictAttributes ()
@@ -150,17 +161,19 @@ class Univers (QObject):
 #                             attribs = perso.getDictAttributes ()
 #                             self.database.update("gm_perso",attribs,"ID="+str(perso.id))
         db_name = self.database.database.databaseName()
+        if filename == None : 
+            filename = self.settings.value("global/database")
         try :
-            QFile.remove(self.settings.value("global/database"))
+            QFile.remove(filename)
         except OSError :
             qWarning("echec suppression ")
             pass
 
-        if QFile.copy(db_name,self.settings.value("global/database")):
+        if QFile.copy(db_name,filename):
             qWarning("sauvegarde reussit")
         else:
             qDebug("Echec sauvegarde")
-            print ('kkk',db_name,self.settings.value("global/database"))
+            print ('kkk',db_name,filename)
     def loadFromFile (self):
         all_sqlite = self.database.select("*", "gm_perso",False,None)
         nb_total = 0
@@ -205,10 +218,9 @@ class Univers (QObject):
                         attribs = {'description':groupe_sqlite.value("description"),'color':groupe_sqlite.value("color"),'rank':groupe_sqlite.value("rank")}
                         groupe = Groupe(groupe_sqlite.value("ID"), groupe_sqlite.value("name"),attribs,kingdom)
                         kingdom.addGroupe(groupe)        
-                        warrior_sqlite = self.database.select("*", "gm_perso",False,"ID_group=="+str(groupe_sqlite.value("ID")),"ID ASC")
+                        warrior_sqlite = self.database.select("*", "gm_perso",False,"ID_groupe=="+str(groupe_sqlite.value("ID")),"ID ASC")
                         while warrior_sqlite.next():
                             attribs = {}
-                            attribs['picture'] = warrior_sqlite.value("representativ_pic") 
                             attribs['latitude'] = warrior_sqlite.value("latitude") 
                             attribs['longitude'] = warrior_sqlite.value("longitude") 
                             attribs['place'] = warrior_sqlite.value("place")
@@ -230,6 +242,7 @@ class Univers (QObject):
                             self.progress.setValue(nb_heros_added)
                             groupe.addWarrior(warrior)
                             warrior.selection_changed.connect(self.onSelectionChanged)
+                            print ('connection warrior to selection changed')
                             if warrior_sqlite.value("place")!= '':
                                 self.temples[int(warrior_sqlite.value("place"))].addHeros(warrior)
 
@@ -239,10 +252,9 @@ class Univers (QObject):
             attribs = {'description':groupe_sqlite.value("description"),'color':groupe_sqlite.value("color"),'rank':groupe_sqlite.value("rank")}
             parent_groupe = self.findGroupeFromID(groupe_sqlite.value("parent"))
             groupe = Groupe(groupe_sqlite.value("ID"), groupe_sqlite.value("name"),attribs,parent_groupe,True)
-            warrior_sqlite = self.database.select("*", "gm_perso",False,"ID_group=="+str(groupe_sqlite.value("ID")),"ID ASC")
+            warrior_sqlite = self.database.select("*", "gm_perso",False,"ID_groupe=="+str(groupe_sqlite.value("ID")),"ID ASC")
             while warrior_sqlite.next():
-                attribs = {}
-                attribs['picture'] = warrior_sqlite.value("representativ_pic") 
+                attribs = {} 
                 attribs['latitude'] = warrior_sqlite.value("latitude") 
                 attribs['longitude'] = warrior_sqlite.value("longitude")
                 attribs['place'] = warrior_sqlite.value("place")
@@ -276,7 +288,7 @@ class Univers (QObject):
         msgBox = QtWidgets.QMessageBox()
         if len(self.factions) == 0:
             msgBox.setIcon( 2)
-            msgBox.setText("Attention la base de donne semble etre vide: ("+self.filename+")");
+            msgBox.setText("Attention la base de donne semble etre vide: ("+self.database.database_name+")");
         else:
             #warning
             msgBox.setIcon( 1)

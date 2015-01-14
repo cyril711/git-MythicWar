@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QAction, QMainWindow, QWidget
+from PyQt5.QtWidgets import QAction, QMainWindow, QWidget, QFileDialog
 from PyQt5.Qt import  QKeySequence,QDialog, QProgressDialog
 from python_modules.main_view.explorer_view import ExplorerWidget
 from python_modules.view.view_map.map_view import MapWindow
@@ -15,6 +15,7 @@ from python_modules.utils.export_to_sqlite import ExportToSqlite
 from python_modules.model.univers import Univers
 import os
 from PyQt5 import QtWidgets, QtCore
+from python_modules.utils.database import DatabaseManager
 class MainWindow(QMainWindow,Ui_MainWindow):
     
     def __init__(self):
@@ -24,25 +25,74 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.settings = Config().instance.settings
         self.msgBox = QtWidgets.QMessageBox()
 
+        self.kingdomLayout = None
+        self.map = None
+        self.warriorLayout = None
+        self.explorerWidget = None
+        self.univers = None
         self.progress = QProgressDialog ()
         self.progress.setWindowModality(QtCore.Qt.WindowModal)        
         filename = None
-        if os.path.exists(self.settings.value("global/current_database")):
-            filename = self.settings.value("global/current_database")
-        elif os.path.exists(self.settings.value("global/default_database")):
-            filename = self.settings.value("global/default_database")
+        if os.path.exists(os.path.join(self.settings.value("global/current_dir"),self.settings.value("global/current_database"))):
+            filename = os.path.join(self.settings.value("global/current_dir"),self.settings.value("global/current_database"))
+        elif os.path.exists(os.path.join(self.settings.value("global/current_dir"),self.settings.value("global/default_database"))):
+            filename = os.path.join(self.settings.value("global/current_dir"),self.settings.value("global/default_database"))
         if filename != None :
             print ('filename',filename)
             self.init(filename)
+            self.actionQuit.triggered.connect(self.onQuit)
+            self.actionLock.toggled.connect(self.onLock)
+            self.actionSave.triggered.connect(self.onSave)
+            self.actionOpen.triggered.connect(self.onOpen)
+            self.actionSave_As.triggered.connect(self.onSaveAs)
+            self.actionSettings.triggered.connect(self.onEditSettings)
+            self.actionReset_attributes.triggered.connect(self.onResetAttributes)
+            self.actionAdd_Kingdom.triggered.connect(self.onAddKingdom)
+            self.actionGenerate_Thumbnail.triggered.connect(self.onGenerateThumbnail)
+            self.actionNew.triggered.connect(self.onNew)
         else:
             self.msgBox.setIcon( 3)
             self.msgBox.setText("Impossible de charger le model de base de donnee, l'application va se fermer");
             self.msgBox.exec_()
-            #information 
+
   
+    def onOpen(self):
+        filename = QFileDialog.getOpenFileName(self, caption='Open Database', directory=self.settings.value("global/current_dir"), filter='Database (*.sqlite)')
+        if filename :
+            print ('filename',filename,type(filename))
+            self.init(filename[0])
  
-    def init(self,filename):
-        self.univers = Univers(filename,self.progress)
+ 
+ 
+    def init(self,filename=None):
+        if filename != None : 
+            self.database = DatabaseManager(filename)
+            self.database.createConnection()
+
+#         if self.kingdomLayout != None :
+#             self.kingdomLayout.disconnect()
+#             self.kingdomLayout.setParent(None)
+        if self.map != None :
+            self.map.disconnect()
+            self.map.setParent(None)
+#         if self.warriorLayout != None :
+#             self.warriorLayout.disconnect()
+#             self.warriorLayout.setParent(None)
+        if self.univers != None :
+            print ('5555555555555555555555555555555555555555')
+            self.univers.disconnect()
+            self.univers = Univers(self.database,self.progress)
+            self.univers.test = "azazazazazzaz"
+        else:
+            self.univers = Univers(self.database,self.progress)
+
+#         if self.explorerWidget != None :
+#             self.explorerWidget.disconnect()
+#             self.explorerWidget.setParent(None)
+
+            
+        
+
         self.modified_royaumes =[]
         self.modified_groupes = []
         self.modified_heros = []
@@ -51,14 +101,23 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         avancement = self.progress.value()
         step = avancement/nb_etapes
         self.progress.setLabelText("Etape 2/2 : Interface - Kingdom Layout")
-        self.kingdomLayout = KingdomLayout(self.univers,self.kingdoms)
+        if self.kingdomLayout == None:
+            self.kingdomLayout = KingdomLayout(self.univers,self.kingdoms)
+            self.k_layout.addWidget (self.kingdomLayout )        
+        else:
+            self.kingdomLayout.init(self.univers)
         self.setStyleSheet("background-color: rgb(22, 249, 200);")
-        self.k_layout.addWidget(self.kingdomLayout)        
+        #self.k_layout.addWidget(self.kingdomLayout)        
         self.progress.setValue(self.progress.value()+step)
 
         self.progress.setLabelText("Etape 2/2 : Interface - Warrior Layout")
-        self.warriorLayout = WarriorLayout(self.univers,self.warriors)
-        self.w_layout.addWidget (self.warriorLayout)
+        if self.warriorLayout == None:
+            self.warriorLayout = WarriorLayout(self.univers,self.warriors)
+            self.w_layout.addWidget (self.warriorLayout)
+            self.warriorLayout.modified.connect(self.onModificationsHeros)
+        else:
+            self.warriorLayout.init(self.univers)
+
         self.progress.setValue(self.progress.value()+step)
 
         self.progress.setLabelText("Etape 2/2 : Interface - Map")
@@ -67,25 +126,22 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.progress.setValue(self.progress.value()+step)        
 
         self.progress.setLabelText("Etape 2/2 : Interface - Explorer")
-        self.explorerWidget = ExplorerWidget(self.univers)        
+        if self.explorerWidget == None :
+            self.explorerWidget = ExplorerWidget(self.univers)
+        else:
+            self.explorerWidget.initView(self.univers)        
         self.explorerWidget.setParent(self.explorer_content)
         self.progress.setValue(self.progress.value()+step)
-        self.connections()
+        #self.connections()
         self.univers.showResultInfos()
-
-       
-    def connections(self):
+        # connections
         self.univers.askForHerosPage.connect(self.onGoToWarriorPage)
-        self.warriorLayout.modified.connect(self.onModificationsHeros)
+        self.univers.selection_updated.connect(self.explorerWidget.updateSelectionList) 
         self.kingdomLayout.modifiedGroupe.connect(self.onModificationsGroupes)
         self.kingdomLayout.modifiedKingdom.connect(self.onModificationsRoyaumes)
-        self.actionQuit.triggered.connect(self.onQuit)
-        self.actionLock.toggled.connect(self.onLock)
-        self.actionSave.triggered.connect(self.onSave)
-        self.actionSettings.triggered.connect(self.onEditSettings)
-        self.actionReset_attributes.triggered.connect(self.onResetAttributes)
-        self.actionAdd_Kingdom.triggered.connect(self.onAddKingdom)
-        self.actionGenerate_Thumbnail.triggered.connect(self.onGenerateThumbnail)
+       
+       
+
 
     def onGenerateThumbnail(self):
         dlg = DialogThumbGenerator(self.univers,self)
@@ -99,7 +155,23 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         else :
             dlg.close()
         
-            
+    def onNew (self):
+        filename = os.path.join(self.settings.value("global/current_dir"),self.settings.value("global/default_database"))
+        if not os.path.exists(filename):
+            filename = None
+
+        if filename != None :
+            #self.explorerWidget.setParent(None)
+            self.univers.clear()
+            self.explorerWidget.initView(self.univers)
+            self.database.database.close()
+            self.init(filename)
+            self.univers.database = self.database
+        else:
+            self.msgBox.setIcon( 3)
+            self.msgBox.setText("Impossible de creer un nouveau projet car "+filename+" n a put etre trouve");
+            self.msgBox.exec_()
+        
 
     def onResetAttributes (self):
         pass
@@ -107,17 +179,23 @@ class MainWindow(QMainWindow,Ui_MainWindow):
     def onAddKingdom (self):
         dlg = DialogKingdomImport(self.univers,self)
         if dlg.exec_() == QDialog.Accepted :
-            faction = dlg.factioName()
+            faction = dlg.factionName()
             empire = dlg.empireName()
             kingdom = dlg.kingdomName()
             dlg.validate()
             
-            tg = ExportToSqlite(self.settings.value("global/resources_path"))
-            tg.setDefaultValues(dlg.defaults_values)
-            tg.process(faction,empire,kingdom)
+            ex = ExportToSqlite(self.settings.value("global/resources_path"),self.database)
+            ex.setDefaultValues(dlg.defaults_values)
+            ex.process(faction,empire,kingdom)
+
+            self.init()
+            #self.univers.loadFromFile()
+            #self.explorerWidget.initView(self.univers)
+        
+
         else :
             dlg.close()
-        
+            print ("close add kingdom")        
 
 
     def onGoToWarriorPage (self):
@@ -151,6 +229,12 @@ class MainWindow(QMainWindow,Ui_MainWindow):
             dlg.applyChanges ()
         else :
             dlg.close()
+    
+    def onSaveAs (self):
+        filename = QFileDialog.getSaveFileName(self, caption='Save Database', directory=self.settings.value("global/current_dir"), filter='Database (*.sqlite)')
+        if filename :
+            self.univers.save(filename)
+    
     def onSave (self):
         #sauvegarde
         dlg = DialogSave (self.univers,self)

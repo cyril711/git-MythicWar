@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'python_modules/main_view/main_window.ui'
 #
-# Created: Tue Dec 23 22:48:44 2014
+# Created: Wed Jan 14 21:14:50 2015
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -45,6 +45,9 @@ class Ui_MainWindow(object):
         icon2 = QtGui.QIcon()
         icon2.addPixmap(QtGui.QPixmap(":/icons/32x32/fiche_perso"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.tabWidget.addTab(self.warriors, icon2, "")
+        self.tab = QtWidgets.QWidget()
+        self.tab.setObjectName("tab")
+        self.tabWidget.addTab(self.tab, "")
         self.verticalLayout.addWidget(self.tabWidget)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
@@ -76,9 +79,9 @@ class Ui_MainWindow(object):
         self.actionLock = QtWidgets.QAction(MainWindow)
         self.actionLock.setCheckable(True)
         icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap(":/icons/24x24/lock"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        icon3.addPixmap(QtGui.QPixmap(":/icons/24x24/unlock"), QtGui.QIcon.Selected, QtGui.QIcon.Off)
         icon3.addPixmap(QtGui.QPixmap(":/icons/24x24/unlock"), QtGui.QIcon.Active, QtGui.QIcon.On)
+        icon3.addPixmap(QtGui.QPixmap(":/icons/24x24/unlock"), QtGui.QIcon.Selected, QtGui.QIcon.Off)
+        icon3.addPixmap(QtGui.QPixmap(":/icons/24x24/lock"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionLock.setIcon(icon3)
         self.actionLock.setObjectName("actionLock")
         self.actionHome = QtWidgets.QAction(MainWindow)
@@ -97,8 +100,8 @@ class Ui_MainWindow(object):
         icon6.addPixmap(QtGui.QPixmap(":/icons/24x24/save"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionSave.setIcon(icon6)
         self.actionSave.setObjectName("actionSave")
-        self.actionLoad = QtWidgets.QAction(MainWindow)
-        self.actionLoad.setObjectName("actionLoad")
+        self.actionOpen = QtWidgets.QAction(MainWindow)
+        self.actionOpen.setObjectName("actionOpen")
         self.actionSave_2 = QtWidgets.QAction(MainWindow)
         self.actionSave_2.setObjectName("actionSave_2")
         self.actionSave_As = QtWidgets.QAction(MainWindow)
@@ -116,7 +119,10 @@ class Ui_MainWindow(object):
         self.actionReset_attributes.setObjectName("actionReset_attributes")
         self.actionAdd_Kingdom = QtWidgets.QAction(MainWindow)
         self.actionAdd_Kingdom.setObjectName("actionAdd_Kingdom")
-        self.menuFIle.addAction(self.actionLoad)
+        self.actionNew = QtWidgets.QAction(MainWindow)
+        self.actionNew.setObjectName("actionNew")
+        self.menuFIle.addAction(self.actionNew)
+        self.menuFIle.addAction(self.actionOpen)
         self.menuFIle.addAction(self.actionSave_2)
         self.menuFIle.addAction(self.actionSave_As)
         self.menuTools.addAction(self.actionGenerate_Thumbnail)
@@ -132,12 +138,13 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.actionSettings)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(2)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Page"))
         self.menuFIle.setTitle(_translate("MainWindow", "FIle"))
         self.menuTools.setTitle(_translate("MainWindow", "Tools"))
         self.explorerDockWidget.setWindowTitle(_translate("MainWindow", "Explorer"))
@@ -151,7 +158,7 @@ class Ui_MainWindow(object):
         self.actionSave.setText(_translate("MainWindow", "Save"))
         self.actionSave.setToolTip(_translate("MainWindow", "Save current modifications"))
         self.actionSave.setShortcut(_translate("MainWindow", "Ctrl+S"))
-        self.actionLoad.setText(_translate("MainWindow", "Load"))
+        self.actionOpen.setText(_translate("MainWindow", "Open"))
         self.actionSave_2.setText(_translate("MainWindow", "Save"))
         self.actionSave_As.setText(_translate("MainWindow", "Save As"))
         self.actionGenerate_Thumbnail.setText(_translate("MainWindow", "Generate Thumbnail"))
@@ -159,5 +166,6 @@ class Ui_MainWindow(object):
         self.actionSettings.setText(_translate("MainWindow", "settings"))
         self.actionReset_attributes.setText(_translate("MainWindow", "Reset attributes"))
         self.actionAdd_Kingdom.setText(_translate("MainWindow", "Add Kingdom"))
+        self.actionNew.setText(_translate("MainWindow", "New"))
 
 import resources_rc

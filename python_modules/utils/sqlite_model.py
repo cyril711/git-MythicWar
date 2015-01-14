@@ -33,14 +33,19 @@ class SqliteModel ():
         except FileNotFoundError :
             pass        
         return nombre_heros
+    
+
+    def onCanceled (self):
+        self.stop = True
+    
     def process(self,faction_name,empire_name,kingdom_name):
-        
+
         self.faction = faction_name
         self.empire = empire_name
         self.kingdom = kingdom_name
         self.fullPath = os.path.join(self.basepath,self.faction,self.empire,self.kingdom,"Picture") 
         self.total_heros = self.estimateNbPerso(self.fullPath)
-        self.progress = QProgressDialog ("Creation des miniatures","Cancel",0,self.total_heros)
+        self.progress = QProgressDialog ()
         self.progress.setWindowModality(QtCore.Qt.WindowModal)
         self.progress.canceled.connect(self.onCanceled)
 

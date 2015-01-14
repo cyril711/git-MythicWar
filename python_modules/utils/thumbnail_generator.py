@@ -23,8 +23,6 @@ class ThumbnailGenerator (SqliteModel):
         
 
 
-    def onCanceled (self):
-        self.stop = True
 
 
 
@@ -95,6 +93,10 @@ class ThumbnailGenerator (SqliteModel):
         #QMessageLogger(str(Config().instance.settings.value("global/log"),0,"DEBUT CREATION THUMBS ("+faction+","+empire+","+kingdom+")"))
         super(ThumbnailGenerator,self).process(faction,empire,kingdom)
         nb_perso = 0
+        self.progress.setLabelText("Creation des miniatures")
+        self.progress.setCancelButton("Cancel")
+        self.progress.setMinimum(0)
+        self.progress.setMaximum(self.total_heros)
         try:
             if os.path.exists(self.fullPath):
                 list_group = list(filter(self.isValid,os.listdir (self.fullPath)))

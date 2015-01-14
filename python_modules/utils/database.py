@@ -40,7 +40,7 @@ class DatabaseManager (QtCore.QObject):
         value = ""
         attrib = ""
         first = True
-        for key in record.key() : 
+        for key in record.keys() : 
             if not first : 
                 attrib += ", "
                 value += ", "
@@ -49,9 +49,10 @@ class DatabaseManager (QtCore.QObject):
             first = False
         query_str+= str(attrib)+" ) VALUES ( "
         query_str+= str (value)+ " );"
+        query.prepare(query_str)
         for value in record.values():
             query.addBindValue(value)
-        query.prepare(query_str)
+
         if self.verbose == True :
             QtCore.qDebug(query_str)
         if not query.exec_():

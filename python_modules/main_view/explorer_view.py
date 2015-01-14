@@ -7,16 +7,23 @@ class ExplorerWidget (QWidget,Ui_ExplorerWidget):
     def __init__(self,model,parent=None):
         super(ExplorerWidget,self).__init__(parent)
         self.setupUi(self)
-        self.model = model
       #  self.tableWidget.setUpdatesEnabled(True)    
         self.settings = Config().instance.settings
         self.connections()
         self.initView(model)        
 
     def initView (self,model):
+        self.model = model
+        print ('self.model.test',self.model.test)
+        print ("Init view explorer view")
+        self.list_filtered.clear()
+        self.list_selected.clear()
+        self.factions.clear()
         self.factions.addItem('*')
-        for faction_name in model.factions.keys() :
-            self.factions.addItem(str(faction_name))
+        if self.model != None : 
+            for faction_name in self.model.factions.keys() :
+                print ('init view add faction anme',str(faction_name))
+                self.factions.addItem(str(faction_name))
         self.empires.clear()
         self.empires.addItem('*')
         self.kingdoms.clear()
@@ -43,12 +50,14 @@ class ExplorerWidget (QWidget,Ui_ExplorerWidget):
         self.groupes.currentIndexChanged['QString'].connect(self.updateFromGroupeCBox)
         #self.tableWidget.itemSelectionChanged.connect(self.changeSelection)
         self.list_filtered.itemSelectionChanged.connect(self.changeSelection)
-        self.model.selection_updated.connect(self.updateSelectionList)
+#         self.model.selection_updated.connect(self.updateSelectionList)
     def changeSelection (self):
+        print ('change selection')
 #         warriors_ID = []
         for i in range (self.list_filtered.count()):
             item = self.list_filtered.item(i)
             item.data(5).setSelected(item.isSelected())
+            print ('data 5',item.data(5).name)
         
 #             warrior.setSelection()
 #         for item in self.list_filtered.selectedItems():
@@ -76,9 +85,11 @@ class ExplorerWidget (QWidget,Ui_ExplorerWidget):
         self.groupes.clear()
         self.groupes.addItem('*')
         self.model.setCurrentGroupe(None)
+        print ('llllllllllll')
         if value in self.model.factions :
             self.model.setCurrentFaction(self.model.factions[value])
             for empire in self.model.currentFaction.empires.values() :
+                print ('o')
                 self.empires.addItem(str(empire.name))
         self.model.updateFilteredWarrior()        
         self.updateWarriorList ()

@@ -27,7 +27,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <property name="iconSize">
        <size>
@@ -40,7 +40,7 @@
       </property>
       <widget class="QWidget" name="map">
        <attribute name="icon">
-        <iconset>
+        <iconset resource="../../resources.qrc">
          <normaloff>:/icons/32x32/map</normaloff>:/icons/32x32/map</iconset>
        </attribute>
        <attribute name="title">
@@ -50,7 +50,7 @@
       </widget>
       <widget class="QWidget" name="kingdoms">
        <attribute name="icon">
-        <iconset>
+        <iconset resource="../../resources.qrc">
          <normaloff>:/icons/32x32/fiche_royaume</normaloff>:/icons/32x32/fiche_royaume</iconset>
        </attribute>
        <attribute name="title">
@@ -60,13 +60,18 @@
       </widget>
       <widget class="QWidget" name="warriors">
        <attribute name="icon">
-        <iconset>
+        <iconset resource="../../resources.qrc">
          <normaloff>:/icons/32x32/fiche_perso</normaloff>:/icons/32x32/fiche_perso</iconset>
        </attribute>
        <attribute name="title">
         <string/>
        </attribute>
        <layout class="QHBoxLayout" name="w_layout"/>
+      </widget>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>Page</string>
+       </attribute>
       </widget>
      </widget>
     </item>
@@ -85,7 +90,8 @@
     <property name="title">
      <string>FIle</string>
     </property>
-    <addaction name="actionLoad"/>
+    <addaction name="actionNew"/>
+    <addaction name="actionOpen"/>
     <addaction name="actionSave_2"/>
     <addaction name="actionSave_As"/>
    </widget>
@@ -145,7 +151,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="../../resources.qrc">
      <normaloff>:/icons/24x24/lock</normaloff>
      <activeon>:/icons/24x24/unlock</activeon>
      <selectedoff>:/icons/24x24/unlock</selectedoff>:/icons/24x24/lock</iconset>
@@ -162,7 +168,7 @@
   </action>
   <action name="actionHome">
    <property name="icon">
-    <iconset>
+    <iconset resource="../../resources.qrc">
      <normaloff>:/icons/24x24/home</normaloff>:/icons/24x24/home</iconset>
    </property>
    <property name="text">
@@ -171,7 +177,7 @@
   </action>
   <action name="actionQuit">
    <property name="icon">
-    <iconset>
+    <iconset resource="../../resources.qrc">
      <normaloff>:/icons/24x24/quit</normaloff>:/icons/24x24/quit</iconset>
    </property>
    <property name="text">
@@ -186,7 +192,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="../../resources.qrc">
      <normaloff>:/icons/24x24/save</normaloff>:/icons/24x24/save</iconset>
    </property>
    <property name="text">
@@ -199,9 +205,9 @@
     <string>Ctrl+S</string>
    </property>
   </action>
-  <action name="actionLoad">
+  <action name="actionOpen">
    <property name="text">
-    <string>Load</string>
+    <string>Open</string>
    </property>
   </action>
   <action name="actionSave_2">
@@ -226,7 +232,7 @@
   </action>
   <action name="actionSettings">
    <property name="icon">
-    <iconset>
+    <iconset resource="../../resources.qrc">
      <normaloff>:/icons/24x24/settings</normaloff>:/icons/24x24/settings</iconset>
    </property>
    <property name="text">
@@ -241,6 +247,11 @@
   <action name="actionAdd_Kingdom">
    <property name="text">
     <string>Add Kingdom</string>
+   </property>
+  </action>
+  <action name="actionNew">
+   <property name="text">
+    <string>New</string>
    </property>
   </action>
  </widget>

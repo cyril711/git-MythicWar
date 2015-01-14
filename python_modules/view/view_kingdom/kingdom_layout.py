@@ -15,27 +15,38 @@ class KingdomLayout ( QWidget):
         self.ui = Ui_KingdomLayout()
         self.ui.setupUi(self)
         self.model = model
-      
+        self.kingdom_homepage = None
         self.connections()
-        self.init()
+        self.init(model)
         self.nb_pages = 0
 
     def connections (self):
         self.ui.next_button.clicked.connect(self.goNextKingdom)
         self.ui.previous_button.clicked.connect(self.goPreviousKingdom)
     
-    def init (self):
+    def init (self,model):
+        self.model = model
         #chapitre World - kingdoms
+        if self.kingdom_homepage != None :
+            self.ui.stackedWidget.removeWidget(self.kingdom_homepage)
+            self.kingdom_homepage.setParent(None)
+            self.removeAllKingdomWidgets()
         self.kingdom_widget = []
         faction = []
         for value in self.model.factions.values() :
             faction.append(value)
         self.kingdom_homepage = BookWorldHomepage (self,self.ui.stackedWidget)
         if len(faction)!= 0:
-            self.kingdom_homepage.setLeftPage(faction[0].name, faction[1].name, faction[0].empires, faction[1].empires)
+            if len(faction)==1:
+                print ('taille faction empires',len(faction[0].empires))
+                self.kingdom_homepage.setLeftPage(faction[0].name, faction[0].name, faction[0].empires, faction[0].empires)
+            else:
+                self.kingdom_homepage.setLeftPage(faction[0].name, faction[1].name, faction[0].empires, faction[1].empires)
+                
         self.ui.stackedWidget.removeWidget(self.ui.page)
         self.ui.stackedWidget.removeWidget(self.ui.page_2)
         self.ui.stackedWidget.addWidget(self.kingdom_homepage)
+        self.ui.stackedWidget.setCurrentIndex(self.ui.stackedWidget.count())
         
     def setEnableEditableItems (self, enable):
         # a faire  rrrrrr

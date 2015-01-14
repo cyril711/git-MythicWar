@@ -1,29 +1,46 @@
-from PyQt5.Qt import QDialog, qDebug, QColorDialog
+from PyQt5.Qt import QDialog, qDebug, QColorDialog, QAction, QFileDialog
 from python_modules.config import Config
+import os
      
 from python_modules.main_view.ui_dialog_import_kingdom import Ui_DialogKingdomImport
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtGui
      
 class DialogKingdomImport (QDialog, Ui_DialogKingdomImport):
     def __init__ (self,model,parent=None):
         super(DialogKingdomImport,self).__init__(parent)
+        print ('init DialogKingdomImport')
         self.setupUi(self)
         self.model = model
         self.settings = Config().instance.settings
-        self.currenEmpire = None
+        self.currentEmpire = None
         self.currentFaction = None
         self.currentKingdom = None
         self.default_widgets_list = []
         self.defaults_values = {}
         self.initDefaultItems ()
-        self.factionComboBox.currentIndexChanged['QString'].connect(self.updateFromFactionCBox)
-        self.empireComboBox.currentIndexChanged['QString'].connect(self.updateFromEmpireCBox)
-        self.kingdomComboBox.currentIndexChanged['QString'].connect(self.updateFromKingdomCBox)
-        
+#         self.factionComboBox.currentIndexChanged['QString'].connect(self.updateFromFactionCBox)
+#         self.empireComboBox.currentIndexChanged['QString'].connect(self.updateFromEmpireCBox)
+#         self.kingdomComboBox.currentIndexChanged['QString'].connect(self.updateFromKingdomCBox)
+        self.toolButtonFaction.clicked.connect(self.onFactionChanged)
+        self.toolButtonEmpire.clicked.connect(self.onEmpireChanged)
+        self.toolButtonKingdom.clicked.connect(self.onKingdomChanged)
         for faction_name in self.model.factions.keys() :
             self.factionComboBox.addItem(str(faction_name))
 
-
+    def onKingdomChanged (self):
+        filename = QFileDialog.getExistingDirectory(self, caption='Kingdom ? ', directory=self.settings.value("global/resources_path"))
+        if filename != None:
+            self.lineEditKingdom.setText(os.path.basename(filename))
+    
+    def onFactionChanged (self):
+        filename = QFileDialog.getExistingDirectory(self, caption='Faction ? ', directory=self.settings.value("global/resources_path"))
+        if filename != None:
+            self.lineEditFaction.setText(os.path.basename(filename))
+                    
+    def onEmpireChanged (self):
+        filename = QFileDialog.getExistingDirectory(self, caption='Empire ? ', directory=self.settings.value("global/resources_path"))
+        if filename != None:
+            self.lineEditEmpire.setText(os.path.basename(filename))
     def processWidget (self, w):
         key = "database/default_"+w.objectName()
         print ('key : ',key)
@@ -54,10 +71,10 @@ class DialogKingdomImport (QDialog, Ui_DialogKingdomImport):
                     qDebug("missing available  choice")
             elif type(w) == QtWidgets.QPushButton:
                 #on espere qu il n y a qu un push button pour gerer la couleur des kingdoms
-                self.colorKingdom = self.settings.value(key)
+                color = self.settings.value(key)
+                self.colorKingdom = QtGui.QColor(int(color[0]),int(color[1]),int(color[2]),int(color[3]))
                 w.clicked.connect(self.onColorKingdomClicked)
-                print ('couleur', w.objectName(), self.colorKingdom[0])
-                w.setStyleSheet("#"+w.objectName()+"{background-color: rgba("+str(self.colorKingdom [0])+","+str(self.colorKingdom [1])+","+str(self.colorKingdom [2])+","+str(self.colorKingdom [3])+");}")
+                w.setStyleSheet("#"+w.objectName()+"{background-color: rgba("+str(self.colorKingdom.red())+","+str(self.colorKingdom.green())+","+str(self.colorKingdom.blue())+","+str(self.colorKingdom.alpha())+");}")
                 w.show()
         else:
             qDebug("erreur dans le fichier config la valeur par default n est pas definit",key)                    
@@ -94,21 +111,22 @@ class DialogKingdomImport (QDialog, Ui_DialogKingdomImport):
                 self.iterateWidgets(w1)
             
     def factionName (self):
-        return self.factionComboBox.currentText()
+        return self.lineEditFaction.text()
 
     def empireName (self):
-        return self.empireComboBox.currentText()
+        return self.lineEditEmpire.text()
     
     def kingdomName (self):
-        return self.kingdomComboBox.currentText()
+        return self.lineEditKingdom.text()
     
 
     def onColorKingdomClicked (self):
+        
         dlg = QColorDialog(self.colorKingdom )
         dlg.setOption(QColorDialog.ShowAlphaChannel,True)
         if dlg.exec_() == QDialog.Accepted:
             self.colorKingdom  = dlg.currentColor()
-            self.sender().setStyleSheet("#"+self.sender().objectName()+"{background-color: rgba("+str(self.colorKingdom [0])+","+str(self.colorKingdom [1])+","+str(self.colorKingdom [2])+","+str(self.colorKingdom [3])+");}")
+            self.sender().setStyleSheet("#"+self.sender().objectName()+"{background-color: rgba("+str(self.colorKingdom.red())+","+str(self.colorKingdom.green())+","+str(self.colorKingdom.blue())+","+str(self.colorKingdom.alpha())+");}")
             self.sender().show()                    
         else:
             dlg.close()
@@ -127,45 +145,45 @@ class DialogKingdomImport (QDialog, Ui_DialogKingdomImport):
             elif type(w) == QtWidgets.QComboBox:
                 self.defaults_values[w.objectName()] = w.currentText()
             elif type(w) == QtWidgets.QPushButton :
-                color = self.colorKingdom[0]+','+self.colorKingdom[1]+','+self.colorKingdom[2]+','+self.colorKingdom[3]
+                color = [self.colorKingdom.red(),self.colorKingdom.green(),self.colorKingdom.blue(),self.colorKingdom.alpha()]
                 self.defaults_values[w.objectName()] = color
             key = "database/default_"+w.objectName()
             self.settings.setValue(key,self.defaults_values[w.objectName()])    
     
-    
-    def updateFromFactionCBox (self, value):
- #       self.empireComboBox.blockSignals(True)
-        self.empireComboBox.clear()  
-  #      self.kingdomComboBox.blockSignals(True)
-        self.kingdomComboBox.clear()
-        if value in self.model.factions :
-            self.currentFaction = self.model.factions[value]
-            print ('current Faction ', self.currentFaction)
-            for empire in self.currentFaction.empires.values() :
-                self.empireComboBox.addItem(str(empire.name))
-        else:
-            self.currentFaction = None
-   #     self.empireComboBox.blockSignals(False)
-   #     self.kingdomComboBox.blockSignals(False)
-        
-    def updateFromEmpireCBox (self, value):
-    #    self.kingdomComboBox.blockSignals(True)
-        self.kingdomComboBox.clear()
-        self.currentKingdom = None
-        if self.currentFaction != None :
-            if value in self.currentFaction.empires.keys() :
-                self.currentEmpire = self.currentFaction.empires[value]
-
-                for kingdom in self.currentEmpire.kingdoms.values():
-                    self.kingdomComboBox.addItem(str(kingdom.name))
-            else:
-                self.currenEmpire = None
-
-     #   self.kingdomComboBox.blockSignals(False)
-
-
-    def updateFromKingdomCBox (self, value):
-        if self.currentEmpire != None :
-            if value in self.model.currentEmpire.kingdoms:
-                self.currentKingdom = self.model.currentEmpire.kingdoms[value]
-        print ('sss',self.currentEmpire)
+#     
+#     def updateFromFactionCBox (self, value):
+#  #       self.empireComboBox.blockSignals(True)
+#         self.empireComboBox.clear()  
+#   #      self.kingdomComboBox.blockSignals(True)
+#         self.kingdomComboBox.clear()
+#         if value in self.model.factions :
+#             self.currentFaction = self.model.factions[value]
+#             print ('current Faction ', self.currentFaction)
+#             for empire in self.currentFaction.empires.values() :
+#                 self.empireComboBox.addItem(str(empire.name))
+#         else:
+#             self.currentFaction = None
+#    #     self.empireComboBox.blockSignals(False)
+#    #     self.kingdomComboBox.blockSignals(False)
+#         
+#     def updateFromEmpireCBox (self, value):
+#     #    self.kingdomComboBox.blockSignals(True)
+#         self.kingdomComboBox.clear()
+#         self.currentKingdom = None
+#         if self.currentFaction != None :
+#             if value in self.currentFaction.empires.keys() :
+#                 self.currentEmpire = self.currentFaction.empires[value]
+# 
+#                 for kingdom in self.currentEmpire.kingdoms.values():
+#                     self.kingdomComboBox.addItem(str(kingdom.name))
+#             else:
+#                 self.currentEmpire = None
+# 
+#      #   self.kingdomComboBox.blockSignals(False)
+# 
+# 
+#     def updateFromKingdomCBox (self, value):
+#         if self.currentEmpire != None :
+#             if value in self.model.currentEmpire.kingdoms:
+#                 self.currentKingdom = self.model.currentEmpire.kingdoms[value]
+#         print ('sss',self.currentEmpire)

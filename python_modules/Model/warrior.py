@@ -49,6 +49,7 @@ class Warrior (QObject):
 
     def setSelected (self, flag):
         if flag != self.selected :
+            print ('ttuu')
             self.selected = flag
             self.selection_changed.emit(flag,self)
 

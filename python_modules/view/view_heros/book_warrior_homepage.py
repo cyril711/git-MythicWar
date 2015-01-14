@@ -19,9 +19,10 @@ class BookWarriorHomepage ( QWidget,Ui_BookWarriorHomepage):
         self.settings = Config().instance.settings
     def setLeftPage(self):
         i = 0
+        self.treeKingdom.setColumnCount(3)
         for faction in self.model.factions.values() :
             item_f = QTreeWidgetItem(self.treeKingdom)
-            self.treeKingdom.insertTopLevelItem(i,item_f)
+            #self.treeKingdom.insertTopLevelItem(i,item_f)
             item_f.setText(i,faction.name)
             i = i +1
             for empire in faction.empires.values():
@@ -35,6 +36,7 @@ class BookWarriorHomepage ( QWidget,Ui_BookWarriorHomepage):
                     for groupe in kingdom.groupes.values():
                         item_g = QTreeWidgetItem()
                         item_g.setText(i,groupe.name)
+                        print ('groupe',groupe.name)
                         item_k.addChild(item_g)
     
     def setRightContent (self, list_warrior):
@@ -81,8 +83,6 @@ class BookWarriorHomepage ( QWidget,Ui_BookWarriorHomepage):
         layout_one_vignette.addWidget(warrior_label)
         
         max_col  = 3
-        spliter = warrior.attribs['picture'].split("/")
-        picture_name = spliter[len(spliter)-1]
         groupe_name = warrior.groupe().name
         if warrior.masterGroupe() != None : 
             groupe_name = warrior.masterGroupe().name+"/"+groupe_name
