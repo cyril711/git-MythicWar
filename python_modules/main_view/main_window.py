@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QAction, QMainWindow, QWidget, QFileDialog
-from PyQt5.Qt import  QKeySequence,QDialog, QProgressDialog
+from PyQt5.Qt import  QKeySequence,QDialog, QProgressDialog, QTextStream,\
+    QApplication
 from python_modules.main_view.explorer_view import ExplorerWidget
 from python_modules.view.view_map.map_view import MapWindow
 from python_modules.view.view_kingdom.kingdom_layout import KingdomLayout
@@ -13,9 +14,12 @@ from python_modules.utils.thumbnail_generator import ThumbnailGenerator
 from python_modules.main_view.dialog_kingdom_import import DialogKingdomImport
 from python_modules.utils.export_to_sqlite import ExportToSqlite
 from python_modules.model.univers import Univers
+from python_modules.model.book import Book
 import os
 from PyQt5 import QtWidgets, QtCore
 from python_modules.utils.database import DatabaseManager
+from python_modules.view.view_book.book_layout import BookLayout
+from python_modules.tools.stylesheet.stylesheeteditor import StyleSheetEditor
 class MainWindow(QMainWindow,Ui_MainWindow):
     
     def __init__(self):
@@ -26,6 +30,7 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.msgBox = QtWidgets.QMessageBox()
 
         self.kingdomLayout = None
+        self.bookLayout = None
         self.map = None
         self.warriorLayout = None
         self.explorerWidget = None
@@ -45,17 +50,41 @@ class MainWindow(QMainWindow,Ui_MainWindow):
             self.actionSave.triggered.connect(self.onSave)
             self.actionOpen.triggered.connect(self.onOpen)
             self.actionSave_As.triggered.connect(self.onSaveAs)
-            self.actionSettings.triggered.connect(self.onEditSettings)
+            self.actionSettings.triggered.connect(self.onEdit)
             self.actionReset_attributes.triggered.connect(self.onResetAttributes)
             self.actionAdd_Kingdom.triggered.connect(self.onAddKingdom)
             self.actionGenerate_Thumbnail.triggered.connect(self.onGenerateThumbnail)
             self.actionNew.triggered.connect(self.onNew)
+            self.actionStylesheet.triggered.connect(self.onEditStyleSheet)
+            self.actionHome.triggered.connect(self.onHome)
         else:
             self.msgBox.setIcon( 3)
             self.msgBox.setText("Impossible de charger le model de base de donnee, l'application va se fermer");
             self.msgBox.exec_()
 
+# 
+#     def onApplyStylesheet(self,filename,style):
+#         #filename = QFileDialog.getOpenFileName(self, caption='Choisissez un stylsheet', directory=self.settings.value("global/resources_qss"), filter='')
+#         if filename != None :
+#             file = QtCore.QFile(os.path.join(self.settings.value("global/resources_qss"),filename))
+#             if file.open(QtCore.QFile.ReadOnly|QtCore.QFile.Text):
+#                 text = QTextStream(file)
+#                 QApplication.instance().setStyleSheet(text.readAll())
+#                 QApplication.setStyle(style)
+#                 self.settings.setValue ("mainView/stylesheet",filename)
+#                 self.settings.setValue ("mainView/style",style)
+                
+
+    def onEditStyleSheet(self):
+        editor = StyleSheetEditor(self)
+        editor.changeStyleSheet.connect(self.onChangeStylesheet)
+        editor.setWindowModality(QtCore.Qt.ApplicationModal)
+        editor.resize(500, 300)
+        editor.show()
   
+  
+    def onChangeStylesheet(self, css):
+        self.current_css = css
     def onOpen(self):
         filename = QFileDialog.getOpenFileName(self, caption='Open Database', directory=self.settings.value("global/current_dir"), filter='Database (*.sqlite)')
         if filename :
@@ -65,6 +94,7 @@ class MainWindow(QMainWindow,Ui_MainWindow):
  
  
     def init(self,filename=None):
+        print ('INITITITITITITITI')
         if filename != None : 
             self.database = DatabaseManager(filename)
             self.database.createConnection()
@@ -79,10 +109,9 @@ class MainWindow(QMainWindow,Ui_MainWindow):
 #             self.warriorLayout.disconnect()
 #             self.warriorLayout.setParent(None)
         if self.univers != None :
-            print ('5555555555555555555555555555555555555555')
+
             self.univers.disconnect()
             self.univers = Univers(self.database,self.progress)
-            self.univers.test = "azazazazazzaz"
         else:
             self.univers = Univers(self.database,self.progress)
 
@@ -90,7 +119,8 @@ class MainWindow(QMainWindow,Ui_MainWindow):
 #             self.explorerWidget.disconnect()
 #             self.explorerWidget.setParent(None)
 
-            
+        self.bookModel = Book()
+        self.bookModel.load("C:\\Users\\cyril\\Documents\\Travail\\Workspace\\databases\\book\\book.xml")
         
 
         self.modified_royaumes =[]
@@ -106,7 +136,14 @@ class MainWindow(QMainWindow,Ui_MainWindow):
             self.k_layout.addWidget (self.kingdomLayout )        
         else:
             self.kingdomLayout.init(self.univers)
-        self.setStyleSheet("background-color: rgb(22, 249, 200);")
+        if self.bookLayout == None:
+            self.bookLayout = BookLayout(self.book)
+            self.bookLayout.load(self.bookModel)
+            self.b_layout.addWidget (self.bookLayout )        
+        else:
+            self.bookLayout.load(self.bookModel)
+
+        #self.setStyleSheet("background-color: rgb(22, 249, 200);")
         #self.k_layout.addWidget(self.kingdomLayout)        
         self.progress.setValue(self.progress.value()+step)
 
@@ -139,8 +176,16 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.univers.selection_updated.connect(self.explorerWidget.updateSelectionList) 
         self.kingdomLayout.modifiedGroupe.connect(self.onModificationsGroupes)
         self.kingdomLayout.modifiedKingdom.connect(self.onModificationsRoyaumes)
-       
-       
+
+
+        self.current_css = ""
+        if self.settings.value("mainView/stylesheet")!= "":
+            file = QtCore.QFile(os.path.join(self.settings.value("global/resources_qss"),self.settings.value("mainView/stylesheet")))
+            if file.open(QtCore.QFile.ReadOnly|QtCore.QFile.Text):
+                text = QTextStream(file)
+                QApplication.instance().setStyleSheet(text.readAll())
+                QApplication.setStyle(self.settings.value("mainView/style"))       
+                self.current_css = self.settings.value("mainView/stylesheet")
 
 
     def onGenerateThumbnail(self):
@@ -223,12 +268,23 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.close()
     
     
-    def onEditSettings (self):
-        dlg = DialogSettings (self)    
-        if dlg.exec_() == QDialog.Accepted :
-            dlg.applyChanges ()
-        else :
-            dlg.close()
+    def onEdit (self):
+        current_index = self.tabWidget.currentIndex()
+        widget = self.tabWidget.widget(current_index)
+        if widget == self.book :
+            self.bookLayout.onEdit()
+#         dlg = Dialogds (self)    
+#         if dlg.exec_() == QDialog.Accepted :
+#             dlg.applyChanges ()
+#         else :
+#             dlg.close()
+
+    def onHome (self):
+        current_index = self.tabWidget.currentIndex()
+        widget = self.tabWidget.widget(current_index)
+        if widget == self.warriors :
+            self.warriorLayout.onHome()
+
     
     def onSaveAs (self):
         filename = QFileDialog.getSaveFileName(self, caption='Save Database', directory=self.settings.value("global/current_dir"), filter='Database (*.sqlite)')
@@ -251,6 +307,7 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.modified_groupes.clear()
         if dlg.exec_() == QDialog.Accepted :
             self.univers.save()
+            self.bookModel.save()
 #             for id_heros in dlg.list_modified_heros.selectedItems():
 #                 self.univers.saveHeros(id_heros)
 
@@ -261,7 +318,8 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.settings.setValue ("explorer/empire",self.explorerWidget.empires.currentText())
         self.settings.setValue ("explorer/kingdom",self.explorerWidget.kingdoms.currentText())
         self.settings.setValue ("explorer/groupe",self.explorerWidget.groupes.currentText())
-        
+        self.settings.setValue ("mainView/stylesheet",self.current_css)
+        self.settings.setValue ("mainView/style",QApplication.style())
 
     def createActions(self):
         self.editFilters = QAction(QIcon(':/images/new.png'), "&EditFilters",

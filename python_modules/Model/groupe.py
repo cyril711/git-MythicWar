@@ -19,6 +19,16 @@ class Groupe:
         attribs ["Description"]=self.attribs['description']
         attribs['color']=self.attribs["color"]
         return attribs
+
+    def getWarriorList(self):
+        warrior_list = []
+        if len(self.sub_groupes)!=0:
+            for g in self.sub_groupes :
+                warrior_list+=g.getWarriorList()
+        else:
+            for w in self.warriors.values():
+                warrior_list.append(w)
+        return warrior_list
     
     def warriorsList(self):
         if len(self.sub_groupes)!=0:

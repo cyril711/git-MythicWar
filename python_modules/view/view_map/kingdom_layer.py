@@ -117,7 +117,6 @@ class KingdomLayer( Layer ):
                    # self.items[kingdom.id].position_changed.connect(self.onKingdomPositionChanged)
 
     def instantiateHerosItems (self):
-        print ('instantiate heros items')
         for heros_item in self.items_heros :
             self.scene.removeItem(heros_item)
         self.items_heros.clear()

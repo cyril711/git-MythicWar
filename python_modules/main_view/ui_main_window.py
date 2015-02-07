@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'python_modules/main_view/main_window.ui'
 #
-# Created: Wed Jan 14 21:14:50 2015
+# Created: Sat Jan 31 23:25:06 2015
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -45,9 +45,11 @@ class Ui_MainWindow(object):
         icon2 = QtGui.QIcon()
         icon2.addPixmap(QtGui.QPixmap(":/icons/32x32/fiche_perso"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.tabWidget.addTab(self.warriors, icon2, "")
-        self.tab = QtWidgets.QWidget()
-        self.tab.setObjectName("tab")
-        self.tabWidget.addTab(self.tab, "")
+        self.book = QtWidgets.QWidget()
+        self.book.setObjectName("book")
+        self.b_layout = QtWidgets.QHBoxLayout(self.book)
+        self.b_layout.setObjectName("b_layout")
+        self.tabWidget.addTab(self.book, "")
         self.verticalLayout.addWidget(self.tabWidget)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
@@ -57,6 +59,8 @@ class Ui_MainWindow(object):
         self.menuFIle.setObjectName("menuFIle")
         self.menuTools = QtWidgets.QMenu(self.menubar)
         self.menuTools.setObjectName("menuTools")
+        self.menuDesign = QtWidgets.QMenu(self.menubar)
+        self.menuDesign.setObjectName("menuDesign")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
@@ -79,9 +83,9 @@ class Ui_MainWindow(object):
         self.actionLock = QtWidgets.QAction(MainWindow)
         self.actionLock.setCheckable(True)
         icon3 = QtGui.QIcon()
+        icon3.addPixmap(QtGui.QPixmap(":/icons/24x24/lock"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         icon3.addPixmap(QtGui.QPixmap(":/icons/24x24/unlock"), QtGui.QIcon.Active, QtGui.QIcon.On)
         icon3.addPixmap(QtGui.QPixmap(":/icons/24x24/unlock"), QtGui.QIcon.Selected, QtGui.QIcon.Off)
-        icon3.addPixmap(QtGui.QPixmap(":/icons/24x24/lock"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionLock.setIcon(icon3)
         self.actionLock.setObjectName("actionLock")
         self.actionHome = QtWidgets.QAction(MainWindow)
@@ -121,6 +125,10 @@ class Ui_MainWindow(object):
         self.actionAdd_Kingdom.setObjectName("actionAdd_Kingdom")
         self.actionNew = QtWidgets.QAction(MainWindow)
         self.actionNew.setObjectName("actionNew")
+        self.actionStylesheet = QtWidgets.QAction(MainWindow)
+        self.actionStylesheet.setObjectName("actionStylesheet")
+        self.actionApplyStyleSheet = QtWidgets.QAction(MainWindow)
+        self.actionApplyStyleSheet.setObjectName("actionApplyStyleSheet")
         self.menuFIle.addAction(self.actionNew)
         self.menuFIle.addAction(self.actionOpen)
         self.menuFIle.addAction(self.actionSave_2)
@@ -129,8 +137,11 @@ class Ui_MainWindow(object):
         self.menuTools.addAction(self.actionLaunch_SQlite)
         self.menuTools.addAction(self.actionReset_attributes)
         self.menuTools.addAction(self.actionAdd_Kingdom)
+        self.menuDesign.addAction(self.actionStylesheet)
+        self.menuDesign.addAction(self.actionApplyStyleSheet)
         self.menubar.addAction(self.menuFIle.menuAction())
         self.menubar.addAction(self.menuTools.menuAction())
+        self.menubar.addAction(self.menuDesign.menuAction())
         self.toolBar.addAction(self.actionLock)
         self.toolBar.addAction(self.actionHome)
         self.toolBar.addAction(self.actionQuit)
@@ -138,15 +149,16 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.actionSettings)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(3)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Page"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.book), _translate("MainWindow", "Page"))
         self.menuFIle.setTitle(_translate("MainWindow", "FIle"))
-        self.menuTools.setTitle(_translate("MainWindow", "Tools"))
+        self.menuTools.setTitle(_translate("MainWindow", "Database"))
+        self.menuDesign.setTitle(_translate("MainWindow", "Tools"))
         self.explorerDockWidget.setWindowTitle(_translate("MainWindow", "Explorer"))
         self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar"))
         self.actionLock.setText(_translate("MainWindow", "Lock"))
@@ -167,5 +179,7 @@ class Ui_MainWindow(object):
         self.actionReset_attributes.setText(_translate("MainWindow", "Reset attributes"))
         self.actionAdd_Kingdom.setText(_translate("MainWindow", "Add Kingdom"))
         self.actionNew.setText(_translate("MainWindow", "New"))
+        self.actionStylesheet.setText(_translate("MainWindow", "EditStyleSheet"))
+        self.actionApplyStyleSheet.setText(_translate("MainWindow", "ApplyStyleSheet"))
 
 import resources_rc

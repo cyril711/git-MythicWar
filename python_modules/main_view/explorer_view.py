@@ -14,15 +14,13 @@ class ExplorerWidget (QWidget,Ui_ExplorerWidget):
 
     def initView (self,model):
         self.model = model
-        print ('self.model.test',self.model.test)
-        print ("Init view explorer view")
+
         self.list_filtered.clear()
         self.list_selected.clear()
         self.factions.clear()
         self.factions.addItem('*')
         if self.model != None : 
             for faction_name in self.model.factions.keys() :
-                print ('init view add faction anme',str(faction_name))
                 self.factions.addItem(str(faction_name))
         self.empires.clear()
         self.empires.addItem('*')

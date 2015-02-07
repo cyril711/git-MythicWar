@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'python_modules/view/view_heros/warrior_layout.ui'
 #
-# Created: Wed Jan 14 21:14:51 2015
+# Created: Sat Jan 31 23:25:07 2015
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!

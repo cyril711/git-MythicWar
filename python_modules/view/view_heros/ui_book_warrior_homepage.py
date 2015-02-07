@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'python_modules/view/view_heros/book_warrior_homepage.ui'
 #
-# Created: Wed Jan 14 21:14:51 2015
+# Created: Sat Jan 31 23:25:07 2015
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -17,9 +17,9 @@ class Ui_BookWarriorHomepage(object):
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.widget = QtWidgets.QWidget(BookWarriorHomepage)
         self.widget.setObjectName("widget")
-        self.verticalLayout = QtWidgets.QVBoxLayout(self.widget)
-        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout.setObjectName("verticalLayout")
+        self.left_page_Layout = QtWidgets.QVBoxLayout(self.widget)
+        self.left_page_Layout.setContentsMargins(0, 0, 0, 0)
+        self.left_page_Layout.setObjectName("left_page_Layout")
         self.Tree_label = QtWidgets.QLabel(self.widget)
         font = QtGui.QFont()
         font.setFamily("Nyala")
@@ -27,19 +27,13 @@ class Ui_BookWarriorHomepage(object):
         self.Tree_label.setFont(font)
         self.Tree_label.setAlignment(QtCore.Qt.AlignCenter)
         self.Tree_label.setObjectName("Tree_label")
-        self.verticalLayout.addWidget(self.Tree_label)
+        self.left_page_Layout.addWidget(self.Tree_label)
         self.widget_4 = QtWidgets.QWidget(self.widget)
         self.widget_4.setObjectName("widget_4")
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.widget_4)
         self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.treeKingdom = QtWidgets.QTreeWidget(self.widget_4)
-        self.treeKingdom.setAnimated(True)
-        self.treeKingdom.setObjectName("treeKingdom")
-        self.treeKingdom.headerItem().setText(0, "1")
-        self.treeKingdom.header().setVisible(False)
-        self.horizontalLayout_2.addWidget(self.treeKingdom)
-        self.verticalLayout.addWidget(self.widget_4)
+        self.left_page_Layout.addWidget(self.widget_4)
         self.horizontalLayout.addWidget(self.widget)
         self.widget_2 = QtWidgets.QWidget(BookWarriorHomepage)
         self.widget_2.setObjectName("widget_2")
@@ -83,3 +77,4 @@ class Ui_BookWarriorHomepage(object):
         self.Tree_label.setText(_translate("BookWarriorHomepage", "Par Royaume"))
         self.label.setText(_translate("BookWarriorHomepage", "Heros"))
 
+import resources_rc

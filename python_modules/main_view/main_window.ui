@@ -27,7 +27,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <property name="iconSize">
        <size>
@@ -68,10 +68,11 @@
        </attribute>
        <layout class="QHBoxLayout" name="w_layout"/>
       </widget>
-      <widget class="QWidget" name="tab">
+      <widget class="QWidget" name="book">
        <attribute name="title">
         <string>Page</string>
        </attribute>
+       <layout class="QHBoxLayout" name="b_layout"/>
       </widget>
      </widget>
     </item>
@@ -97,15 +98,23 @@
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
-     <string>Tools</string>
+     <string>Database</string>
     </property>
     <addaction name="actionGenerate_Thumbnail"/>
     <addaction name="actionLaunch_SQlite"/>
     <addaction name="actionReset_attributes"/>
     <addaction name="actionAdd_Kingdom"/>
    </widget>
+   <widget class="QMenu" name="menuDesign">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+    <addaction name="actionStylesheet"/>
+    <addaction name="actionApplyStyleSheet"/>
+   </widget>
    <addaction name="menuFIle"/>
    <addaction name="menuTools"/>
+   <addaction name="menuDesign"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QDockWidget" name="explorerDockWidget">
@@ -252,6 +261,16 @@
   <action name="actionNew">
    <property name="text">
     <string>New</string>
+   </property>
+  </action>
+  <action name="actionStylesheet">
+   <property name="text">
+    <string>EditStyleSheet</string>
+   </property>
+  </action>
+  <action name="actionApplyStyleSheet">
+   <property name="text">
+    <string>ApplyStyleSheet</string>
    </property>
   </action>
  </widget>

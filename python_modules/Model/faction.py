@@ -12,3 +12,9 @@ class Faction:
         
     def getDictAttributes(self):  
         return self.attribs
+    
+    def getWarriorList(self):
+        warrior_list = []
+        for empire in self.empires.values() :
+            warrior_list+=empire.getWarriorList()
+        return warrior_list

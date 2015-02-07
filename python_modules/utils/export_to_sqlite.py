@@ -1,7 +1,8 @@
 from PyQt5.QtWidgets import QProgressDialog
 from PyQt5 import QtCore
 import os
-from PyQt5.Qt import QPointF, QMessageLogger
+from PyQt5.Qt import QPointF, QMessageLogger, QFile, QTextDocumentWriter,\
+    QTextEdit
 from python_modules.utils.sqlite_model import SqliteModel
 from python_modules.config import Config
 
@@ -12,12 +13,7 @@ class ExportToSqlite (SqliteModel):
     def __init__ (self,basepath, database):
         super(ExportToSqlite,self).__init__(basepath)
         self.database = database
-        self.defaultColorString = "125,125,125,255"
-        self.defaultText = ""
         self.defaultColorStringFaction = "0,0,255,255"
-        self.default_heros_status = "Attente"
-        #par defautl on met les position de la tour eiffel
-        self.defaultPos = QPointF(48.858093,2.294694)
         self.nb_heros_inserted = [" ajout de Heros ",0]
         self.nb_groupes_inserted = [" ajout de Groupes",0]
         self.nb_kingdom_inserted = [" ajout de Royaumes ",0]
@@ -28,7 +24,7 @@ class ExportToSqlite (SqliteModel):
         self.nb_kingdom_unchanged= [" unchanged Royaumes ",0]
         self.nb_empire_unchanged= [" unchanged Empires ",0]
         self.nb_faction_unchanged= [" unchanged Factions ",0]
-        self.defaultRankGroup = 0
+
 
 
 
@@ -41,7 +37,7 @@ class ExportToSqlite (SqliteModel):
 
         if result.first() == 0 :
             print ('faction inexistante') 
-            attribs = {"name":faction_name,'couleur':self.defaultColorStringFaction}
+            attribs = {"name":faction_name,'couleur':self.defaultColorStringFaction,'icon':faction_name+'.png'}
             self.database.insert("gm_faction",attribs)
             result = self.database.select("*","gm_faction",False,'name=="'+faction_name+'"')
             self.nb_faction_inserted[1] = self.nb_faction_inserted[1] + 1
@@ -52,7 +48,7 @@ class ExportToSqlite (SqliteModel):
     def addEmpire (self, empire_name,id_faction):
         result = self.database.select("*","gm_empire",True,'name=="'+empire_name+'"')
         if result.first() == 0 : 
-            attribs = {"name":empire_name,"ID_faction":id_faction}
+            attribs = {"name":empire_name,"ID_faction":id_faction,"icon":str(empire_name)+".png"}
             self.database.insert("gm_empire",attribs)        
             result = self.database.select("*","gm_empire",True,'name=="'+empire_name+'"')
             self.nb_empire_inserted[1] = self.nb_empire_inserted[1] + 1
@@ -62,8 +58,9 @@ class ExportToSqlite (SqliteModel):
 
     def addKingdom (self, kingdom_name, id_empire):
         result = self.database.select("*","gm_kingdom",True,'name=="'+kingdom_name+'"')
-        if result.first() == 0 : 
-            attribs = {"name":kingdom_name,"ID_empire":id_empire,"armee":self.defaultText,"description":self.defaultText,"couleur":self.defaultColorString}
+        if result.first() == 0 :
+            default_couleur = str(self.defaultValues['kingdom_couleur'][0]) +','+ str(self.defaultValues['kingdom_couleur'][1])+','+str(self.defaultValues['kingdom_couleur'][2])+','+str(self.defaultValues['kingdom_couleur'][3]) 
+            attribs = {"name":kingdom_name,"ID_empire":id_empire,"armee":self.defaultValues['kingdom_armee'],"description":self.defaultValues['kingdom_description'],"couleur":default_couleur}
             self.database.insert("gm_kingdom",attribs) 
             result = self.database.select("*","gm_kingdom",True,'name=="'+kingdom_name+'"')
             self.nb_kingdom_inserted[1] = self.nb_kingdom_inserted[1] + 1
@@ -75,7 +72,7 @@ class ExportToSqlite (SqliteModel):
         #on suppose que chaque groupe a un nom unique pour un royaume donne
         result = self.database.select("*","gm_groupe",True,'name=="'+group+'" AND ID_kingdom=='+str(id_kingdom))
         if result.first() == 0 : 
-            attribs = {'name':group,'ID_kingdom':id_kingdom,'description':self.defaultText,'color':"",'rank':self.defaultRankGroup,'parent':id_group_parent}
+            attribs = {'name':group,'ID_kingdom':id_kingdom,'description':self.defaultValues['groupe_description'],'color':self.defaultValues['groupe_color'],'rank':self.defaultValues['groupe_rank'],'parent':id_group_parent}
             self.database.insert("gm_groupe",attribs) 
             result = self.database.select("*","gm_groupe",True,'name=="'+group+'" AND ID_kingdom=='+str(id_kingdom))
             print ('add groupe ',group,id_kingdom)
@@ -88,7 +85,7 @@ class ExportToSqlite (SqliteModel):
         #on suppose que chaque heros a un nom unique pour un groupe
         result = self.database.select("*","gm_perso",True,'name=="'+heros+'" AND ID_groupe=='+str(id_groupe))
         if result.first() == 0 : 
-            attribs = {'name':heros,'ID_groupe':id_groupe,'description':self.defaultText,'techniques':self.defaultText,'historique':self.defaultText,'latitude':self.defaultPos.x(),'longitude':self.defaultPos.y(),'place':"","level":"",'leader':0,'rank':self.defaultRankGroup,'status':self.default_heros_status,'HP':1,'MP':1,'HP_max':1,'MP_max':1,'ATK':0,'DEF':0,'MATK':0,'MATK':0,'AGL':0,'LUCK':0}
+            attribs = {'name':heros,'ID_groupe':id_groupe,'description':self.defaultValues['heros_description'],'techniques':self.defaultValues['heros_techniques'],'historique':self.defaultValues['heros_historique'],'latitude':self.defaultValues['heros_latitude'],'longitude':self.defaultValues['heros_longitude'],'place':self.defaultValues['heros_place'],"level":"",'leader':self.defaultValues['heros_level'],'rank':self.defaultValues['heros_rank'],'status':self.defaultValues['heros_status'],'HP':1,'MP':1,'HP_max':1,'MP_max':1,'ATK':0,'DEF':0,'MATK':0,'MATK':0,'AGL':0,'LUCK':0}
             self.database.insert("gm_perso",attribs) 
             #print ('attribs',attribs)
             result = self.database.select("*","gm_perso",True,'name=="'+heros+'" AND ID_groupe=='+str(id_groupe))
@@ -146,12 +143,14 @@ class ExportToSqlite (SqliteModel):
                     id_groupe= result.value("ID")
                     list_heros = list(filter(self.isValid,os.listdir(os.path.join(currentPath,sub))))
                     for heros in list_heros :
+                        self.createDescriptionFile(heros,os.path.join(currentPath,sub,heros))
                         self.addHeros(heros,id_groupe)
                         nb_heros+=1
                         self.progress.setValue(nb_heros)      
             else:
                 list_heros = list(filter(self.isValid,os.listdir(currentPath)))
                 for heros in list_heros :
+                    self.createDescriptionFile(heros,os.path.join(currentPath,heros))
                     self.success = True
                     self.addHeros(heros,id_groupe)
                     nb_heros+=1       
@@ -160,8 +159,26 @@ class ExportToSqlite (SqliteModel):
                 break
             
         self.progress.setValue(self.total_heros)
-        result_info = [self.nb_faction_inserted,self.nb_empire_inserted,self.nb_kingdom_inserted,self.nb_groupes_inserted,self.nb_heros_inserted,self.nb_faction_unchanged,self.nb_empire_unchanged,self.nb_kingdom_unchanged,self.nb_groupes_unchanged,self.nb_heros_inserted]
+        result_info = [self.nb_faction_inserted,self.nb_empire_inserted,self.nb_kingdom_inserted,self.nb_groupes_inserted,self.nb_heros_inserted,self.nb_faction_unchanged,self.nb_empire_unchanged,self.nb_kingdom_unchanged,self.nb_groupes_unchanged,self.nb_heros_unchanged]
         self.showResultInfos(result_info)
 
 
 
+    def createDescriptionFile(self, name, path_file):
+        file_name = "description.html"
+#         test = QFile(os.path.join(Config().instance.settings.value("global/resources_path"),"templace.html"))
+#         chaine_char = test.readAll()
+#         ddd = chaine_char.data()
+        file = open(os.path.join(Config().instance.settings.value("global/resources_path"),"template_profil.html"))
+        ddd = file.read()
+        print ('ooooo',type(ddd))
+        ddd = ddd.replace("tname",name)
+        print ('mmmm',ddd)
+        chemin = os.path.join(path_file,file_name)
+        if (not os.path.exists(chemin)):
+            self.textEdit = QTextEdit()
+
+            self.textEdit.setText(ddd)
+            writer = QTextDocumentWriter(chemin)
+            success = writer.write(self.textEdit.document())
+        

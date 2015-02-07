@@ -16,7 +16,7 @@
   <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,1">
    <item>
     <widget class="QWidget" name="widget" native="true">
-     <layout class="QVBoxLayout" name="verticalLayout">
+     <layout class="QVBoxLayout" name="left_page_Layout">
       <item>
        <widget class="QLabel" name="Tree_label">
         <property name="font">
@@ -35,23 +35,7 @@
       </item>
       <item>
        <widget class="QWidget" name="widget_4" native="true">
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <item>
-          <widget class="QTreeWidget" name="treeKingdom">
-           <property name="animated">
-            <bool>true</bool>
-           </property>
-           <attribute name="headerVisible">
-            <bool>false</bool>
-           </attribute>
-           <column>
-            <property name="text">
-             <string notr="true">1</string>
-            </property>
-           </column>
-          </widget>
-         </item>
-        </layout>
+        <layout class="QHBoxLayout" name="horizontalLayout_2"/>
        </widget>
       </item>
      </layout>
@@ -105,6 +89,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../../../resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -52,10 +52,9 @@ class SqliteModel ():
 
 
     def isValid (self, name):
-        return name[0] != '~'
+        return name[0] != '~' and name!="Thumb.db"
 
    
-
        
     def showResultInfos (self, infos_list):
         msgBox = QtWidgets.QMessageBox()

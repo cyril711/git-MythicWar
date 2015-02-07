@@ -17,8 +17,14 @@ call %UIC% python_modules/main_view/dialog_thumb_generator.ui > python_modules/m
 call %UIC% python_modules/main_view/dialog_settings.ui > python_modules/main_view/ui_dialog_settigns.py
 call %UIC% python_modules/main_view/dialog_kingdom_choice.ui > python_modules/main_view/ui_dialog_kingdom_choice.py
 call %UIC% python_modules/main_view/dialog_import_kingdom.ui > python_modules/main_view/ui_dialog_import_kingdom.py
+call %UIC% python_modules/view/view_book/book_layout.ui > python_modules/view/view_book/ui_book_layout.py
+call %UIC% python_modules/view/view_book/book_page.ui > python_modules/view/view_book/ui_book_page.py
+call %UIC% python_modules/tools/pyhtmleditor/ui/htmleditor.ui > python_modules/tools/pyhtmleditor/ui/htmleditor_ui.py
+call %UIC% python_modules/tools/pyhtmleditor/ui/inserthtmldialog.ui > python_modules/tools/pyhtmleditor/ui/inserthtmldialog_ui.py
 
 
 %RCC% resources.qrc -o python_modules/resources_rc.py
+%RCC% python_modules/tools/stylesheet/stylesheet.qrc -o python_modules/stylesheet_rc.py
+%RCC% python_modules/tools/pyhtmleditor/ui/htmleditor.qrc -o python_modules/tools/pyhtmleditor/ui/htmleditor_rc.py
 
 pause

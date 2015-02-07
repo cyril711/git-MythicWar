@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'python_modules/main_view/dialog_import_kingdom.ui'
 #
-# Created: Wed Jan 14 21:14:53 2015
+# Created: Sat Jan 31 23:25:10 2015
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -219,7 +219,7 @@ class Ui_DialogKingdomImport(object):
         self.groupBox_2.setTitle(_translate("DialogKingdomImport", "Paramètres par defaut Kingdom"))
         self.label_17.setText(_translate("DialogKingdomImport", "TextLabel"))
         self.label_14.setText(_translate("DialogKingdomImport", "Armee"))
-        self.kingdom_couleur.setText(_translate("DialogKingdomImport", "Color Groupe"))
+        self.kingdom_couleur.setText(_translate("DialogKingdomImport", "Color Kingdom"))
         self.label_16.setText(_translate("DialogKingdomImport", "Description"))
         self.groupBox.setTitle(_translate("DialogKingdomImport", "Parametres par default Heros : "))
         self.label_2.setText(_translate("DialogKingdomImport", "Lat :"))

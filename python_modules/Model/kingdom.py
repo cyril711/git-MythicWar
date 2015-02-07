@@ -20,6 +20,12 @@ class Kingdom :
         attribs['couleur'] = str(self.color.red())+','+str(self.color.green())+','+str(self.color.blue())+','+str(self.color.alpha())
         return attribs 
     
+    def getWarriorList(self):
+        warrior_list = []
+        for groupe in self.groupes.values():
+            warrior_list+=groupe.getWarriorList()
+        return warrior_list
+    
     def avancement (self):
         total = 4.0 # description + armee + picture armee + picture land
         completed = 0.0

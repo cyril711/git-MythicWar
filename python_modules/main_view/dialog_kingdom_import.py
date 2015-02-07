@@ -43,14 +43,11 @@ class DialogKingdomImport (QDialog, Ui_DialogKingdomImport):
             self.lineEditEmpire.setText(os.path.basename(filename))
     def processWidget (self, w):
         key = "database/default_"+w.objectName()
-        print ('key : ',key)
         if self.settings.contains(key):
-            print ('ok')
             if type(w) == QtWidgets.QLineEdit :
                 w.setText(self.settings.value(key))
             elif (type(w)== QtWidgets.QSpinBox) :
                 w.setValue(int(self.settings.value(key)))
-                print ('spinbox value',int(self.settings.value(key)))
             elif (type(w)== QtWidgets.QDoubleSpinBox):
                 w.setValue(float(self.settings.value(key)))
             elif type(w) == QtWidgets.QCheckBox :
@@ -85,6 +82,7 @@ class DialogKingdomImport (QDialog, Ui_DialogKingdomImport):
     def initDefaultItems (self):
         self.default_widgets_list = []
         self.processWidget(self.groupe_color)
+        self.processWidget(self.groupe_rank)
         self.processWidget(self.groupe_description)
         self.processWidget(self.kingdom_armee)
         self.processWidget(self.kingdom_description)
@@ -148,6 +146,7 @@ class DialogKingdomImport (QDialog, Ui_DialogKingdomImport):
                 color = [self.colorKingdom.red(),self.colorKingdom.green(),self.colorKingdom.blue(),self.colorKingdom.alpha()]
                 self.defaults_values[w.objectName()] = color
             key = "database/default_"+w.objectName()
+            print ('key:',key)
             self.settings.setValue(key,self.defaults_values[w.objectName()])    
     
 #     

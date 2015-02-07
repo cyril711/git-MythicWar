@@ -75,7 +75,7 @@ def writePrettyXml( element_tree_root, filename ):
     dom = xml.dom.minidom.parseString( xml_str )
     pretty_xml = dom.toprettyxml( encoding="UTF-8" )
     with open( filename, 'w' ) as f:
-        f.write( pretty_xml )
+        f.write( pretty_xml.decode(encoding='UTF-8') )
 
 def meter2feet( meters ):
     return 3.2808399 * meters

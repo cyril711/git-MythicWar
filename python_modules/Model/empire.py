@@ -15,3 +15,9 @@ class Empire:
         
     def addKingdom(self, kingdom):
         self.kingdoms[kingdom.name] = kingdom
+        
+    def getWarriorList(self):
+        warrior_list = []
+        for kingdom in self.kingdoms.values():
+            warrior_list+=kingdom.getWarriorList()
+        return warrior_list
