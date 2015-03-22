@@ -9,3 +9,5 @@ encoding//python_modules/utils/global_helper.py=ISO-8859-1
 encoding//python_modules/view/view_book/ui_book_homepage.py=utf-8
 encoding//python_modules/view/view_heros/ui_book_warrior_homepage.py=utf-8
 encoding//python_modules/view/view_heros/ui_book_warrior_page.py=utf-8
+encoding//python_modules/view/view_heros/ui_book_warrior_page_reverse.py=utf-8
+encoding//python_modules/view/view_kingdom/ui_book_world_army.py=utf-8

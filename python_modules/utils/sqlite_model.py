@@ -52,7 +52,7 @@ class SqliteModel ():
 
 
     def isValid (self, name):
-        return name[0] != '~' and name!="Thumb.db"
+        return (name[0] != '~' and name!="Thumbs.db")
 
    
        

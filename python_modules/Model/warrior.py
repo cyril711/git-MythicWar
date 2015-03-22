@@ -57,7 +57,6 @@ class Warrior (QObject):
         return self.parent
     
     def kingdom (self):
-
         if self.groupe().isSub() : 
             return self.groupe().parent.parent
         return self.groupe().parent

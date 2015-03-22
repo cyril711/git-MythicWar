@@ -296,7 +296,8 @@ class BookWarriorHomepage ( QWidget,Ui_BookWarriorHomepage):
         layout_one_vignette.setSpacing(0)
         layout_one_vignette.setContentsMargins(0, 0, 0, 0)
         warrior_button = QPushButton(widget_vignette)
-        warrior_button.setObjectName(str(i))
+        # on met plus car dans le cas du signal clicked on enverra True ou False (0 ou 1)
+        warrior_button.setObjectName(str(i+2))
         warrior_button.clicked.connect(self.parent().goWarriorPage)
         sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -307,14 +308,6 @@ class BookWarriorHomepage ( QWidget,Ui_BookWarriorHomepage):
         
         # label
         warrior_label = HerosLabel(warrior,widget_vignette)
-#         warrior_label.setText(warrior.name)
-#         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
-#         sizePolicy.setHorizontalStretch(0)
-#         sizePolicy.setVerticalStretch(0)
-#         sizePolicy.setHeightForWidth(warrior_label.sizePolicy().hasHeightForWidth())
-#         warrior_label.setSizePolicy(sizePolicy)
-#         warrior_label.setMinimumSize(QtCore.QSize(0, 10))
-#         warrior_label.setAlignment(QtCore.Qt.AlignCenter)
         layout_one_vignette.addWidget(warrior_label)
         
         max_col  = 3

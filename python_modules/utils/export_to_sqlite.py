@@ -37,7 +37,7 @@ class ExportToSqlite (SqliteModel):
 
         if result.first() == 0 :
             print ('faction inexistante') 
-            attribs = {"name":faction_name,'couleur':self.defaultColorStringFaction,'icon':faction_name+'.png'}
+            attribs = {"name":faction_name,'icon':faction_name+'.png'}
             self.database.insert("gm_faction",attribs)
             result = self.database.select("*","gm_faction",False,'name=="'+faction_name+'"')
             self.nb_faction_inserted[1] = self.nb_faction_inserted[1] + 1

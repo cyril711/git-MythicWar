@@ -39,7 +39,7 @@ class KingdomLayout ( QWidget):
         if len(faction)!= 0:
             if len(faction)==1:
                 print ('taille faction empires',len(faction[0].empires))
-                self.kingdom_homepage.setLeftPage(faction[0].name, faction[0].name, faction[0].empires, faction[0].empires)
+                self.kingdom_homepage.setLeftPage("", faction[0].name, {}, faction[0].empires)
             else:
                 self.kingdom_homepage.setLeftPage(faction[0].name, faction[1].name, faction[0].empires, faction[1].empires)
                 

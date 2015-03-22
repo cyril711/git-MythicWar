@@ -137,7 +137,7 @@
                <string/>
               </property>
               <property name="icon">
-               <iconset resource="../../../resources.qrc">
+               <iconset>
                 <normaloff>:/flags/blue_flag</normaloff>:/flags/blue_flag</iconset>
               </property>
               <property name="iconSize">
@@ -152,12 +152,12 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="iconKingdom">
+             <widget class="QPushButton" name="iconEmpire">
               <property name="text">
                <string/>
               </property>
               <property name="icon">
-               <iconset resource="../../../resources.qrc">
+               <iconset>
                 <normaloff>:/empireIcon/greek_icon</normaloff>:/empireIcon/greek_icon</iconset>
               </property>
               <property name="iconSize">

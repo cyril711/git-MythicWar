@@ -83,11 +83,9 @@ class ExplorerWidget (QWidget,Ui_ExplorerWidget):
         self.groupes.clear()
         self.groupes.addItem('*')
         self.model.setCurrentGroupe(None)
-        print ('llllllllllll')
         if value in self.model.factions :
             self.model.setCurrentFaction(self.model.factions[value])
             for empire in self.model.currentFaction.empires.values() :
-                print ('o')
                 self.empires.addItem(str(empire.name))
         self.model.updateFilteredWarrior()        
         self.updateWarriorList ()

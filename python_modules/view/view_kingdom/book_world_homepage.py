@@ -17,16 +17,18 @@ class BookWorldHomepage ( QWidget,Ui_BookWorldHomepage):
         self.faction_right.setText(faction2_name)
 
         sp = QSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
+        #print ('WORLD Homepage page gauche: nb empire 1 et 2 :',len(empires1_list.values()),len(empires2_list.values()))
         for value in empires1_list.values() :
             button = QtWidgets.QPushButton()
-
+            print ('empire name',empires1_list.values() )
             button.setSizePolicy(sp)
             button.setText(value.name)
             button.setObjectName(value.name)
             button.clicked.connect(self.onEmpireSelected)
-            self.empire_right_layout.addWidget(button)
+            self.empire_left_layout.addWidget(button)
 
         for value in empires2_list.values():
+            print ('empire name',empires2_list.values() )
             button = QtWidgets.QPushButton()
             button.setSizePolicy(sp)
             button.clicked.connect(self.onEmpireSelected)
@@ -38,11 +40,12 @@ class BookWorldHomepage ( QWidget,Ui_BookWorldHomepage):
         self.book.removeAllKingdomWidgets ()
         name = self.sender().objectName()
         self.right_empire_name.setText(name)
-        list_kingdoms = []
+        list_kingdoms = {}
         if name in self.listEmpire1 :
             list_kingdoms= self.listEmpire1[name].kingdoms
         elif name in self.listEmpire2:
             list_kingdoms = self.listEmpire2[name].kingdoms
+            
         for kingdom in list_kingdoms.values() :
             self.book.addKingdomWidget(kingdom)
 

@@ -100,6 +100,8 @@ class HerosItem (QtWidgets.QGraphicsItem):
         self.setFlag(QGraphicsItem.ItemIsMovable)
         #if warrior.selected == True : 
         self.setSelected(warrior.selected)
+        self.setCacheMode(QGraphicsItem.DeviceCoordinateCache)
+
 
 
     def itemChange (self, change,value):
@@ -123,7 +125,8 @@ class HerosItem (QtWidgets.QGraphicsItem):
         return path
 
     def paint (self,painter,option, widget):
-        painter.setRenderHints(QtGui.QPainter.Antialiasing)
+        #painter.setRenderHints(QtGui.QPainter.Antialiasing)
+        
         painter.rotate(self.rotation)
         #painter.scale(300,600)
         if self.isSelected() == True : 

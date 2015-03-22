@@ -3,6 +3,7 @@ from PyQt5.Qt import QPixmap, QWidget,QColor, QRect, QPainter, QPoint,QBrush, QP
 from PyQt5 import QtCore, QtWidgets
      
 from python_modules.view.view_heros.ui_book_warrior_page import Ui_BookWarriorPage
+from python_modules.view.view_heros.ui_book_warrior_page_reverse import Ui_BookWarriorPageReverse
 
 import math
 from python_modules.config import Config
@@ -55,10 +56,8 @@ class RankWidget (QtWidgets.QWidget):
                 starPath.setFillRule(QtCore.Qt.WindingFill)
                 painter.translate(QtCore.QPointF(20,0))
                 if (nb_stars-s) > self.rank :
-                    print ('i no',self.rank)
                     painter.setBrush(QtCore.Qt.NoBrush)
                 else:
-                    print ('yes')
                     painter.setBrush(brush)
                 painter.drawPath(starPath)
                 self.stars.append(starPath)
@@ -67,8 +66,8 @@ class RankWidget (QtWidgets.QWidget):
         print ('oooot')
         for i in range (len(self.stars)):
             if (5-i) > 2:#self.warrior.attribs['rank']:
-                if self.stars[i].contains(event.pos):
-                    print ('event pos',event.pos)
+                if self.stars[i].contains(event.pos()):
+                    print ('event pos',event.pos())
                     self.rank = i
                     self.updateGeom()
         
@@ -78,33 +77,26 @@ class RankWidget (QtWidgets.QWidget):
 
 class ProfilHeroWidget (QPushButton):
         
-    def __init__ (self,parent):
+    def __init__ (self,picture,parent):
 
         super(ProfilHeroWidget, self).__init__(parent)
         self.settings = Config().instance.settings
-        self.setFixedSize(QSize(500*2.0/3.0,500))
-    def setWarrior (self, warrior):
-        self.warrior = warrior
-        groupe_name = self.warrior.groupe().name
-        if self.warrior.masterGroupe() != None : 
-            groupe_name = self.warrior.masterGroupe().name+"/"+groupe_name
-         
-        kingdom_name = self.warrior.kingdom().name
-        empire_name = self.warrior.empire().name
-        faction_name = self.warrior.faction().name
-        picture = QPixmap(self.settings.value("global/resources_path")+"/"+faction_name+"/"+empire_name+"/"+kingdom_name+"/Picture/"+groupe_name+"/"+self.warrior.name+"/portrait.jpg")
-
-
+        if picture.width()> picture.height() :
+            self.setFixedSize(QSize(500,500*2.0/3.0))
+        else:
+            self.setFixedSize(QSize(500*2.0/3.0,500))
         size_pic_height = self.height()-20
         size_pic_width = self.width()-20
         ratio_h = picture.height() / size_pic_height
         ratio_v = picture.width()/ size_pic_width
         if ratio_h < ratio_v :
+            #self.setFixedSize(QSize(500,500*2.0/3.0))
             if not picture.isNull():
                 picture = picture.scaledToHeight(size_pic_height)
                 diff =  picture.width() - size_pic_width
                 picture = picture.copy(diff/2.0,0,size_pic_width,size_pic_height)
         else:
+            #self.setFixedSize(QSize(500*2.0/3.0,500))
             if not picture.isNull():
                 picture = picture.scaledToWidth(size_pic_width)
                 diff = picture.height() - size_pic_height
@@ -182,14 +174,25 @@ class BookWarriorPage ( QWidget):
 #         self.setObjectName("BookWarriorPage")
         self.warrior = warrior
         self.settings = Config().instance.settings
-        self.ui = Ui_BookWarriorPage()
 
+
+        groupe_name = warrior.groupe().name
+        if warrior.masterGroupe() != None : 
+            groupe_name = warrior.masterGroupe().name+"/"+groupe_name
+         
+        kingdom_name = warrior.kingdom().name
+        empire_name = warrior.empire().name
+        faction_name = warrior.faction().name
+        picture = QPixmap(self.settings.value("global/resources_path")+"/"+faction_name+"/"+empire_name+"/"+kingdom_name+"/Picture/"+groupe_name+"/"+warrior.name+"/portrait.jpg")
+        print ('picture size',picture.height(),picture.width())
+        if picture.height() < picture.width():
+            self.ui = Ui_BookWarriorPageReverse()
+        else: 
+            self.ui = Ui_BookWarriorPage()
 
         self.ui.setupUi(self)
         couleur = "saphir"    
 
-        
-        self.setEnabled(False)
    
         self.ui.warrior_name.setText(self.warrior.name.replace("_"," "))
         self.ui.warrior_name.setObjectName("Warrior_name")
@@ -205,8 +208,8 @@ class BookWarriorPage ( QWidget):
 #             self.ui.warrior_techniques.setPlainText(self.warrior.attribs['techniques'])
 #         except KeyError : 
 #             pass
-        profil_widget = ProfilHeroWidget(self.ui.picture_widget)
-        profil_widget.setWarrior(self.warrior)
+        profil_widget = ProfilHeroWidget(picture,self.ui.picture_widget)
+        #profil_widget.setPicture(picture)
         self.ui.picture_layout_2.addWidget(profil_widget)
         kingdom_name = self.warrior.kingdom().name
         empire_name = self.warrior.empire().name
@@ -247,13 +250,14 @@ class BookWarriorPage ( QWidget):
         groupe_color = "saphir"
         pixmap = QIcon(":/textures/"+groupe_color)
         self.ui.groupe_texture_button.setStyleSheet("#groupe_texture_button{background-image: url(:/textures/"+groupe_color+")0 0 0 0 stretch stretch ;color:white}")
-        path = os.path.join(self.settings.value("global/resources_path"),"icon","faction","32x32")
+        path = os.path.join(self.settings.value("global/resources_path"),"icons","faction","32x32",self.warrior.faction().name)
         self.ui.iconFaction.setIcon(QIcon(path))
-        path = os.path.join(self.settings.value("global/resources_path"),"icon","empire","32x32")
-        self.ui.iconEmpite.setIcon(QIcon(path))
+        path = os.path.join(self.settings.value("global/resources_path"),"icons","empire","32x32",self.warrior.empire().name)
+        self.ui.iconEmpire.setIcon(QIcon(path))
        
         filename= os.path.join(basepath,"description.html")
         if (os.path.exists(filename)):
+            print ('jjjjj')
             self.description_widget = PageWidget(filename,self.ui.right_page)
             #self.ui.right_page_layout.addWidget(self.description_widget)
             self.ui.right_page_layout.insertWidget(1,self.description_widget)

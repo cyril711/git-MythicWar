@@ -10,7 +10,6 @@ from functools import partial
 from python_modules.config import Config
 import os
 import resources_rc
-from python_modules.tools.editor_html.editor_html import EditorHtml
 from python_modules.tools.pyhtmleditor.htmleditor import HtmlEditor
 
 class BaseTreeItem(object):
@@ -245,17 +244,14 @@ class TreeModel(QAbstractItemModel):
         return parentItem.getChildCount()
 
     def setupModelData(self, data, parent):
-        print ('data.root.children : ', len(data.root.children))
         first_item = ChapterTreeItem(self.rootItem, data.root)
         self.rootItem.addChild(first_item)
         for chap in data.root.children:
-            print ('ok1')
             chapTreeItem = ChapterTreeItem(first_item, chap)
             self.setupChapitre (chap, chapTreeItem)
             first_item.addChild(chapTreeItem)
     def setupChapitre (self, model_chapitre, tree_chapitre):
         for chap in model_chapitre.children :
-            print ('ok2')
             chapTreeItem = ChapterTreeItem(tree_chapitre, chap)
             tree_chapitre.addChild(chapTreeItem)
             self.setupChapitre (chap, chapTreeItem)
@@ -267,7 +263,6 @@ class CustomTreeView (QTreeView):
         super(CustomTreeView,self).__init__(parent)
     def dropEvent(self,item):
         super(CustomTreeView,self).dropEvent(item)
-        print ('llll')
 
 class BookLayout (QWidget, Ui_BookLayout):
     def __init__ (self,  parent=None):
@@ -317,17 +312,15 @@ class BookLayout (QWidget, Ui_BookLayout):
         self.treeView.header().hide()
         self.treeView.setAlternatingRowColors(True)
         self.contextMenu = QMenu(self.treeView)
-        
-        print ('len(self.model.children())', len(self.model.children()))
+
 
         for child in self.model.root.children:
-            print ('tarararar')
             self.processChapter(child)
 
         print ('nombre de page :',self.stackedWidget.count())
         if self.stackedWidget.count() >= 1 :
             self.next.setEnabled(True)
-        print ('finis')
+
 #         self.stackedWidget.removeWidget(self.page)
 #         self.stackedWidget.removeWidget(self.page_2)
 #         self.stackedWidget.addWidget(self.book_homepage)
@@ -375,7 +368,7 @@ class BookLayout (QWidget, Ui_BookLayout):
         print ('nombre de page :',self.stackedWidget.count())
         if self.stackedWidget.count() >= 1 :
             self.next.setEnabled(True)
-        print ('finis')
+
         self.stackedWidget.setCurrentIndex(0)
 
 
@@ -397,7 +390,6 @@ class BookLayout (QWidget, Ui_BookLayout):
             
 
     def processChapter (self, chapitre):
-        print ('processChapter')
         if len(chapitre.children) != 0:
             for sub in chapitre.children :
                 self.processChapter(sub)
@@ -450,10 +442,8 @@ class BookLayout (QWidget, Ui_BookLayout):
         filename = QFileDialog.getOpenFileName(self, caption='Choisir le contenu de la page', directory=Config().instance.settings.value("global/resources_book_path"))
         if filename :
             if chapter.content != None:
-                print ('cas1')
                 chapitre = chapter.getParent()
             else:
-                print ('cas2')
                 chapitre = chapter
             print ('chapitre partnt',chapitre.title)
             test = Chapitre(chapitre, "undefined", os.path.basename(filename[0]))

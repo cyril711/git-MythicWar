@@ -31,16 +31,20 @@ class BookWorldArmy (QWidget,Ui_BookWorldArmy):
     
     def onComboBoxRightChanged (self):
         self.groupe_right.attribs['color'] =self.comboBoxColorRight.currentText().replace(" ","") 
-        self.right_page.setStyleSheet("#vignettes_droite{background-image: url(:/textures/"+self.groupe_right.attribs['color']+");}")
-        self.title_droite.setStyleSheet("#title_droite{background-image: url(:/textures/"+self.groupe_right.attribs['color']+");}")
+        #self.right_page.setStyleSheet("#vignettes_droite{background-image: url(:/textures/"+self.groupe_right.attribs['color']+");}")
+        #self.title_droite.setStyleSheet("#title_droite{background-image: url(:/textures/"+self.groupe_right.attribs['color']+");}")
+        self.right_page.setStyleSheet("#label_vignette_right{background-image: url(:/textures/"+self.groupe_right.attribs['color']+");}")
+        
         self.onModificationRight()
         
     def onComboBoxLeftChanged (self):
 #         ind = self.comboBoxColorLeft.currentIndex()
 #         couleur = self.comboBoxColorLeft.itemIcon(ind).themeName()
         self.groupe_left.attribs['color'] = self.comboBoxColorLeft.currentText().replace(" ","")
-        self.left_page.setStyleSheet("#vignettes_gauche{background-image: url(:/textures/"+self.groupe_left.attribs['color']+");}")
-        self.title_gauche.setStyleSheet("#title_gauche{background-image: url(:/textures/"+self.groupe_left.attribs['color']+");}")
+        self.left_page.setStyleSheet("#label_vignette_left{background-image: url(:/textures/"+self.groupe_left.attribs['color']+");}")
+
+        #self.left_page.setStyleSheet("#vignettes_gauche{background-image: url(:/textures/"+self.groupe_left.attribs['color']+");}")
+        #self.title_gauche.setStyleSheet("#title_gauche{background-image: url(:/textures/"+self.groupe_left.attribs['color']+");}")
         #self.left_page.show()
         self.onModificationLeft()
     
@@ -55,11 +59,13 @@ class BookWorldArmy (QWidget,Ui_BookWorldArmy):
             self.groupe_left = sub_groupe
         else : 
             self.groupe_left = groupe
-        self.left_page.setStyleSheet("#vignettes_gauche{background-image: url(:/textures/"+self.groupe_left.attribs['color']+");}")
+        self.left_page.setStyleSheet("#label_vignette_left{background-image: url(:/textures/"+self.groupe_left.attribs['color']+");}")
+
+        #self.left_page.setStyleSheet("#vignettes_gauche{background-image: url(:/textures/"+self.groupe_left.attribs['color']+");}")
         self.title_gauche.setText(groupe.name)
-        self.title_gauche.setStyleSheet("#title_gauche{background-image: url(:/textures/"+self.groupe_left.attribs['color']+");}")
+        #self.title_gauche.setStyleSheet("#title_gauche{background-image: url(:/textures/"+self.groupe_left.attribs['color']+");}")
         self.description_gauche.setPlainText(self.groupe_left.attribs['description'])
-        self.description_gauche.setEnabled(False)
+        #self.description_gauche.setEnabled(False)
         self.nb_row =0
         self.nb_col =0
         self.current_page = 0
@@ -77,18 +83,18 @@ class BookWorldArmy (QWidget,Ui_BookWorldArmy):
             self.comboBoxColorLeft.addItem(icon,key)       
             if key == groupe.attribs['color']:
                 self.comboBoxColorLeft.setCurrentIndex(self.comboBoxColorLeft.count()-1)
-        self.comboBoxColorLeft.setEnabled(False)
+        #self.comboBoxColorLeft.setEnabled(False)
     def setRightContent (self,groupe,sub_groupe=None):
         if sub_groupe != None : 
             self.groupe_right = sub_groupe
         else : 
             self.groupe_right = groupe
         #self.right_page.setObjectName("vignette_droite"+groupe.name)
-        self.right_page.setStyleSheet("#vignettes_droite{background-image: url(:/textures/"+self.groupe_right.attribs['color']+");}")
-        self.title_droite.setStyleSheet("#title_droite{background-image: url(:/textures/"+self.groupe_right.attribs['color']+");}")
+        self.right_page.setStyleSheet("#label_vignette_right{background-image: url(:/textures/"+self.groupe_right.attribs['color']+");}")
+        #self.title_droite.setStyleSheet("#title_droite{background-image: url(:/textures/"+self.groupe_right.attribs['color']+");}")
         self.title_droite.setText(groupe.name)
         self.description_droite.setPlainText(self.groupe_right.attribs['description'])
-        self.description_droite.setEnabled(False)
+      # self.description_droite.setEnabled(False)
         self.current_page = 1
         self.nb_row =0
         self.nb_col =0    
@@ -105,16 +111,17 @@ class BookWorldArmy (QWidget,Ui_BookWorldArmy):
             self.comboBoxColorRight.addItem(icon,key)
             if key == groupe.attribs['color']:
                 self.comboBoxColorRight.setCurrentIndex(self.comboBoxColorRight.count()-1)
-        self.comboBoxColorRight.setEnabled(False)
+      #  self.comboBoxColorRight.setEnabled(False)
         self.connections()        
     def addVignette (self,warrior):
-        
+        label_name = "label_vignette_left"
         if self.current_page == 0 : 
             widget_vignette = QWidget(self.vignettes_gauche)
         else:
+            label_name = "label_vignette_right"
             widget_vignette = QWidget(self.vignettes_droite)        
-        widget_vignette.setObjectName("toto")
-        widget_vignette.setStyleSheet("#toto { background-color: rgb(170, 255, 0,0);}")
+        #widget_vignette.setObjectName("toto")
+        #widget_vignette.setStyleSheet("#toto { background-color: rgb(170, 255, 0,0);}")
         layout_one_vignette = QVBoxLayout(widget_vignette)
         layout_one_vignette.setSpacing(0)
         layout_one_vignette.setContentsMargins(0, 0, 0, 0)
@@ -128,6 +135,7 @@ class BookWorldArmy (QWidget,Ui_BookWorldArmy):
         # label
         warrior_label = HerosLabel(warrior,widget_vignette)
         warrior_label.connect()
+        warrior_label.setObjectName(label_name)
         layout_one_vignette.addWidget(warrior_label)
         
 

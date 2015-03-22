@@ -94,7 +94,6 @@ class MainWindow(QMainWindow,Ui_MainWindow):
  
  
     def init(self,filename=None):
-        print ('INITITITITITITITI')
         if filename != None : 
             self.database = DatabaseManager(filename)
             self.database.createConnection()
@@ -186,7 +185,7 @@ class MainWindow(QMainWindow,Ui_MainWindow):
                 QApplication.instance().setStyleSheet(text.readAll())
                 QApplication.setStyle(self.settings.value("mainView/style"))       
                 self.current_css = self.settings.value("mainView/stylesheet")
-
+        self.tabWidget.setCurrentIndex(int(self.settings.value("mainView/ind_current_tab")))
 
     def onGenerateThumbnail(self):
         dlg = DialogThumbGenerator(self.univers,self)
@@ -261,7 +260,7 @@ class MainWindow(QMainWindow,Ui_MainWindow):
             self.actionSave.setEnabled(True)
             
     def onLock(self,locked):
-        self.warriorLayout.setEnableEditableItems(locked)
+        #self.warriorLayout.setEnableEditableItems(locked)
         self.kingdomLayout.setEnableEditableItems(locked)
 
     def onQuit (self):
@@ -273,6 +272,8 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         widget = self.tabWidget.widget(current_index)
         if widget == self.book :
             self.bookLayout.onEdit()
+        elif widget == self.warriors:
+            self.warriorLayout.onEdit()
 #         dlg = Dialogds (self)    
 #         if dlg.exec_() == QDialog.Accepted :
 #             dlg.applyChanges ()
@@ -280,16 +281,17 @@ class MainWindow(QMainWindow,Ui_MainWindow):
 #             dlg.close()
 
     def onHome (self):
-        current_index = self.tabWidget.currentIndex()
+        current_index = self.tabWiget.currentIndex()
         widget = self.tabWidget.widget(current_index)
         if widget == self.warriors :
             self.warriorLayout.onHome()
+            self.warriorLayout.setFocus()
 
     
     def onSaveAs (self):
         filename = QFileDialog.getSaveFileName(self, caption='Save Database', directory=self.settings.value("global/current_dir"), filter='Database (*.sqlite)')
         if filename :
-            self.univers.save(filename)
+            self.univers.save(filename[0])
     
     def onSave (self):
         #sauvegarde
@@ -319,7 +321,8 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.settings.setValue ("explorer/kingdom",self.explorerWidget.kingdoms.currentText())
         self.settings.setValue ("explorer/groupe",self.explorerWidget.groupes.currentText())
         self.settings.setValue ("mainView/stylesheet",self.current_css)
-        self.settings.setValue ("mainView/style",QApplication.style())
+        #self.settings.setValue ("mainView/style",QApplication.style())
+        self.settings.setValue("mainView/ind_currrent_tab",self.tabWidget.currentIndex())
 
     def createActions(self):
         self.editFilters = QAction(QIcon(':/images/new.png'), "&EditFilters",

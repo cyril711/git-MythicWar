@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'python_modules/main_view/dialog_import_kingdom.ui'
 #
-# Created: Sat Jan 31 23:25:10 2015
+# Created: Sat Feb 14 22:22:06 2015
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -56,25 +56,26 @@ class Ui_DialogKingdomImport(object):
         self.groupBox_3 = QtWidgets.QGroupBox(self.widget)
         self.groupBox_3.setObjectName("groupBox_3")
         self.formLayout_4 = QtWidgets.QFormLayout(self.groupBox_3)
+        self.formLayout_4.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
         self.formLayout_4.setObjectName("formLayout_4")
         self.label_18 = QtWidgets.QLabel(self.groupBox_3)
         self.label_18.setObjectName("label_18")
         self.formLayout_4.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label_18)
+        self.groupe_description = QtWidgets.QLineEdit(self.groupBox_3)
+        self.groupe_description.setObjectName("groupe_description")
+        self.formLayout_4.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.groupe_description)
         self.label_19 = QtWidgets.QLabel(self.groupBox_3)
         self.label_19.setObjectName("label_19")
         self.formLayout_4.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_19)
+        self.groupe_rank = QtWidgets.QSpinBox(self.groupBox_3)
+        self.groupe_rank.setObjectName("groupe_rank")
+        self.formLayout_4.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.groupe_rank)
         self.label_20 = QtWidgets.QLabel(self.groupBox_3)
         self.label_20.setObjectName("label_20")
         self.formLayout_4.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_20)
         self.groupe_color = QtWidgets.QComboBox(self.groupBox_3)
         self.groupe_color.setObjectName("groupe_color")
         self.formLayout_4.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.groupe_color)
-        self.groupe_description = QtWidgets.QLineEdit(self.groupBox_3)
-        self.groupe_description.setObjectName("groupe_description")
-        self.formLayout_4.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.groupe_description)
-        self.groupe_rank = QtWidgets.QSpinBox(self.groupBox_3)
-        self.groupe_rank.setObjectName("groupe_rank")
-        self.formLayout_4.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.groupe_rank)
         self.verticalLayout.addWidget(self.groupBox_3)
         self.groupBox_2 = QtWidgets.QGroupBox(self.widget)
         self.groupBox_2.setObjectName("groupBox_2")

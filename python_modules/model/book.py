@@ -51,8 +51,6 @@ class Book (QObject):
         for c in self.root.children:
             self.process_print_chapter(c,1)
     def process_print_chapter (self, chapter,level):
-        print ('ooo')
-        print (str(level),'- ',chapter.title,chapter.content,len(chapter.children),chapter.getParent().title)
         for c in chapter.children:
             self.process_print_chapter ( c,level+1)
             

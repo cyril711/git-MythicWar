@@ -16,15 +16,17 @@ class PageWidget (QTextEdit):
         
     def load(self):
         if not QFile.exists(self.filename):
+            print ('file not exist')
             print ('-------file not exist : ',self.filename)
             return None
 
         fh = QFile(self.filename)
         if not fh.open(QFile.ReadOnly):
+            print ('echec ouverture fichier')
             return None
-
-        
+    
         data = fh.readAll()
+    
         codec = QTextCodec.codecForHtml(data)
         unistr = codec.toUnicode(data)
         if QtCore.Qt.mightBeRichText(unistr):

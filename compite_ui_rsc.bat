@@ -11,6 +11,7 @@ call %UIC% python_modules/view/view_kingdom/kingdom_layout.ui > python_modules/v
 call %UIC% python_modules/view/view_heros/warrior_layout.ui > python_modules/view/view_heros/ui_warrior_layout.py
 call %UIC% python_modules/view/view_heros/book_warrior_homepage.ui > python_modules/view/view_heros/ui_book_warrior_homepage.py
 call %UIC% python_modules/view/view_heros/book_warrior_page.ui > python_modules/view/view_heros/ui_book_warrior_page.py
+call %UIC% python_modules/view/view_heros/book_warrior_page_reverse.ui > python_modules/view/view_heros/ui_book_warrior_page_reverse.py
 call %UIC% python_modules/main_view/explorer.ui > python_modules/main_view/ui_explorer_widget.py
 call %UIC% python_modules/main_view/dialog_save.ui > python_modules/main_view/ui_dialog_save.py
 call %UIC% python_modules/main_view/dialog_thumb_generator.ui > python_modules/main_view/ui_dialog_thumb_generator.py

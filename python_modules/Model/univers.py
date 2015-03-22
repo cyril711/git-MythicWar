@@ -164,6 +164,8 @@ class Univers (QObject):
         if filename == None : 
             filename = self.settings.value("global/database")
         try :
+            print ('filename',type(filename))
+            print ('value',filename)
             QFile.remove(filename)
         except OSError :
             qWarning("echec suppression ")
@@ -196,18 +198,15 @@ class Univers (QObject):
         faction_sqlite = self.database.select("*", "gm_faction",False,None,"ID ASC")
         while faction_sqlite.next():
             attribs = {} 
-            print ('add Faction : ',faction_sqlite.value("name"))
             faction = Faction(faction_sqlite.value("ID"), faction_sqlite.value("name"),attribs)
             self.addFaction(faction)
             empire_sqlite = self.database.select("*", "gm_empire",False, "ID_faction=="+str(faction_sqlite.value("ID")),"ID ASC")         
             while empire_sqlite.next():
                 attribs = {}
-                print ('add Empire: ',empire_sqlite.value("name"))
                 empire = Empire(empire_sqlite.value("ID"), empire_sqlite.value("name"),attribs,faction)
                 faction.addEmpire(empire)
                 kingdom_sqlite = self.database.select("*", "gm_kingdom",False,"ID_empire=="+str(empire_sqlite.value("ID")),"ID ASC")
                 while kingdom_sqlite.next():
-                    print ('couleur ',kingdom_sqlite.value("couleur"))
                     attribs = {'armee':kingdom_sqlite.value("armee"),'description':kingdom_sqlite.value("description"),'red':int(kingdom_sqlite.value("couleur").split(",")[0]),'green':int(kingdom_sqlite.value("couleur").split(",")[1]),'blue':int(kingdom_sqlite.value("couleur").split(",")[2]),'alpha':int(kingdom_sqlite.value("couleur").split(",")[3])}
                     kingdom = Kingdom(kingdom_sqlite.value("ID"), kingdom_sqlite.value("name"),attribs,empire)
                     empire.addKingdom(kingdom)
@@ -266,8 +265,8 @@ class Univers (QObject):
                 attribs['rank'] = bool(warrior_sqlite.value("rank"))
                 attribs['HP'] = bool(warrior_sqlite.value("HP"))
                 attribs['MP'] = bool(warrior_sqlite.value("MP"))
-                attribs['HPmax'] = bool(warrior_sqlite.value("HPmax"))
-                attribs['MPmax'] = bool(warrior_sqlite.value("MPmax"))
+                attribs['HP_max'] = bool(warrior_sqlite.value("HP_max"))
+                attribs['MP_max'] = bool(warrior_sqlite.value("MP_max"))
                 attribs['ATK'] = bool(warrior_sqlite.value("ATK"))
                 attribs['DEF'] = bool(warrior_sqlite.value("DEF"))
                 attribs['MATK'] = bool(warrior_sqlite.value("MATK"))

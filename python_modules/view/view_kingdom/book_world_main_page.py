@@ -32,8 +32,9 @@ class BookWorldMainPage ( QWidget,Ui_BookWorldMainpage):
         dlg.setOption(QColorDialog.ShowAlphaChannel,True)
         if dlg.exec_() == QDialog.Accepted:
             self.kingdom.color = dlg.currentColor()
-            #self.setStyleSheet("QPlainTextEdit{ border: 2px solid rgb("+str(self.kingdom.color.red())+","+str(self.kingdom.color.green())+","+str(self.kingdom.color.blue())+");background-color: rgba("+str(self.kingdom.color.red())+","+str(self.kingdom.color.green())+","+str(self.kingdom.color.blue())+","+str(self.kingdom.color.alpha())+");}")
-            self.setStyleSheet("QPlainTextEdit{ background-color: rgba("+str(self.kingdom.color.red())+","+str(self.kingdom.color.green())+","+str(self.kingdom.color.blue())+","+str(self.kingdom.color.alpha())+");}")
+            self.setStyleSheet("QLineEdit,QFrame{ border: 2px solid rgb("+str(self.kingdom.color.red())+","+str(self.kingdom.color.green())+","+str(self.kingdom.color.blue())+");background-color: rgba("+str(self.kingdom.color.red())+","+str(self.kingdom.color.green())+","+str(self.kingdom.color.blue())+","+str(self.kingdom.color.alpha())+");}")
+            
+            #self.setStyleSheet("QPlainTextEdit{ background-color: rgba("+str(self.kingdom.color.red())+","+str(self.kingdom.color.green())+","+str(self.kingdom.color.blue())+","+str(self.kingdom.color.alpha())+");}")
             self.button_color.setStyleSheet("#button_color{background-color: rgba("+str(self.kingdom.color.red())+","+str(self.kingdom.color.green())+","+str(self.kingdom.color.blue())+","+str(self.kingdom.color.alpha())+");}")
             self.button_color.show()
         else:
@@ -42,17 +43,16 @@ class BookWorldMainPage ( QWidget,Ui_BookWorldMainpage):
         self.kingdom = kingdom
         faction_name = kingdom.parent.parent.name
         empire_name = kingdom.parent.name
-        self.setStyleSheet("QPlainTextEdit{ border: 2px solid rgb("+str(kingdom.color.red())+","+str(kingdom.color.green())+","+str(kingdom.color.blue())+";)}")
-        
+        #self.setStyleSheet("QPlainTextEdit{ border: 2px solid rgb("+str(kingdom.color.red())+","+str(kingdom.color.green())+","+str(kingdom.color.blue())+";)}")
+        self.setStyleSheet("QLineEdit,QFrame{ border: 2px solid rgb("+str(kingdom.color.red())+","+str(kingdom.color.green())+","+str(kingdom.color.blue())+";)}")
+
         self.button_color.setStyleSheet("#button_color{background-color: rgba("+str(kingdom.color.red())+","+str(kingdom.color.green())+","+str(kingdom.color.blue())+","+str(kingdom.color.alpha())+");}")
         self.button_color.clicked.connect(self.onUpdateColorKingdom)
         self.land_picture.setPixmap(QPixmap(os.path.join(self.settings.value("global/resources_path"),faction_name,empire_name,kingdom.name,"Land.jpg")).scaledToHeight(200))
         self.army_picture.setPixmap(QPixmap(os.path.join(self.settings.value("global/resources_path"),faction_name,empire_name,kingdom.name,"Army.png")).scaledToHeight(200))        
         self.Title.setText( kingdom.name)
         self.historyTextEdit.appendPlainText(kingdom.attribs['armee'])
-        self.historyTextEdit.setEnabled(False)
         self.descriptionTextEdit.appendPlainText(kingdom.attribs['description'])
-        self.descriptionTextEdit.setEnabled(False)
         avancement = kingdom.avancement ()
         self.button_color.setText("( "+str(avancement)+" % ) ")
         self.connections()
@@ -75,6 +75,7 @@ class BookWorldMainPage ( QWidget,Ui_BookWorldMainpage):
         # label
         warrior_label = HerosLabel(warrior,widget_vignette)
         warrior_label.connect()
+        warrior_label.setObjectName("label_heros")
         layout_one_vignette.addWidget(warrior_label)
 
         max_col  = 3
@@ -110,7 +111,8 @@ class BookWorldMainPage ( QWidget,Ui_BookWorldMainpage):
 
     def onColorGroupChanged (self,text):
         self.groupe.attribs['color'] = self.comboBoxColor.currentText().replace(" ","")
-        self.right_page.setStyleSheet("#vignettes{background-image: url(:/textures/"+self.groupe.attribs['color']+");}")
+        self.right_page.setStyleSheet("#label_heros{background-image: url(:/textures/"+self.groupe.attribs['color']+");}")
+        
         self.onModificationKingdom()
     def setContentRightPage (self,groupe,sub_groupe=None):
         if sub_groupe != None : 
@@ -122,7 +124,7 @@ class BookWorldMainPage ( QWidget,Ui_BookWorldMainpage):
             self.comboBoxColor.addItem(icon,key)
             if key == groupe.attribs['color']:
                 self.comboBoxColor.setCurrentIndex(self.comboBoxColor.count()-1)
-        self.right_page.setStyleSheet("#vignettes{background-image: url(:/textures/"+self.groupe.attribs['color']+");}")
+        self.right_page.setStyleSheet("#label_heros{background-image: url(:/textures/"+self.groupe.attribs['color']+");}")
         self.groupe_name.setText( groupe.name)
         self.comboBoxColor.currentTextChanged.connect (self.onColorGroupChanged)
         self.description_groupe.appendPlainText(self.groupe.attribs['description'])

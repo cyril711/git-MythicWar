@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'python_modules/main_view/main_window.ui'
 #
-# Created: Sat Jan 31 23:25:06 2015
+# Created: Sat Feb 14 22:21:58 2015
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -83,9 +83,9 @@ class Ui_MainWindow(object):
         self.actionLock = QtWidgets.QAction(MainWindow)
         self.actionLock.setCheckable(True)
         icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap(":/icons/24x24/lock"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        icon3.addPixmap(QtGui.QPixmap(":/icons/24x24/unlock"), QtGui.QIcon.Active, QtGui.QIcon.On)
         icon3.addPixmap(QtGui.QPixmap(":/icons/24x24/unlock"), QtGui.QIcon.Selected, QtGui.QIcon.Off)
+        icon3.addPixmap(QtGui.QPixmap(":/icons/24x24/unlock"), QtGui.QIcon.Active, QtGui.QIcon.On)
+        icon3.addPixmap(QtGui.QPixmap(":/icons/24x24/lock"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionLock.setIcon(icon3)
         self.actionLock.setObjectName("actionLock")
         self.actionHome = QtWidgets.QAction(MainWindow)
