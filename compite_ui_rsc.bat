@@ -22,6 +22,7 @@ call %UIC% python_modules/view/view_book/book_layout.ui > python_modules/view/vi
 call %UIC% python_modules/view/view_book/book_page.ui > python_modules/view/view_book/ui_book_page.py
 call %UIC% python_modules/tools/pyhtmleditor/ui/htmleditor.ui > python_modules/tools/pyhtmleditor/ui/htmleditor_ui.py
 call %UIC% python_modules/tools/pyhtmleditor/ui/inserthtmldialog.ui > python_modules/tools/pyhtmleditor/ui/inserthtmldialog_ui.py
+call %UIC% python_modules/view/view_map/add_temple_dialog.ui > python_modules/view/view_map/ui_dialog_add_temple.py
 
 
 %RCC% resources.qrc -o python_modules/resources_rc.py

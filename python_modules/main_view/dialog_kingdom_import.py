@@ -24,8 +24,8 @@ class DialogKingdomImport (QDialog, Ui_DialogKingdomImport):
         self.toolButtonFaction.clicked.connect(self.onFactionChanged)
         self.toolButtonEmpire.clicked.connect(self.onEmpireChanged)
         self.toolButtonKingdom.clicked.connect(self.onKingdomChanged)
-        for faction_name in self.model.factions.keys() :
-            self.factionComboBox.addItem(str(faction_name))
+#        for faction_name in self.model.factions.keys() :
+#            self.factionComboBox.addItem(str(faction_name))
 
     def onKingdomChanged (self):
         filename = QFileDialog.getExistingDirectory(self, caption='Kingdom ? ', directory=self.settings.value("global/resources_path"))

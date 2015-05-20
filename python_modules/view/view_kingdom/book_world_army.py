@@ -42,7 +42,6 @@ class BookWorldArmy (QWidget,Ui_BookWorldArmy):
 #         couleur = self.comboBoxColorLeft.itemIcon(ind).themeName()
         self.groupe_left.attribs['color'] = self.comboBoxColorLeft.currentText().replace(" ","")
         self.left_page.setStyleSheet("#label_vignette_left{background-image: url(:/textures/"+self.groupe_left.attribs['color']+");}")
-
         #self.left_page.setStyleSheet("#vignettes_gauche{background-image: url(:/textures/"+self.groupe_left.attribs['color']+");}")
         #self.title_gauche.setStyleSheet("#title_gauche{background-image: url(:/textures/"+self.groupe_left.attribs['color']+");}")
         #self.left_page.show()

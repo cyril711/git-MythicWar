@@ -14,8 +14,8 @@ class Temple:
         
         
     def getDictAttributes (self):
+
         attribs = {}
-        attribs['name'] = self.name
         lvl = ''
         background = ''
         for key,value in zip(self.levels.keys(),self.levels.values()):
@@ -24,10 +24,13 @@ class Temple:
                 background = background+","
             lvl = lvl+key
             background = background+value
+        attribs['name'] = self.name
         attribs['levels'] = lvl
         attribs['backgrounds'] = background
         attribs['latitude'] = self.position.x()
+        print ('position x',self.position.x())
         attribs['longitude'] = self.position.y()
+        print ('position y',self.position.y())
         return attribs
     def setOwner (self,kingdom):
         self.owner = kingdom

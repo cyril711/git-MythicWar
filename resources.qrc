@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons/24x24">
+    <file alias="add">ressources/icons/png/24x24/add.png</file>
     <file alias="settings">ressources/icons/png/24x24/edit.png</file>
     <file alias="unlock">ressources/icons/png/24x24/unlock.png</file>
     <file alias="lock">ressources/icons/png/24x24/lock.png</file>

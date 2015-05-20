@@ -126,6 +126,18 @@ class MapWindow( QtWidgets.QGraphicsView ):
         self.setMouseTracking( True )
         self.setDragMode( QtWidgets.QGraphicsView.ScrollHandDrag )
 
+    def keyPressEvent(self, event):
+        
+        if event.key() == QtCore.Qt.Key_Control:
+            print ('press Ctrl')
+            self.setDragMode( QtWidgets.QGraphicsView.NoDrag )        
+    def keyReleaseEvent(self, event):
+            
+        if event.key() == QtCore.Qt.Key_Control:
+            print ('press Ctrl')
+            self.setDragMode( QtWidgets.QGraphicsView.ScrollHandDrag )        
+        
+
     def initGraphicsView( self, projection_name, level, lat, lon ):
         ''' init the graphics view with the projection '''
 
@@ -314,15 +326,21 @@ class MapWindow( QtWidgets.QGraphicsView ):
 
 
     def contextMenuEvent(self,event):
- 
+        menu = QMenu()
         if len(self.univers.selectedWarriors()) != 0 : 
-            menu = QMenu()
+            
             testAction = QAction('Move', None)
             testAction.triggered.connect(self.onMoveMode)
             menu.addAction(testAction)
-            menu.exec_(event.globalPos())
+        addTempleAction = QAction('Add Temple', None)
+        addTempleAction.triggered.connect(self.onAddTemple)
+        menu.addAction(addTempleAction)
+        menu.exec_(event.globalPos())
             
-
+    def onAddTemple (self):
+        print ('add temple')
+        #todo
+        return False
     def onMoveMode (self):
         if self.moveShape!= None : 
             self.scene.removeItem(self.moveShape)

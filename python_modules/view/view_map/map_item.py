@@ -1,22 +1,23 @@
 from PyQt5.QtWidgets import  QFrame
 from PyQt5.Qt import QColor, QRectF, QPen, QBrush,\
     QAction, QMenu, QPainterPath, QPointF, QLinearGradient, QVBoxLayout,\
-    QGraphicsItem
+    QGraphicsItem, QLabel, QPixmap, QTimer, QTextStream, QApplication
 from PyQt5 import QtGui, QtCore
 from python_modules.view.view_map.temple_view import TempleView
 from PyQt5 import QtWidgets
-
-
+from python_modules.config import Config
+from functools import partial
+import os
 class TempleItem (QtWidgets.QGraphicsItem):
     SIZE_MULTIPLICATOR = 2
-    def __init__(self,kingdom,size,parent=None):
+    def __init__(self,temple,size,parent=None):
         super (TempleItem,self).__init__(parent)
         self.polygon  = self.getTriangle (size)
         self.rotation = 0.0
         self.color = QColor(0,0,125)
         self.name_visible = True
-        self.name = kingdom.name
-        self.kingdom = kingdom
+        self.name = temple.name
+        self.model = temple
         #set flags
         self.setFlag(QGraphicsItem.ItemIgnoresTransformations)
         self.setFlag(QGraphicsItem.ItemSendsGeometryChanges)
@@ -34,7 +35,12 @@ class TempleItem (QtWidgets.QGraphicsItem):
         return QtGui.QPolygonF(pts)
 
 
-
+    def itemChange(self, change, value):
+        if change == QGraphicsItem.ItemPositionHasChanged :
+            self.model.position = value
+            print ('new position ',self.model.position)
+        else:
+            return QGraphicsItem.itemChange(self,change,value)
     def paint (self,painter,option, widget):
 
         painter.setRenderHints(QtGui.QPainter.Antialiasing)
@@ -80,19 +86,22 @@ class TempleItem (QtWidgets.QGraphicsItem):
 
 class HerosItem (QtWidgets.QGraphicsItem):
     SIZE_MULTIPLICATOR = 2
-    def __init__(self,warrior,size,parent=None):
+    def __init__(self,model,warrior,size,parent=None):
         super (HerosItem,self).__init__(parent)
+        self.settings = Config().instance.settings
         self.heros = warrior
-        self.image  = warrior.thumb
-        self.ratio = 1.29
-        if not self.image.isNull():
-            self.image = self.image.scaled(0.8*size,0.8*self.ratio*size)#.scaledToWidth(0.8*size)
-        self.path = self.getShape(size)
+        self.model = model
+#        self.image  = warrior.thumb
+#        self.ratio = 1.29
+#        if not self.image.isNull():
+#            self.image = self.image.scaled(0.8*size,0.8*self.ratio*size)#.scaledToWidth(0.8*size)
+#        self.path = self.getShape(size)
         self.rotation = 0.0
         self.size = size
         self.color = QColor(125,125,125)
         self.name_visible = True
         self.name = warrior.name
+        self.iconShape = 0
         #set flags
         self.setFlag(QGraphicsItem.ItemIgnoresTransformations)
         self.setFlag(QGraphicsItem.ItemSendsGeometryChanges)
@@ -101,53 +110,125 @@ class HerosItem (QtWidgets.QGraphicsItem):
         #if warrior.selected == True : 
         self.setSelected(warrior.selected)
         self.setCacheMode(QGraphicsItem.DeviceCoordinateCache)
+        self.setAcceptHoverEvents (True)
+        self.framePicture = None
 
-
+        self.timer = QTimer()
+        self.timer.setSingleShot(True)
+        self.timer.timeout.connect(self.showPicture)
 
     def itemChange (self, change,value):
         if change == QGraphicsItem.ItemSelectedChange :
             self.heros.setSelected(value)
-        return super(HerosItem,self).itemChange(change,value) 
-
+    #    return super(HerosItem,self).itemChange(change,value) 
+        return QGraphicsItem.itemChange(self,change,value)
     def boundingRect(self):
-        return self.path.boundingRect()
-        return QRectF(0,0,self.image.width(),self.image.height())#self.image.boundingRect()
+       # return self.path.boundingRect()
+        return QRectF(0,0,self.size,self.size)#self.image.boundingRect()
         
-    def getShape (self,size):
-        path = QPainterPath ()
-        height_arrow = -5
-        height = size*self.ratio
-        path.cubicTo(QPointF(0.0,height_arrow), QPointF(-size/4.0,height_arrow), QPointF(-size/2.0,height_arrow))
-        path.lineTo(QPointF(-size/2.0,-height+height_arrow))
-        path.lineTo(QPointF(size/2.0,-height+height_arrow))
-        path.lineTo(QPointF(size/2.0,height_arrow))
-        path.cubicTo(QPointF(0,height_arrow), QPointF(size/4.0,0), QPointF(0,0))
-        return path
+ #   def getShape (self,size):
+ ##       path = QPainterPath ()
+ #       height = size*self.ratio
+#        height_arrow = -5
+#        path.cubicTo(QPointF(0.0,height_arrow), QPointF(-size/4.0,height_arrow), QPointF(-size/2.0,height_arrow))
+ #       path.lineTo(QPointF(-size/2.0,-height+height_arrow))
+ #       path.lineTo(QPointF(size/2.0,-height+height_arrow))
+ #       path.lineTo(QPointF(size/2.0,height_arrow))
+ #       path.cubicTo(QPointF(0,height_arrow), QPointF(size/4.0,0), QPointF(0,0))
+ #       return path
 
+
+    def drawShape(self,painter,size):
+        if self.iconShape == 0 :
+            painter.drawEllipse(0,0,self.size,self.size)
+        elif self.iconShape == 1 :
+            painter.drawRect(self.boundingRect())
+    def showPicture (self):
+        self.framePicture  = QFrame()
+        self.framePicture.setWindowModality(QtCore.Qt.WindowModal)
+        if self.settings.value("mainView/stylesheet")!= "":
+            file = QtCore.QFile(os.path.join(self.settings.value("global/resources_qss"),self.settings.value("mainView/stylesheet")))
+            if file.open(QtCore.QFile.ReadOnly|QtCore.QFile.Text):
+                text = QTextStream(file)
+                QApplication.instance().setStyleSheet(text.readAll())
+        self.framePicture.setObjectName("Frame")
+        self.framePicture.setFrameShape(QFrame.NoFrame)
+        #self.framePicture.setFrameShadow(QFrame.Raised)
+        self.verticalLayout = QVBoxLayout(self.framePicture)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.picture = QLabel()
+        self.picture.setFrameShape(QFrame.NoFrame)
+        groupe_name = self.heros.groupe().name
+        if self.heros.masterGroupe() != None : 
+            groupe_name = self.heros.masterGroupe().name+"/"+groupe_name
+        kingdom_name = self.heros.kingdom().name
+        empire_name = self.heros.empire().name
+        faction_name = self.heros.faction().name
+        pixmap = QPixmap(self.settings.value("global/resources_path")+"/"+faction_name+"/"+empire_name+"/"+kingdom_name+"/Picture/"+groupe_name+"/"+self.heros.name+"/portrait.jpg")
+        if not pixmap.isNull():
+            pixmap = pixmap.scaled(pixmap.width()/5.0,pixmap.height()/5.0)
+            self.picture.setPixmap(pixmap)
+            self.verticalLayout.addWidget(self.picture)
+            self.title = QLabel()
+            self.title.setAlignment(QtCore.Qt.AlignHCenter)
+            self.title.setFrameShape(QFrame.NoFrame)
+            self.framePicture.setGeometry(QtGui.QCursor().pos().x()+30,QtGui.QCursor().pos().y()+50,pixmap.width(),pixmap.height())
+          
+            self.title.setText(self.heros.name)
+            self.verticalLayout.addWidget(self.title)
+            self.framePicture.show()
+        else:
+            print ('picture is null')
+                    
+    def hoverEnterEvent(self, event):
+        if not self.isSelected():
+            self.timer.start(3000)
+        else:
+            self.timer.stop()
+
+        return QGraphicsItem.hoverEnterEvent(self,event)
+
+    def hoverLeaveEvent(self,event):
+        print ('leave event')
+        self.timer.stop()
+        self.framePicture = None
+        return QGraphicsItem.hoverLeaveEvent(self,event)
+        
+    def dropEvent(self, event):
+        print ('leave drag event')
+        self.setSelected(False)
+        return QGraphicsItem.dropEvent(self,event)
     def paint (self,painter,option, widget):
         #painter.setRenderHints(QtGui.QPainter.Antialiasing)
-        
         painter.rotate(self.rotation)
         #painter.scale(300,600)
+        c = self.model.groupe_color_value[self.heros.groupe().attribs['color']]
+        pen = QPen(c)
         if self.isSelected() == True : 
-            pen = QPen(QColor(255,0,0,self.color.alpha()))
+            pen.setWidth(4)
         else:   
-            pen = QPen(QColor(255-self.color.red(),255-self.color.green(),255-self.color.blue(),self.color.alpha()))
+            pen.setWidth(2)
         painter.setPen(pen)
 #         brush = QBrush(self.color)
-        linearGradient = QLinearGradient(0, 0, 100, 100)
-        linearGradient.setColorAt(0.0, QColor('green'))
-        linearGradient.setColorAt(0.2, QColor('white'))
-        linearGradient.setColorAt(1.0, QColor('green'))
-        brush = QBrush(linearGradient)
+        #linearGradient = QLinearGradient(0, 0, 100, 100)
+        #linearGradient.setColorAt(0.0, QColor('green'))
+        #linearGradient.setColorAt(0.2, QColor('white'))
+        #linearGradient.setColorAt(1.0, QColor('green'))
+        #brush = QBrush(linearGradient)
+
+        brush = QBrush(self.heros.kingdom().color)
         painter.setBrush(brush)
-        painter.drawPath(self.path)
-        diff_height = self.path.boundingRect().height() - self.image.height()
-        painter.translate(-self.image.width()/2.0,-self.path.boundingRect().height()+diff_height/2.0)
-        painter.drawPixmap(0,0,self.image)
+        self.drawShape(painter,self.size)
+
+        
+        ##painter.drawPath(self.path)
+        #diff_height = self.path.boundingRect().height() - self.image.height()
+       # painter.translate(-self.image.width()/2.0,-self.path.boundingRect().height()+diff_height/2.0)
+       # painter.drawPixmap(0,0,self.image)
         if self.name_visible == True :
             painter.setPen(QPen(QColor('black')))
             painter.translate(0,10)
+            self.ratio = 1.2
             rect = QRectF(0,0,self.size,self.size*self.ratio)
             painter.drawText (rect,QtCore.Qt.AlignHCenter|QtCore.Qt.AlignBottom, self.name)
 

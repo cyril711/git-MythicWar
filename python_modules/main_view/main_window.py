@@ -47,7 +47,7 @@ class MainWindow(QMainWindow,Ui_MainWindow):
             self.init(filename)
             self.actionQuit.triggered.connect(self.onQuit)
             self.actionLock.toggled.connect(self.onLock)
-            self.actionSave.triggered.connect(self.onSave)
+            self.actionSave_2.triggered.connect(self.onSave)
             self.actionOpen.triggered.connect(self.onOpen)
             self.actionSave_As.triggered.connect(self.onSaveAs)
             self.actionSettings.triggered.connect(self.onEdit)
@@ -295,6 +295,7 @@ class MainWindow(QMainWindow,Ui_MainWindow):
     
     def onSave (self):
         #sauvegarde
+        print('sauvegarde')
         dlg = DialogSave (self.univers,self)
         for heros in self.modified_heros :
             dlg.addHeros (heros)

@@ -120,19 +120,21 @@ class KingdomLayer( Layer ):
         for heros_item in self.items_heros :
             self.scene.removeItem(heros_item)
         self.items_heros.clear()
+        print ('len self.filteredWarriors',len(self.model.filteredWarriors()))
         for heros in self.model.filteredWarriors():
-            if heros.attribs['place'] == '':
+            if heros.attribs['place'] != '':
                 try:
                     lat = heros.attribs['latitude']
                     lon = heros.attribs['longitude']
                 except KeyError :
-                    lat = 0.0
-                    lon = 0.0
+                    lat = 48.858093
+                    lon = 2.294694
                 lat = float(Config().instance.settings.value("map/initial_lat"))
                 lon = float(Config().instance.settings.value("map/initial_lon"))
                 mx,my = self.scene_coord.LatLonToScene(lat,lon)
-                item = HerosItem(heros,50)
-                item.setPos( mx,my )
+
+                item = HerosItem(self.model,heros,50)
+                item.setPos(mx,my)
                 item.setZValue( self.z_value+10 )
                 self.items_heros.append(item)
                 self.scene.addItem( item)

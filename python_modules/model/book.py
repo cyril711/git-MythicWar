@@ -56,14 +56,13 @@ class Book (QObject):
             
     def save (self):
         print ('SAVVVEE')
-        QtCore.QFile.remove(self.filename)
-        book = ET.Element('book',{'title':self.root.title,'content':self.root.content})
-        for c in self.root.children:
-           # chapterNode = ET.SubElement(book,{'title':c.title,'content':c.content} )
-            self.processSave(book,c)
-        global_helper.writePrettyXml(book,self.filename)
+      #  QtCore.QFile.remove(self.filename)
+      #  book = ET.Element('book',{'title':self.root.title,'content':self.root.content})
+      #  for c in self.root.children:
+      #      self.processSave(book,c)
+      #  global_helper.writePrettyXml(book,self.filename)
     def processSave (self,c_node, c_model):
         chapterNode = ET.SubElement(c_node,{'title':c_model.title,'content':c_model.content} )
         for c in c_model.children:
-            self.processS ( chapterNode,c)
+            self.processSave ( chapterNode,c)
         

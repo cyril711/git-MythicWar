@@ -5,7 +5,8 @@ from python_modules.model.warrior import Warrior
 from python_modules.model.groupe import Groupe
 from python_modules.model.temple import Temple
 from python_modules.utils.database import DatabaseManager
-from PyQt5.Qt import qDebug, QIcon, qWarning, QPointF, QFile, QProgressDialog
+from PyQt5.Qt import qDebug, QIcon, qWarning, QPointF, QFile, QProgressDialog,\
+    QImage, QColor
 from PyQt5.QtCore import QObject, pyqtSignal
 from python_modules.config import Config
 from random import randint
@@ -35,9 +36,14 @@ class Univers (QObject):
 
         colors =  self.settings.value ("global/groupe_color").split(",")
         self.groupe_color_icons = {}
+        self.groupe_color_value = {}
         for color in colors :
             icon = QIcon(":/textures/"+color)
-            self.groupe_color_icons[color] = icon            
+            self.groupe_color_icons[color] = icon
+            image = QImage(":/textures/"+color)
+            value = image.pixel(image.width()/2.0,image.height()/2.0)
+            print ('type value',type(value))
+            self.groupe_color_value[color]  = QColor(value)
 
         self.test = "iiii"
 
@@ -71,7 +77,6 @@ class Univers (QObject):
         self.first_selected = (self.first_selected - 1)% len(self.selected_Warriors)    
 
     def onSelectionChanged (self, flag,warrior):
-        print ('OPOPOP')
         if (warrior in self.selected_Warriors) and (flag == False):
             self.selected_Warriors.remove(warrior)
             print ('remove from selected warriors',warrior.name)
@@ -162,7 +167,7 @@ class Univers (QObject):
 #                             self.database.update("gm_perso",attribs,"ID="+str(perso.id))
         db_name = self.database.database.databaseName()
         if filename == None : 
-            filename = self.settings.value("global/database")
+            filename = self.settings.value("global/current_database")
         try :
             print ('filename',type(filename))
             print ('value',filename)
@@ -186,7 +191,7 @@ class Univers (QObject):
         self.progress.setMinimum (0)
         self.progress.setMaximum (nb_total*2)
         qWarning("debut chargement de la bdd")
-        temples_sqlite = self.database.select("*", "gm_temple",False,None,"ID ASC")
+        temples_sqlite = self.database.select("*", "gm_temple",False,None,"ID")
         while temples_sqlite.next():
             level_dict = {}
             for name,background in zip(temples_sqlite.value("levels").split(','),temples_sqlite.value("backgrounds").split(',')):
