@@ -45,10 +45,10 @@ class ExportToSqlite (SqliteModel):
             print ('faction deja persante')
             self.nb_empire_unchanged[1] = self.nb_empire_unchanged[1] + 1
         return result
-    def addEmpire (self, empire_name,id_faction):
+    def addEmpire (self, empire_name,id_faction,empire_color=""):
         result = self.database.select("*","gm_empire",True,'name=="'+empire_name+'"')
         if result.first() == 0 : 
-            attribs = {"name":empire_name,"ID_faction":id_faction,"icon":str(empire_name)+".png"}
+            attribs = {"name":empire_name,"ID_faction":id_faction,"icon":str(empire_name)+".png","color":empire_color}
             self.database.insert("gm_empire",attribs)        
             result = self.database.select("*","gm_empire",True,'name=="'+empire_name+'"')
             self.nb_empire_inserted[1] = self.nb_empire_inserted[1] + 1
@@ -85,7 +85,7 @@ class ExportToSqlite (SqliteModel):
         #on suppose que chaque heros a un nom unique pour un groupe
         result = self.database.select("*","gm_perso",True,'name=="'+heros+'" AND ID_groupe=='+str(id_groupe))
         if result.first() == 0 : 
-            attribs = {'name':heros,'ID_groupe':id_groupe,'description':self.defaultValues['heros_description'],'techniques':self.defaultValues['heros_techniques'],'historique':self.defaultValues['heros_historique'],'latitude':self.defaultValues['heros_latitude'],'longitude':self.defaultValues['heros_longitude'],'place':self.defaultValues['heros_place'],"level":"",'leader':self.defaultValues['heros_level'],'rank':self.defaultValues['heros_rank'],'status':self.defaultValues['heros_status'],'HP':1,'MP':1,'HP_max':1,'MP_max':1,'ATK':0,'DEF':0,'MATK':0,'MATK':0,'AGL':0,'LUCK':0}
+            attribs = {'name':heros,'ID_groupe':id_groupe,'description':self.defaultValues['heros_description'],'techniques':self.defaultValues['heros_techniques'],'historique':self.defaultValues['heros_historique'],'latitude':self.defaultValues['heros_latitude'],'longitude':self.defaultValues['heros_longitude'],'place':self.defaultValues['heros_place'],"level":"",'leader':self.defaultValues['heros_level'],'rank':self.defaultValues['heros_rank'],'status':self.defaultValues['heros_status'],'complete':1,'HP':1,'MP':1,'HP_max':1,'MP_max':1,'ATK':0,'DEF':0,'MATK':0,'MATK':0,'AGL':0,'LUCK':0}
             self.database.insert("gm_perso",attribs) 
             #print ('attribs',attribs)
             result = self.database.select("*","gm_perso",True,'name=="'+heros+'" AND ID_groupe=='+str(id_groupe))
@@ -119,7 +119,12 @@ class ExportToSqlite (SqliteModel):
         id_faction = result.value("ID")
         print ('ID faction',id_faction)
         #si l empire n existe pas encore le creer
-        result = self.addEmpire(self.empire,id_faction)
+        color = ""
+        empire = self.empire
+        if len(self.empire.split["-"])>=2 :
+            color = self.empire.split["-"][1]
+            empire = self.empire.split["-"][0]
+        result = self.addEmpire(empire,id_faction,color)
         result.next()
         id_empire= result.value("ID")
         print ('ID empire',id_empire)
@@ -166,9 +171,7 @@ class ExportToSqlite (SqliteModel):
 
     def createDescriptionFile(self, name, path_file):
         file_name = "description.html"
-#         test = QFile(os.path.join(Config().instance.settings.value("global/resources_path"),"templace.html"))
-#         chaine_char = test.readAll()
-#         ddd = chaine_char.data()
+
         file = open(os.path.join(Config().instance.settings.value("global/resources_path"),"template_profil.html"))
         ddd = file.read()
         print ('ooooo',type(ddd))

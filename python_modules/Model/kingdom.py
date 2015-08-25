@@ -18,6 +18,13 @@ class Kingdom :
         attribs['armee'] = self.attribs['armee']
         attribs['description'] = self.attribs["description"]
         attribs['couleur'] = str(self.color.red())+','+str(self.color.green())+','+str(self.color.blue())+','+str(self.color.alpha())
+        attribs['name'] = self.name
+        attribs['ID'] = self.id
+        attribs['ID_empire'] = self.parent.id
+        temples = ""
+        for t_id in self.attribs['temples']:
+            temples=temples+","+str(t_id)
+        attribs['temples'] = temples
         return attribs 
     
     def getWarriorList(self):
@@ -26,6 +33,8 @@ class Kingdom :
             warrior_list+=groupe.getWarriorList()
         return warrior_list
     
+    def empire (self):
+        return self.parent
     def avancement (self):
         total = 4.0 # description + armee + picture armee + picture land
         completed = 0.0

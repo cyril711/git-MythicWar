@@ -23,7 +23,9 @@ class KingdomLayout ( QWidget):
     def connections (self):
         self.ui.next_button.clicked.connect(self.goNextKingdom)
         self.ui.previous_button.clicked.connect(self.goPreviousKingdom)
-    
+        self.model.askForKingdomPage.connect(self.goToKingdom)
+        self.model.askForKingdomHomePage.connect(self.goToEmpire)
+        self.model.askForGroup.connect(self.goToGroupe)
     def init (self,model):
         self.model = model
         #chapitre World - kingdoms
@@ -72,28 +74,24 @@ class KingdomLayout ( QWidget):
         kingdom_widget.setContent (kingdom)
         self.kingdom_widget.append(kingdom_widget)
         self.ui.stackedWidget.addWidget(kingdom_widget)
-        self.nb_pages =  1      
+        self.nb_pages =  0      
         for groupe in kingdom.groupes.values() :
             if len(groupe.sub_groupes)==0 : 
-                if self.nb_pages == 1 : 
-                    kingdom_widget.setContentRightPage(groupe)
+                if (self.nb_pages%2)==0 : 
+                    kingdom_widget = BookWorldArmy (self.model,self.ui.stackedWidget)
+                    kingdom_widget.setLeftContent (groupe)
+                    self.kingdom_widget.append(kingdom_widget)
+                    self.ui.stackedWidget.addWidget(kingdom_widget)
 
                 else:
-                    if (self.nb_pages%2)==0 : 
-                        kingdom_widget = BookWorldArmy (self.model,self.ui.stackedWidget)
-                        kingdom_widget.setLeftContent (groupe)
-                        self.kingdom_widget.append(kingdom_widget)
-                        self.ui.stackedWidget.addWidget(kingdom_widget)
-
-                    else:
-                        kingdom_widget.setRightContent(groupe)
+                    kingdom_widget.setRightContent(groupe)
                 self.nb_pages+=1
                 for warrior in groupe.warriorsList().values():
                     kingdom_widget.addVignette(warrior)                
             else: 
                 for sg in groupe.sub_groupes:
                     if self.nb_pages == 1 : 
-                        kingdom_widget.setContentRightPage(groupe,sg)
+                        kingdom_widget.setRightContent(groupe,sg)
                     else:
                         if (self.nb_pages%2)==0 : 
                             kingdom_widget = BookWorldArmy (self.model,self.ui.stackedWidget)
@@ -122,6 +120,43 @@ class KingdomLayout ( QWidget):
         else :
             self.ui.previous_button.setEnabled (True)
 
+    def goToKingdom (self, kingdom):
+        print ('goToKingdom...',kingdom.name)
+        if self.kingdom_homepage != None :
+            self.kingdom_homepage.onEmpireSelected(kingdom.empire().name)
+            buttons = self.kingdom_homepage.list_buttons
+            ind= -1
+            for b in buttons:
+                if b.text()== kingdom.name :
+                    ind = int(b.objectName())
+            if ind != -1 :
+                self.ui.stackedWidget.setCurrentIndex(ind)
+    
+        
+    def goToGroupe (self,groupe):
+        if self.kingdom_homepage != None :
+            self.kingdom_homepage.onEmpireSelected(groupe.kingdom().empire().name)
+            buttons = self.kingdom_homepage.list_buttons
+            ind= -1
+            for b in buttons:
+                if b.text()== groupe.kingdom().name :
+                    ind = int(b.objectName())
+            for i in range (ind,self.ui.stackedWidget.count()):
+                w = self.ui.stackedWidget.widget(i)
+                try :
+                    if w.groupe_left.name == groupe.name or w.groupe_right.name == groupe.name:
+                        self.ui.stackedWidget.setCurrentIndex(i)
+                    else:
+                        print ('else',w.groupe_left)         
+                except AttributeError :
+                    print ('attribute error')
+                    pass
+    
+    def goToEmpire(self, empire):
+        print ('goToEmpire...')
+        if self.kingdom_homepage != None :
+            self.kingdom_homepage.onEmpireSelected(empire.name)
+                
     def goPreviousKingdom (self):
         self.ui.stackedWidget.setCurrentIndex(self.ui.stackedWidget.currentIndex()-1)
         if self.ui.stackedWidget.currentIndex() == (self.ui.stackedWidget.count()-1):

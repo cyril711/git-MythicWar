@@ -28,9 +28,8 @@ class LayerManager( QtCore.QObject ):
     def initLayers( self ):
         ''' list all instantiable layers '''
         layers_list = self.settings.value("map/available_layers",[])
-        print ("layer_list",layers_list)
+
         for layer in layers_list:
-            print ('layer ',layer)
             module_name, module_class = layer.split( '.' )
             print ('module_name',module_name,module_class)
             module = importlib.import_module( "python_modules.view.view_map."+module_name )
@@ -46,7 +45,6 @@ class LayerManager( QtCore.QObject ):
         for layer in self.instantiated_layers:
             layer.update( scene_bounding_box )
         self.scene_bounding_box = scene_bounding_box
-
     def addLayer( self, layer_name ):
         ''' create layer '''
         # instantiation
@@ -96,6 +94,7 @@ class LayerManager( QtCore.QObject ):
 
     def updateAvailableLayers( self ):
         ''' update available layers list '''
+
         self.available_layers = []
         # if projection is null, only layers with specific projection can be instantiate
         if self.projection == None:

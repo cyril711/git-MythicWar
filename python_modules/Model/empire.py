@@ -10,7 +10,11 @@ class Empire:
     
     def getDictAttributes (self):
         attribs = {}
-        
+        attribs['name'] = self.name
+        attribs['color']=self.attrib['color']
+        attribs['icon']=self.attrib['icon']
+        attribs['ID']=self.id
+        attribs['ID_faction']=self.parent.id
         return attribs 
         
     def addKingdom(self, kingdom):

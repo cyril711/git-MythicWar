@@ -27,6 +27,7 @@ class HerosLabel (QPushButton):
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
+        self.setFixedSize(QSize(100,20))
         sizePolicy.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
         self.setSizePolicy(sizePolicy)
         #warrior_label.setMinimumSize(QtCore.QSize(0, 10))

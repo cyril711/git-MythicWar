@@ -17,10 +17,13 @@ class Univers (QObject):
     selection_updated = pyqtSignal()
     filtered_changed = pyqtSignal()
     askForHerosPage = pyqtSignal(Warrior)
+    askForKingdomPage = pyqtSignal(Kingdom)
+    askForKingdomHomePage = pyqtSignal (Empire)
+    askForMap = pyqtSignal(float,float)
+    askForGroup = pyqtSignal (Groupe)
     def __init__ (self,database,progressBar,parent=None):
         super(Univers,self).__init__(parent)
         self.progress = progressBar
-        self.settings = Config().instance.settings
         self.factions = {}
         self.temples = {}
         self.database = database
@@ -33,16 +36,16 @@ class Univers (QObject):
         self.currentGroupe= None     
         self.selected_Warriors = []
         self.filtered_Warriors = []
-
+        self.settings = Config().instance.settings
         colors =  self.settings.value ("global/groupe_color").split(",")
         self.groupe_color_icons = {}
         self.groupe_color_value = {}
         for color in colors :
-            icon = QIcon(":/textures/"+color)
+            icon = QIcon(Config().instance.path_to_texture()+"/"+color+".jpg")
             self.groupe_color_icons[color] = icon
-            image = QImage(":/textures/"+color)
+            image = QImage(Config().instance.path_to_texture()+"/"+color+".jpg")
             value = image.pixel(image.width()/2.0,image.height()/2.0)
-            print ('type value',type(value))
+            # pour view map donner une couleur a item warrior
             self.groupe_color_value[color]  = QColor(value)
 
         self.test = "iiii"
@@ -79,11 +82,11 @@ class Univers (QObject):
     def onSelectionChanged (self, flag,warrior):
         if (warrior in self.selected_Warriors) and (flag == False):
             self.selected_Warriors.remove(warrior)
-            print ('remove from selected warriors',warrior.name)
+           # print ('remove from selected warriors',warrior.name)
             self.selection_updated.emit()
         elif (warrior not in self.selected_Warriors) and (flag == True):
             self.selected_Warriors.append(warrior)
-            print ('append from selected warriors',warrior.name)
+            #print ('append from selected warriors',warrior.name)
             self.selection_updated.emit()        
 #     def setSelection (self, list_id):
 #         self.selected_Warriors = []
@@ -96,7 +99,8 @@ class Univers (QObject):
 #         self.first_selected = 0
 #         self.selection_changed.emit()
 
-    def dispatchCircleWarriors(self, origin, radius):
+    def dispatchCircleWarriors(self,scene_coord, origin, radius):
+        print ('dispatch circle warriors')
         for heros in self.selectedWarriors():
             x = randint(int(-radius),int(radius))
             y = (radius*radius) - (x*x)
@@ -104,8 +108,12 @@ class Univers (QObject):
             print ('rrr',origin,radius,y,x)
             print ('randrange',int(origin.y()-math.sqrt(y)),int(origin.y()+math.sqrt(y)))
             y = randint (int(-math.sqrt(y)),int(math.sqrt(y)))
-            heros.latitude = origin.x()  +x 
-            heros.longitude = origin.y()  +y 
+            latitude = origin.x()  +x 
+            longitude = -origin.y()  +y
+            print ('position AVT dispatch :',heros.attribs['latitude'],heros.attribs['longitude'])
+            heros.attribs['latitude'],heros.attribs['longitude'] = scene_coord.SceneToLatLon(latitude,longitude)
+            print ('position du dispatch :',heros.attribs['latitude'],heros.attribs['longitude']) 
+            heros.on_move.emit()
 
     def selectedWarriors (self):
         return self.selected_Warriors
@@ -124,6 +132,11 @@ class Univers (QObject):
                         for perso in groupe.warriors.values():
                             l.append(perso)
         return l
+    def clearSelection (self):
+        l = self.allWarriors()
+        for warrior in l : 
+            warrior.setSelected(False)
+        
     def updateFilteredWarrior(self):
         self.filtered_Warriors = []
         for faction_name, faction in zip(self.factions.keys(),self.factions.values()):
@@ -141,6 +154,7 @@ class Univers (QObject):
     
     def save (self,filename = None):
         print ("sauvegarde")
+       # self.database.setVerbose(True)
         for temple in self.temples.values() :
             attribs = temple.getDictAttributes ()
             self.database.update("gm_temple",attribs,"ID="+str(temple.id))
@@ -149,35 +163,39 @@ class Univers (QObject):
             self.database.update("gm_faction",attribs,"ID="+str(faction.id))
             for empire in faction.empires.values():
                 attribs = empire.getDictAttributes ()
-                self.database.update("gm_empire",attribs,"IDEmpire="+str(empire.id))
+                self.database.update("gm_empire",attribs,"ID="+str(empire.id))
                 for kingdom in empire.kingdoms.values():
                     attribs = kingdom.getDictAttributes ()
-                    self.database.update("gm_kingdom",attribs,"IDKingdom="+str(kingdom.id))
-#                     for groupe in kingdom.groupes.values():
-#                         attribs = groupe.getDictAttributes ()
-#                         self.database.update("gm_groupes",attribs,"IDGroupe="+str(groupe.id))
-#                         for sub_groupe in groupe.sub_groupes:
-#                             attribs = groupe.getDictAttributes ()
-#                             self.database.update("gm_groupes",attribs,"IDGroupe="+str(groupe.id))
-#                             for perso in sub_groupe.warriors.values():
-#                                 attribs = perso.getDictAttributes ()
-#                                 self.database.update("gm_perso",attribs,"ID="+str(perso.id))
-#                         for perso in groupe.warriors.values():
-#                             attribs = perso.getDictAttributes ()
-#                             self.database.update("gm_perso",attribs,"ID="+str(perso.id))
+                    self.database.update("gm_kingdom",attribs,"ID="+str(kingdom.id))
+                    for groupe in kingdom.groupes.values():
+                        attribs = groupe.getDictAttributes ()
+                        self.database.update("gm_groupe",attribs,"ID="+str(groupe.id))
+                        for sub_groupe in groupe.sub_groupes:
+                            attribs = sub_groupe.getDictAttributes ()
+                            self.database.update("gm_groupe",attribs,"ID="+str(sub_groupe.id))
+                            for perso in sub_groupe.warriors.values():
+                                attribs = perso.getDictAttributes ()
+                                self.database.update("gm_perso",attribs,"ID="+str(perso.id))
+                        for perso in groupe.warriors.values():
+                            attribs = perso.getDictAttributes ()
+                            if perso.name == "Artemis":
+                                print ("artemie pos pour test",attribs["latitude"],attribs["longitude"])
+                            self.database.update("gm_perso",attribs,"ID="+str(perso.id))
         db_name = self.database.database.databaseName()
         if filename == None : 
             filename = self.settings.value("global/current_database")
         try :
             print ('filename',type(filename))
             print ('value',filename)
-            QFile.remove(filename)
+            if QFile.remove(filename) == False :
+                qWarning("echec suppression ")
+                
         except OSError :
             qWarning("echec suppression ")
             pass
 
         if QFile.copy(db_name,filename):
-            qWarning("sauvegarde reussit")
+            print("sauvegarde reussit db name",db_name, filename)
         else:
             qDebug("Echec sauvegarde")
             print ('kkk',db_name,filename)
@@ -190,7 +208,7 @@ class Univers (QObject):
         self.progress.setLabelText("Etape 1/2 : Chargement de la base de donnee")
         self.progress.setMinimum (0)
         self.progress.setMaximum (nb_total*2)
-        qWarning("debut chargement de la bdd")
+        qWarning("debut chargement de la bdd progess max = ")
         temples_sqlite = self.database.select("*", "gm_temple",False,None,"ID")
         while temples_sqlite.next():
             level_dict = {}
@@ -202,17 +220,19 @@ class Univers (QObject):
             self.addTemple (temple)
         faction_sqlite = self.database.select("*", "gm_faction",False,None,"ID ASC")
         while faction_sqlite.next():
-            attribs = {} 
+            attribs = {'icon':faction_sqlite.value("icon")} 
             faction = Faction(faction_sqlite.value("ID"), faction_sqlite.value("name"),attribs)
             self.addFaction(faction)
             empire_sqlite = self.database.select("*", "gm_empire",False, "ID_faction=="+str(faction_sqlite.value("ID")),"ID ASC")         
             while empire_sqlite.next():
-                attribs = {}
+                attribs = {'color':str(empire_sqlite.value("color")),'icon':str(empire_sqlite.value("icon"))}
+                print ('coloooooor',str(empire_sqlite.value("icon")),empire_sqlite.value("name"),str(empire_sqlite.value("color")))
                 empire = Empire(empire_sqlite.value("ID"), empire_sqlite.value("name"),attribs,faction)
                 faction.addEmpire(empire)
                 kingdom_sqlite = self.database.select("*", "gm_kingdom",False,"ID_empire=="+str(empire_sqlite.value("ID")),"ID ASC")
                 while kingdom_sqlite.next():
                     attribs = {'armee':kingdom_sqlite.value("armee"),'description':kingdom_sqlite.value("description"),'red':int(kingdom_sqlite.value("couleur").split(",")[0]),'green':int(kingdom_sqlite.value("couleur").split(",")[1]),'blue':int(kingdom_sqlite.value("couleur").split(",")[2]),'alpha':int(kingdom_sqlite.value("couleur").split(",")[3])}
+                    attribs['temples'] = kingdom_sqlite.value("temples").split(',')
                     kingdom = Kingdom(kingdom_sqlite.value("ID"), kingdom_sqlite.value("name"),attribs,empire)
                     empire.addKingdom(kingdom)
                     for t in kingdom_sqlite.value("temples").split(','):
@@ -232,23 +252,28 @@ class Univers (QObject):
                             attribs['level'] = warrior_sqlite.value("level") 
                             attribs['leader'] = bool(warrior_sqlite.value("leader")) 
                             attribs['rank'] = bool(warrior_sqlite.value("rank"))
-                            attribs['HP'] = bool(warrior_sqlite.value("HP"))
-                            attribs['MP'] = bool(warrior_sqlite.value("MP"))
-                            attribs['HP_max'] = bool(warrior_sqlite.value("HP_max"))
-                            attribs['MP_max'] = bool(warrior_sqlite.value("MP_max"))
-                            attribs['ATK'] = bool(warrior_sqlite.value("ATK"))
-                            attribs['DEF'] = bool(warrior_sqlite.value("DEF"))
-                            attribs['MATK'] = bool(warrior_sqlite.value("MATK"))
+                            attribs['HP'] = int(warrior_sqlite.value("HP"))
+                            attribs['MP'] = int(warrior_sqlite.value("MP"))
+                            attribs['HP_max'] = int(warrior_sqlite.value("HP_max"))
+                            attribs['MP_max'] = int(warrior_sqlite.value("MP_max"))
+                            attribs['ATK'] = int(warrior_sqlite.value("ATK"))
+                            attribs['DEF'] = int(warrior_sqlite.value("DEF"))
+                            attribs['MATK'] = int(warrior_sqlite.value("MATK"))
                             attribs['MDEF'] = bool(warrior_sqlite.value("MDEF"))
-                            attribs['AGL'] = bool(warrior_sqlite.value("AGL"))
-                            attribs['LUCK'] = bool(warrior_sqlite.value("LUCK"))
+                            attribs['AGL'] = int(warrior_sqlite.value("AGL"))
+                            attribs['LUCK'] = int(warrior_sqlite.value("LUCK"))
                             attribs['description'] = bool(warrior_sqlite.value("description"))
+                            try : 
+                                attribs['complete'] = int(warrior_sqlite.value("complete"))
+                            except ValueError: 
+                                attribs['complete'] = 0
+                            attribs['state'] = "repos"
                             warrior = Warrior(warrior_sqlite.value("ID"), warrior_sqlite.value("name"),attribs, groupe)
                             nb_heros_added+=1
                             self.progress.setValue(nb_heros_added)
                             groupe.addWarrior(warrior)
                             warrior.selection_changed.connect(self.onSelectionChanged)
-                            if warrior_sqlite.value("place")!= '':
+                            if int(warrior_sqlite.value("place"))!= 0:
                                 try:
                                     self.temples[int(warrior_sqlite.value("place"))].addHeros(warrior)
                                 except KeyError:
@@ -267,18 +292,24 @@ class Univers (QObject):
                 attribs['place'] = warrior_sqlite.value("place")
                 attribs['level'] = warrior_sqlite.value("level")
                 attribs['leader'] = bool(warrior_sqlite.value("leader"))
-                attribs['rank'] = bool(warrior_sqlite.value("rank"))
-                attribs['HP'] = bool(warrior_sqlite.value("HP"))
-                attribs['MP'] = bool(warrior_sqlite.value("MP"))
-                attribs['HP_max'] = bool(warrior_sqlite.value("HP_max"))
-                attribs['MP_max'] = bool(warrior_sqlite.value("MP_max"))
-                attribs['ATK'] = bool(warrior_sqlite.value("ATK"))
-                attribs['DEF'] = bool(warrior_sqlite.value("DEF"))
-                attribs['MATK'] = bool(warrior_sqlite.value("MATK"))
+                attribs['rank'] = int(warrior_sqlite.value("rank"))
+                attribs['HP'] = int(warrior_sqlite.value("HP"))
+                attribs['MP'] = int(warrior_sqlite.value("MP"))
+                attribs['HP_max'] = int(warrior_sqlite.value("HP_max"))
+                attribs['MP_max'] = int(warrior_sqlite.value("MP_max"))
+                attribs['ATK'] = int(warrior_sqlite.value("ATK"))
+                attribs['DEF'] = int(warrior_sqlite.value("DEF"))
+                attribs['MATK'] = int(warrior_sqlite.value("MATK"))
                 attribs['MDEF'] = bool(warrior_sqlite.value("MDEF"))
-                attribs['AGL'] = bool(warrior_sqlite.value("AGL"))
-                attribs['LUCK'] = bool(warrior_sqlite.value("LUCK"))
+                attribs['AGL'] = int(warrior_sqlite.value("AGL"))
+                attribs['LUCK'] = int(warrior_sqlite.value("LUCK"))
                 attribs['description'] = bool(warrior_sqlite.value("description"))
+                try : 
+                    attribs['complete'] = int(warrior_sqlite.value("complete"))
+                except ValueError: 
+                    attribs['complete'] = 0
+                #TODO compute state with history and life state
+                attribs['state'] = "repos"
                 warrior = Warrior(warrior_sqlite.value("ID"), warrior_sqlite.value("name"),attribs, groupe)
                 nb_heros_added+=1
                 self.progress.setValue(nb_heros_added)
@@ -353,4 +384,6 @@ class Univers (QObject):
         
     def addTemple (self, temple):
         self.temples[temple.id] = temple
+
+
         

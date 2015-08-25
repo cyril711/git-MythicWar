@@ -36,9 +36,14 @@ class BookWorldHomepage ( QWidget,Ui_BookWorldHomepage):
             button.setObjectName(value.name)
             self.empire_right_layout.addWidget(button)
 
-    def onEmpireSelected (self):
+    def onEmpireSelected (self,empire_name=None):
         self.book.removeAllKingdomWidgets ()
-        name = self.sender().objectName()
+        if empire_name == None:
+            name = self.sender().objectName()
+            print ('empire name sender',empire_name)
+        else:
+            name = empire_name
+            print ('empire name',empire_name)
         self.right_empire_name.setText(name)
         list_kingdoms = {}
         if name in self.listEmpire1 :

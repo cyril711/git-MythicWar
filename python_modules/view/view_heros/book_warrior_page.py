@@ -1,5 +1,6 @@
 from PyQt5.Qt import QPixmap, QWidget,QColor, QRect, QPainter, QPoint,QBrush, QPainterPath,\
-    QPushButton, QSize, QIcon
+    QPushButton, QSize, QIcon, QPalette, QImage, QListWidgetItem, QLabel,\
+    QGridLayout, QSizePolicy, QToolTip
 from PyQt5 import QtCore, QtWidgets
      
 from python_modules.view.view_heros.ui_book_warrior_page import Ui_BookWarriorPage
@@ -11,6 +12,69 @@ import os
 from python_modules.view.view_book.page_widget import PageWidget
 #basepath = "C:/Users/cyril/Documents/Travail/Workspace/MythicWar/ressources/images/La_Guerre_Mythique"   
 
+
+
+class ImagePopup(QLabel):
+    """
+    The ImagePopup class is a QLabel that displays a popup, zoomed image
+    on top of another label.
+    """
+    def __init__(self, parent):
+        super(QLabel, self).__init__(parent)
+
+        # set pixmap and size, which is the double of the original pixmap
+        thumb = parent.pixmap()
+        imageSize = thumb.size()
+        factor = 126/imageSize.width()
+        #factor = 0.5
+        imageSize.setWidth(imageSize.width()*factor)
+        imageSize.setHeight(imageSize.height()*factor)
+        self.setPixmap(thumb.scaled(imageSize,QtCore.Qt.KeepAspectRatioByExpanding))
+
+        # center the zoomed image on the thumb
+        position = self.cursor().pos()
+        position.setX(position.x() - thumb.size().width()*factor)
+        position.setY(position.y() - thumb.size().height()*factor)
+        self.move(position)
+
+        # FramelessWindowHint may not work on some window managers on Linux
+        # so I force also the flag X11BypassWindowManagerHint
+        self.setWindowFlags(QtCore.Qt.Popup | QtCore.Qt.WindowStaysOnTopHint
+                            | QtCore.Qt.FramelessWindowHint
+                            | QtCore.Qt.X11BypassWindowManagerHint)
+
+    def leaveEvent(self, event):
+        """ When the mouse leave this widget, destroy it. """
+        self.destroy()
+
+
+class ImageLabel(QLabel):
+    """ This widget displays an ImagePopup when the mouse enters its region """
+    def __init__(self, parent,path_pic):
+        super(QLabel, self).__init__(parent)
+        self.p = None
+        #self.setStyleSheet("#QToolTip { color: #ff0000; background-color: #ff0000;}")
+        self.path_pic = path_pic
+    def enterEvent(self, event): 
+        print ('enter event label')
+        #self.p = ImagePopup(self)
+        #self.p.show()
+
+        self.setToolTip('<span style="background-color:red;"><img src="'+self.path_pic+'"width="420"></span>')
+
+        event.accept()
+    def paintEvent(self,event): 
+        painter = QPainter(self)
+        if self.pixmap().width()!= 0:
+            factor_w = 100/self.pixmap().width()
+            factor_h = 123/self.pixmap().height()
+            painter.scale(factor_w,factor_h)
+            painter.drawPixmap(QRect(0,0,self.pixmap().width(),self.pixmap().height()),self.pixmap(),QRect(0,0,self.pixmap().width(),self.pixmap().height()))
+#     def leaveEvent(self, event):
+#         if self.p != None :
+#             self.p.destroy()
+        
+        
 
 class RankWidget (QtWidgets.QWidget):
     def __init__ (self,warrior,parent):
@@ -63,7 +127,6 @@ class RankWidget (QtWidgets.QWidget):
                 self.stars.append(starPath)
            # painter.setBrush(QtCore.Qt.NoBrush)
     def mouseMoveEvent(self,event):
-        print ('oooot')
         for i in range (len(self.stars)):
             if (5-i) > 2:#self.warrior.attribs['rank']:
                 if self.stars[i].contains(event.pos()):
@@ -80,7 +143,6 @@ class ProfilHeroWidget (QPushButton):
     def __init__ (self,picture,parent):
 
         super(ProfilHeroWidget, self).__init__(parent)
-        self.settings = Config().instance.settings
         if picture.width()> picture.height() :
             self.setFixedSize(QSize(500,500*2.0/3.0))
         else:
@@ -169,12 +231,11 @@ class ProfilHeroWidget (QPushButton):
 
 class BookWarriorPage ( QWidget):
 
-    def __init__ (self,parent=None,warrior=None):
+    def __init__ (self,model,parent=None,warrior=None):
         super(BookWarriorPage,self).__init__(parent)
 #         self.setObjectName("BookWarriorPage")
         self.warrior = warrior
-        self.settings = Config().instance.settings
-
+        self.model = model
 
         groupe_name = warrior.groupe().name
         if warrior.masterGroupe() != None : 
@@ -183,7 +244,9 @@ class BookWarriorPage ( QWidget):
         kingdom_name = warrior.kingdom().name
         empire_name = warrior.empire().name
         faction_name = warrior.faction().name
-        picture = QPixmap(self.settings.value("global/resources_path")+"/"+faction_name+"/"+empire_name+"/"+kingdom_name+"/Picture/"+groupe_name+"/"+warrior.name+"/portrait.jpg")
+        path = os.path.join(Config().instance.path_to_pic(),faction_name,empire_name,kingdom_name,'Picture',groupe_name,warrior.name)
+        picture = QPixmap(path+"/portrait.jpg")
+        print ("book warrior page pic path :",path)
         print ('picture size',picture.height(),picture.width())
         if picture.height() < picture.width():
             self.ui = Ui_BookWarriorPageReverse()
@@ -191,7 +254,6 @@ class BookWarriorPage ( QWidget):
             self.ui = Ui_BookWarriorPage()
 
         self.ui.setupUi(self)
-        couleur = "saphir"    
 
    
         self.ui.warrior_name.setText(self.warrior.name.replace("_"," "))
@@ -211,16 +273,21 @@ class BookWarriorPage ( QWidget):
         profil_widget = ProfilHeroWidget(picture,self.ui.picture_widget)
         #profil_widget.setPicture(picture)
         self.ui.picture_layout_2.addWidget(profil_widget)
+        if picture.height() >= picture.width():
+            separator = QtWidgets.QWidget(self.ui.picture_widget)
+            separator.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
+            self.ui.picture_layout_2.addWidget(separator)
         kingdom_name = self.warrior.kingdom().name
         empire_name = self.warrior.empire().name
         faction_name = self.warrior.faction().name
-        self.ui.label_faction.setText(faction_name)
-        self.ui.label_empire.setText(empire_name)
-        self.ui.label_royaume.setText(kingdom_name)
+
         self.ui.progressBar_HP.setStyleSheet("  QProgressBar {border-radius: 5px;} QProgressBar::chunk {     background-color: #05B8CC;width: 20px;}")
         self.ui.progressBar_HP.setAlignment(QtCore.Qt.AlignCenter)
         self.ui.progressBar_MP.setStyleSheet("  QProgressBar {border-radius: 5px;} QProgressBar::chunk {     background-color: #05B8CC;width: 20px;}")
         self.ui.progressBar_MP.setAlignment(QtCore.Qt.AlignCenter)
+        self.ui.profil_completion_button.setIcon(QIcon(":/icons/128x128/state_"+str(self.warrior.attribs['complete']+1)))
+        self.ui.profil_completion_button.setStyleSheet("#"+self.ui.profil_completion_button.objectName()+"{background-color:transparent;}")
+        self.ui.profil_completion_button.clicked.connect(self.onChangeCompletion)
  #       self.ui.progressBar_MP.setStyleSheet(" QProgressBar::chunk {background-color: blue; }")
        # self.ui.progressBar_HP.setStyleSheet(" QProgressBar {background-color: #green; };QProgressBar::chunk {background-color: #red; }")
         #self.ui.label_avancement.setText(str(self.warrior.kingdom().avancement()))
@@ -233,40 +300,116 @@ class BookWarriorPage ( QWidget):
             mp_percent =0
         self.ui.progressBar_HP.setValue(int(hp_percent))
         self.ui.progressBar_MP.setValue(int(mp_percent))
-        rank_widget = RankWidget(warrior,self.ui.rank_widget)
-        self.ui.layout_rank.addWidget(rank_widget)
+        #rank_widget = RankWidget(warrior,self.ui.rank_widget)
+        #self.ui.layout_rank.addWidget(rank_widget)
+
+        self.l_stars = []
+        self.l_stars.append(self.ui.star_1)
+        self.l_stars.append(self.ui.star_2)
+        self.l_stars.append(self.ui.star_3)
+        self.l_stars.append(self.ui.star_4)
+        self.l_stars.append(self.ui.star_5) 
+        for w in self.l_stars:
+            w.setStyleSheet("#"+w.objectName()+"{border-width: 0px;background-color:transparent;}")
+            w.clicked.connect(self.onRankChanged)
+        self.updateRank(self.warrior.attribs["rank"]) 
+
         #self.profil_layout.insertWidget(0,profil_widget)
         
         groupe_name = self.warrior.groupe().name
         if self.warrior.masterGroupe() != None : 
             groupe_name = self.warrior.masterGroupe().name+"/"+groupe_name
-        basepath = self.settings.value("global/resources_path")+"/"+faction_name+"/"+empire_name+"/"+kingdom_name+"/Picture/"+groupe_name+"/"+self.warrior.name
-
-        self.ui.groupe_texture_button.setText(groupe_name)
-       
+        path_warrior = os.path.join(Config().instance.path_to_pic(),faction_name,empire_name,kingdom_name,'Picture',groupe_name,self.warrior.name)
+        
+        self.ui.groupe_texture_button.setText(groupe_name.replace("_"," "))
+        self.ui.groupe_texture_button.clicked.connect(self.onGroupClicked)
         groupe_color = self.warrior.groupe().attribs['color']
         if self.warrior.masterGroupe() != None : 
             groupe_color = self.warrior.masterGroupe().attribs['color']
-        groupe_color = "saphir"
-        pixmap = QIcon(":/textures/"+groupe_color)
-        self.ui.groupe_texture_button.setStyleSheet("#groupe_texture_button{background-image: url(:/textures/"+groupe_color+")0 0 0 0 stretch stretch ;color:white}")
-        path = os.path.join(self.settings.value("global/resources_path"),"icons","faction","32x32",self.warrior.faction().name)
+
+        self.ui.groupe_texture_button.setStyleSheet("#"+self.ui.groupe_texture_button.objectName()+"{background-image:url(:/textures/"+groupe_color+");}")
+        #self.ui.groupe_texture_button.setStyleSheet("#"+self.ui.groupe_texture_button.objectName()+"{background-image: url("+Config().instance.path_to_texture()+"/"+groupe_color+".jpg)0 0 0 0 stretch stretch ;color:white}")
+        #self.ui.groupe_texture_button.setFlat(True)
+        #self.ui.groupe_texture_button.setAutoFillBackground(True)
+        path = os.path.join(Config().instance.path_to_icons(),"faction","32x32",self.warrior.faction().name)
         self.ui.iconFaction.setIcon(QIcon(path))
-        path = os.path.join(self.settings.value("global/resources_path"),"icons","empire","32x32",self.warrior.empire().name)
+        self.ui.iconFaction.setToolTip(self.warrior.faction().name)
+        path = os.path.join(Config().instance.path_to_icons(),"empire","32x32",self.warrior.empire().name)
         self.ui.iconEmpire.setIcon(QIcon(path))
-       
-        filename= os.path.join(basepath,"description.html")
+        self.ui.iconEmpire.setToolTip(self.warrior.empire().name)
+        self.ui.iconEmpire.clicked.connect(self.onEmpireClicked)
+        path = os.path.join(Config().instance.path_to_icons(),"kingdom","32x32",self.warrior.kingdom().name)
+        self.ui.iconKingdom.setIcon(QIcon(path))
+        self.ui.iconKingdom.setToolTip(self.warrior.kingdom().name)
+        self.ui.iconKingdom.clicked.connect(self.onKingdomClicked)
+        path = os.path.join(Config().instance.path_to_icons(),"actions",self.warrior.attribs['state'])
+        print ('path icon ',path)
+        self.ui.iconState.setPixmap(QPixmap(path).scaledToHeight(64))
+        
+        self.ui.iconState.setToolTip(self.warrior.attribs['state'])
+        filename= os.path.join(path_warrior,"description.html")
         if (os.path.exists(filename)):
-            print ('jjjjj')
             self.description_widget = PageWidget(filename,self.ui.right_page)
             #self.ui.right_page_layout.addWidget(self.description_widget)
             self.ui.right_page_layout.insertWidget(1,self.description_widget)
+
+
+        list_pic = list(filter(self.isValid,os.listdir (path_warrior)))
+        nb_row = 0
+        nb_col = 0
+        max_col = 4
+        for pic in list_pic : 
+            pic_widget = ImageLabel(self,os.path.join(path_warrior,pic))
+            print(pic)
+            pic_widget.setPixmap(QPixmap(os.path.join(path_warrior,pic)))
+            self.ui.gridLayout.addWidget(pic_widget, nb_row, nb_col)
+            nb_col = (nb_col +1)%max_col
+            if nb_col == 0 :
+                nb_row+=1
+#             #item = QListWidgetItem()
+#             item = ImageLabel()
+#             item.setPixmap(QPixmap(os.path.join(path_warrior,pic)))
+#             self.ui.gallery.addItem(item)
+        self.ui.map_button.clicked.connect(self.onMapClicked)
+
         self.connections ()
+        
+    def onMapClicked (self):
+        self.model.clearSelection()
+        self.warrior.setSelected(True)
+        self.model.askForMap.emit(self.warrior.attribs['latitude'],self.warrior.attribs['longitude'])
+    def onGroupClicked (self):
+        self.model.askForGroup.emit(self.warrior.groupe())
+    def onKingdomClicked (self):
+        self.model.askForKingdomPage.emit(self.warrior.kingdom())
+    def onEmpireClicked (self):
+        self.model.askForKingdomHomePage.emit(self.warrior.empire())
+    def isValid (self, name):
+        return (name != "portrait.jpg" and name!="portrait_thumbnail.jpg" and name!= "description.html")
+    
+    def onRankChanged (self):
+        new_rank = int(self.sender().objectName().split("_")[1])
+        self.warrior.attribs["rank"] = new_rank
+        self.updateRank(new_rank)
+    def updateRank(self,rank):
+        pal = QPalette(self.ui.rank_text.palette())
+        image = QImage(os.path.join(Config().instance.path_to_icons(),"rank")+"/star_"+self.warrior.groupe().attribs["color"]+".png")
+        value = image.pixel(image.width()/2.0,image.height()/2.0)
+        pal.setColor(QPalette.WindowText, QColor(value))
+        self.ui.rank_text.setPalette(pal)
+        for i in range (len(self.l_stars)) :
+            if i < rank:
+                self.l_stars[i].setIcon(QIcon(os.path.join(Config().instance.path_to_icons(),"rank")+"/star_"+self.warrior.groupe().attribs["color"]+".png"))
+            else:
+                self.l_stars[i].setIcon(QIcon(os.path.join(Config().instance.path_to_icons(),"rank")+"/star_white.png"))                
+
     def connections (self):
         pass
 #         self.ui.warrior_description.textChanged.connect(self.onModification)
 #         self.ui.warrior_techniques.textChanged.connect(self.onModification)
-        
+    def onChangeCompletion (self):
+        self.warrior.attribs['complete'] = (self.warrior.attribs['complete']+1)%3 
+        self.ui.profil_completion_button.setIcon(QIcon(":/icons/128x128/state_"+str(self.warrior.attribs['complete']+1)))
     def mousePressEvent(self, event):
         print ('q')
         return super(BookWarriorPage,self).mouseMoveEvent(event)

@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="icons/24x24">
+    <file alias="pause">ressources/icons/png/24x24/player_pause.png</file>
+    <file alias="player">ressources/icons/png/24x24/player_play.png</file>
     <file alias="add">ressources/icons/png/24x24/add.png</file>
     <file alias="settings">ressources/icons/png/24x24/edit.png</file>
     <file alias="unlock">ressources/icons/png/24x24/unlock.png</file>
@@ -10,8 +12,17 @@
     <file alias="next">ressources/icons/png/24x24/next.png</file>
     <file alias="save">ressources/icons/png/24x24/floppy_disc.png</file>
   </qresource>
+  <qresource prefix="newPrefix"/>
+  <qresource prefix="icons/128x128">
+    <file alias="state_1">ressources/icons/png/128x128/check_state_1.png</file>
+    <file alias="state_2">ressources/icons/png/128x128/check_state_2.png</file>
+    <file alias="state_3">ressources/icons/png/128x128/check_state_3.png</file>
+    <file alias="target">ressources/icons/png/128x128/target.png</file>
+  </qresource>
   <qresource prefix="icons/16x16">
     <file alias="page">ressources/icons/png/16x16/page.png</file>
+    <file alias="validate">ressources/icons/png/16x16/validate.png</file>
+    <file alias="warning">ressources/icons/png/16x16/warning.png</file>
   </qresource>
   <qresource prefix="icons/32x32">
     <file alias="kingdom">ressources/icons/png/32x32/chart.png</file>
@@ -22,14 +33,17 @@
     <file alias="fiche_perso">ressources/icons/png/32x32/image.png</file>
     <file alias="filtered">ressources/icons/png/32x32/user_search.png</file>
   </qresource>
-  <qresource prefix="textures">
-    <file alias="saphir">ressources/textures/saphir.jpg</file>
-    <file alias="emeraude">ressources/textures/emeraude.jpg</file>
-    <file alias="onyx">ressources/textures/onyx.jpg</file>
-    <file alias="citrine">ressources/textures/citrine.jpg</file>
-    <file alias="rubis">ressources/textures/rubis2.jpg</file>
-  </qresource>
   <qresource prefix="background">
     <file alias="grec">ressources/background/grec.jpg</file>
+  </qresource>
+  <qresource prefix="textures">
+    <file alias="ambre">ressources/textures/ambre.png</file>
+    <file alias="amethiste">ressources/textures/amethiste.png</file>
+    <file alias="diamond">ressources/textures/diamond.png</file>
+    <file alias="emeraude">ressources/textures/emeraude.png</file>
+    <file alias="gold">ressources/textures/gold.png</file>
+    <file alias="onyx">ressources/textures/onyx.png</file>
+    <file alias="rubis">ressources/textures/rubis.png</file>
+    <file alias="saphir">ressources/textures/saphir.png</file>
   </qresource>
 </RCC>

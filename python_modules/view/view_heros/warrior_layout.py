@@ -10,6 +10,7 @@ class WarriorLayout (QWidget, Ui_WarriorLayout):
     modified = QtCore.pyqtSignal(int)
     def __init__ (self, model, parent=None):
         super(WarriorLayout, self).__init__(parent)
+        print ('tout debut')
         self.setupUi(self)
         self.model = model
         # self.widget.setStyleSheet("#widget{background-image: url(:/textures/saphir)}")
@@ -19,10 +20,12 @@ class WarriorLayout (QWidget, Ui_WarriorLayout):
         self.ind_warrior = 0
 
         self.selection2 = []
+        print ('debut init')
         self.init(model)
         self.previous_button.setEnabled(False)
         self.next_button.setEnabled(False)
         self.new_page = None
+        print ('fin init')
         #self.editable = True
 
         # self.preset_all_button.setStyleSheet("border-top: 3px transparent;border-bottom: 3px transparent;border-right: 10px transparent;border-left: 10px transparent;");
@@ -30,9 +33,9 @@ class WarriorLayout (QWidget, Ui_WarriorLayout):
         self.next_button.clicked.connect(self.goNextWarrior)
         self.previous_button.clicked.connect(self.goPreviousWarrior)
 
-        self.preset_all_button.clicked.connect(self.onPresetAll)
-        self.preset_filtre_button.clicked.connect(self.onPresetFilter)
-        self.preset_selection_button.clicked.connect(self.onPresetSelection)
+#         self.preset_all_button.clicked.connect(self.onPresetAll)
+#         self.preset_filtre_button.clicked.connect(self.onPresetFilter)
+#         self.preset_selection_button.clicked.connect(self.onPresetSelection)
         self.model.askForHerosPage.connect(self.onPresetFromModel)
 
     def onPresetFromModel (self, heros):
@@ -110,7 +113,7 @@ class WarriorLayout (QWidget, Ui_WarriorLayout):
         self.homepage.updateSelection.connect(self.onPresetFromHomepage)
         self.homepage.setLeftPage()
         self.horizontalLayout.insertWidget(1, self.homepage)
-        self.preset_all_button.click()
+        #self.preset_all_button.click()
 #         self.homepage.setLeftPage("config.xml")
         # self.central_widget = self.homepage
         
@@ -128,7 +131,7 @@ class WarriorLayout (QWidget, Ui_WarriorLayout):
         print ('onUpdatePage')
         self.new_page.setParent(None)
         self.new_page = None
-        self.new_page = BookWarriorPage (self, self.selection2[self.ind_warrior])
+        self.new_page = BookWarriorPage (self.model,self, self.selection2[self.ind_warrior])
         self.horizontalLayout.insertWidget(1, self.new_page)
         
     def goNextWarrior (self):
@@ -141,7 +144,7 @@ class WarriorLayout (QWidget, Ui_WarriorLayout):
         else:
             self.homepage.setParent(None)
             self.horizontalLayout.removeWidget(self.homepage)
-        self.new_page = BookWarriorPage (self, self.selection2[self.ind_warrior])
+        self.new_page = BookWarriorPage (self.model,self, self.selection2[self.ind_warrior])
       #  self.new_page.setEnabled(self.editable)
        # self.setStyleSheet('BookWarriorPageN{background-image: url(:/background/grec)}')
         self.horizontalLayout.insertWidget(1, self.new_page)
@@ -171,7 +174,7 @@ class WarriorLayout (QWidget, Ui_WarriorLayout):
             self.new_page = None
 
         self.ind_warrior = (self.ind_warrior - 1) % len(self.selection2)
-        self.new_page = BookWarriorPage (self, self.selection2[self.ind_warrior])
+        self.new_page = BookWarriorPage (self.model,self, self.selection2[self.ind_warrior])
         self.horizontalLayout.insertWidget(1, self.new_page)
 
             
@@ -190,7 +193,7 @@ class WarriorLayout (QWidget, Ui_WarriorLayout):
             self.ind_warrior = ind
             print ('ind :',ind)
         print ('goWarriorPage : ', len(self.selection2))
-        self.new_page = BookWarriorPage (self, self.selection2[self.ind_warrior])
+        self.new_page = BookWarriorPage (self.model,self, self.selection2[self.ind_warrior])
         #self.new_page.setEnabled(self.editable)
         self.horizontalLayout.insertWidget(1, self.new_page)
         
@@ -207,7 +210,7 @@ class WarriorLayout (QWidget, Ui_WarriorLayout):
         self.ind_warrior = ind
         print ('ind :',ind)
         print ('goWarriorPage : ', len(self.selection2))
-        self.new_page = BookWarriorPage (self, self.selection2[self.ind_warrior])
+        self.new_page = BookWarriorPage (self.model, self, self.selection2[self.ind_warrior])
         #self.new_page.setEnabled(self.editable)
         self.horizontalLayout.insertWidget(1, self.new_page)
 

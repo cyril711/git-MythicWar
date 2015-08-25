@@ -109,7 +109,7 @@ class BookEditWindow(QMainWindow):
         self.textEdit.copyAvailable.connect(self.actionCopy.setEnabled)
         QApplication.clipboard().dataChanged.connect(self.clipboardDataChanged)
 
-        basepath = Config().instance.settings.value("global/resources_book_path")
+        basepath = os.path.join(Config().instance.settings.value("global/resources_path"),Config().instance.settings.value("global/resources_book"))
         fileName= os.path.join(basepath,fileName)
         if not self.load(fileName):
             self.fileNew()

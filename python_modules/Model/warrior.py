@@ -1,8 +1,10 @@
 from PyQt5.Qt import QPixmap, QObject
 from python_modules.config import Config
 from PyQt5 import QtCore
+import os
 class Warrior (QObject):
     selection_changed = QtCore.pyqtSignal(bool,object)
+    on_move = QtCore.pyqtSignal()
     def __init__(self, id_i, name, attribs, parent):
         super(Warrior,self).__init__()
         self.id = id_i
@@ -11,20 +13,18 @@ class Warrior (QObject):
         self.selected = False
         self.parent = parent
         self.leader = attribs['leader']
-        self.latitude = attribs['latitude']
-        self.longitude = attribs['longitude']
+        
         if attribs['rank']=='':
             attribs['rank'] = self.parent.attribs['rank']
         groupe_name = self.parent.name
-        self.settings = Config().instance.settings
         if self.masterGroupe() != None : 
             groupe_name = self.masterGroupe().name+"/"+groupe_name
         
         kingdom_name = self.kingdom().name
         empire_name = self.empire().name
         faction_name = self.faction().name
-        basepath = self.settings.value("global/resources_path")
-        self.thumb = QPixmap(basepath+"/"+faction_name+"/"+empire_name+"/"+kingdom_name+"/Picture/"+groupe_name+"/"+self.name+"/portrait_thumbnail.jpg")
+        path = os.path.join(Config().instance.path_to_pic(),faction_name,empire_name,kingdom_name,'Picture',groupe_name,self.name)
+        self.thumb = QPixmap(path+"/portrait_thumbnail.jpg")
 #         self.setDefaultValue()
 #     
 #     
@@ -43,13 +43,10 @@ class Warrior (QObject):
         for key,value in zip (self.attribs.keys(),self.attribs.values()):
             attribs[key] = value
         attribs['leader'] = self.leader
-        attribs['latitude'] = self.latitude
-        attribs['longitude'] = self.longitude
-        return self.attribs
+        return attribs
 
     def setSelected (self, flag):
         if flag != self.selected :
-            print ('ttuu')
             self.selected = flag
             self.selection_changed.emit(flag,self)
 

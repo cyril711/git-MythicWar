@@ -1,4 +1,5 @@
 eclipse.preferences.version=1
+encoding//python_modules/main_view/ui_dialog_import_kingdom.py=utf-8
 encoding//python_modules/main_view/ui_dialog_thumb_generator.py=utf-8
 encoding//python_modules/main_view/ui_main_window.py=utf-8
 encoding//python_modules/tools/pyhtmleditor/highlighter.py=utf-8
@@ -11,3 +12,4 @@ encoding//python_modules/view/view_heros/ui_book_warrior_homepage.py=utf-8
 encoding//python_modules/view/view_heros/ui_book_warrior_page.py=utf-8
 encoding//python_modules/view/view_heros/ui_book_warrior_page_reverse.py=utf-8
 encoding//python_modules/view/view_kingdom/ui_book_world_army.py=utf-8
+encoding//python_modules/view/view_kingdom/ui_book_world_main_page.py=utf-8

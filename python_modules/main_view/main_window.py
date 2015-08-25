@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QAction, QMainWindow, QWidget, QFileDialog
-from PyQt5.Qt import  QKeySequence,QDialog, QProgressDialog, QTextStream,\
-    QApplication
+from PyQt5.Qt import  QKeySequence, QDate, QTime,QDialog, QProgressDialog,QIcon, QTextStream,\
+    QApplication, QSizePolicy, QPushButton, QTimer, QComboBox, QDateTimeEdit,\
+    QDateTime, QLabel
 from python_modules.main_view.explorer_view import ExplorerWidget
 from python_modules.view.view_map.map_view import MapWindow
 from python_modules.view.view_kingdom.kingdom_layout import KingdomLayout
@@ -27,7 +28,60 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.setupUi(self)
         self.setWindowTitle("Mythic War")
         self.settings = Config().instance.settings
+        self.toolBar = QtWidgets.QToolBar(self)
+        self.toolBar.setObjectName("toolBar")
+    
+        self.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
+        separator = QtWidgets.QWidget(self)
+        separator.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
+        self.toolBar.addWidget(separator)
+        self.toolBar.addActions([self.actionLock,self.actionHome,self.actionQuit,self.actionSave,self.actionSettings])
+        self.toolBar.addSeparator()
+        self.toolBar.addActions([self.actionAll,self.actionSelection,self.actionFilter])
+        self.toolBar.addSeparator()
+        self.play_button = QAction(self)
+        self.play_button.setIcon(QIcon(":/icons/24x24/player"))
+        self.play_button.triggered.connect(self.onPlay)
+        self.toolBar.addAction(self.play_button)
+        self.time = QDateTime()
+        if self.settings.contains("time") :
+            self.time.setTime(self.settings.value["time"])
+        else:
+            self.time.setDate(QDate(2000,1,1))
+            self.time.setTime(QTime(0,0,0))
+
+        self.time_label = QLabel(self)
+
+        self.time_label.setText(self.time.toString("ddd MMM hh:mm:ss"))
+        self.toolBar.addWidget(self.time_label)
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.onUpdateTime)
+        self.c_box_speed = QComboBox(self)
+        self.c_box_speed.addItem('1x', 1)
+        self.c_box_speed.addItem('2x', 2)
+        self.c_box_speed.addItem('4x', 4)
+        self.c_box_speed.addItem('8x', 8)
+        self.c_box_speed.addItem('16x', 16)
+        self.toolBar.addWidget(self.c_box_speed)
+        self.toolBar.addSeparator()
+        separator2 = QtWidgets.QWidget(self)
+        separator2.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
+        self.toolBar.addWidget(separator2)
+
+        button_fight = QPushButton(self)
+        button_fight.setIcon(QIcon(":/icons/16x16/validate"))
+        button_fight.setText("0 combat en attente")
+        self.toolBar.addWidget(button_fight)
+        button_in_progress = QPushButton(self)
+        button_in_progress.setText("0 in progress")
+        self.toolBar.addWidget(button_in_progress)
+        button_history= QPushButton(self)
+
+        self.toolBar.addWidget(button_history)
+
         self.msgBox = QtWidgets.QMessageBox()
+
+
 
         self.kingdomLayout = None
         self.bookLayout = None
@@ -57,23 +111,15 @@ class MainWindow(QMainWindow,Ui_MainWindow):
             self.actionNew.triggered.connect(self.onNew)
             self.actionStylesheet.triggered.connect(self.onEditStyleSheet)
             self.actionHome.triggered.connect(self.onHome)
+            self.actionAll.triggered.connect(self.onPresetAll)
+            self.actionSelection.triggered.connect(self.onPresetFilter)
+            self.actionFilter.triggered.connect(self.onPresetSelection)
         else:
             self.msgBox.setIcon( 3)
             self.msgBox.setText("Impossible de charger le model de base de donnee, l'application va se fermer");
             self.msgBox.exec_()
 
-# 
-#     def onApplyStylesheet(self,filename,style):
-#         #filename = QFileDialog.getOpenFileName(self, caption='Choisissez un stylsheet', directory=self.settings.value("global/resources_qss"), filter='')
-#         if filename != None :
-#             file = QtCore.QFile(os.path.join(self.settings.value("global/resources_qss"),filename))
-#             if file.open(QtCore.QFile.ReadOnly|QtCore.QFile.Text):
-#                 text = QTextStream(file)
-#                 QApplication.instance().setStyleSheet(text.readAll())
-#                 QApplication.setStyle(style)
-#                 self.settings.setValue ("mainView/stylesheet",filename)
-#                 self.settings.setValue ("mainView/style",style)
-                
+ 
 
     def onEditStyleSheet(self):
         editor = StyleSheetEditor(self)
@@ -83,11 +129,24 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         editor.show()
   
   
+    def onPlay (self):
+        if self.timer.isActive():
+            self.play_button.setIcon(QIcon(":/icons/24x24/player"))
+            self.timer.stop()
+        else:
+            self.play_button.setIcon(QIcon(":/icons/24x24/pause"))
+            self.timer.start(1000)
+    def onUpdateTime (self):
+        print ('current speed  :',self.c_box_speed.currentData())
+        new_date = self.time.addSecs(self.c_box_speed.currentData())
+        self.time.setDate(new_date.date())
+        self.time.setTime(new_date.time())
+        self.time_label.setText(self.time.toString("ddd MMM hh:mm:ss"))
     def onChangeStylesheet(self, css):
         self.current_css = css
     def onOpen(self):
         filename = QFileDialog.getOpenFileName(self, caption='Open Database', directory=self.settings.value("global/current_dir"), filter='Database (*.sqlite)')
-        if filename :
+        if filename[0]!= '' :
             print ('filename',filename,type(filename))
             self.init(filename[0])
  
@@ -119,7 +178,7 @@ class MainWindow(QMainWindow,Ui_MainWindow):
 #             self.explorerWidget.setParent(None)
 
         self.bookModel = Book()
-        self.bookModel.load("C:\\Users\\cyril\\Documents\\Travail\\Workspace\\databases\\book\\book.xml")
+        self.bookModel.load(Config().instance.path_to_book()+"\\book.xml")
         
 
         self.modified_royaumes =[]
@@ -129,7 +188,7 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         nb_etapes= 4
         avancement = self.progress.value()
         step = avancement/nb_etapes
-        self.progress.setLabelText("Etape 2/2 : Interface - Kingdom Layout")
+        self.progress.setLabelText("Etape 2/5: Interface - Kingdom Layout")
         if self.kingdomLayout == None:
             self.kingdomLayout = KingdomLayout(self.univers,self.kingdoms)
             self.k_layout.addWidget (self.kingdomLayout )        
@@ -144,34 +203,41 @@ class MainWindow(QMainWindow,Ui_MainWindow):
 
         #self.setStyleSheet("background-color: rgb(22, 249, 200);")
         #self.k_layout.addWidget(self.kingdomLayout)        
-        self.progress.setValue(self.progress.value()+step)
 
-        self.progress.setLabelText("Etape 2/2 : Interface - Warrior Layout")
+
+        self.progress.setLabelText("Etape 3/5: Interface - Warrior Layout")
+        self.progress.setValue(self.progress.value()+step)
         if self.warriorLayout == None:
             self.warriorLayout = WarriorLayout(self.univers,self.warriors)
             self.w_layout.addWidget (self.warriorLayout)
             self.warriorLayout.modified.connect(self.onModificationsHeros)
         else:
             self.warriorLayout.init(self.univers)
+        
 
+
+        self.progress.setLabelText("Etape 4/5: Interface - Map")
         self.progress.setValue(self.progress.value()+step)
-
-        self.progress.setLabelText("Etape 2/2 : Interface - Map")
         self.map = MapWindow(self.univers)
         self.map_layout.addWidget (self.map)
-        self.progress.setValue(self.progress.value()+step)        
+        
 
-        self.progress.setLabelText("Etape 2/2 : Interface - Explorer")
+        self.progress.setLabelText("Etape 5/5: Interface - Explorer")
+        self.progress.setValue(self.progress.value()+step)
         if self.explorerWidget == None :
             self.explorerWidget = ExplorerWidget(self.univers)
         else:
             self.explorerWidget.initView(self.univers)        
         self.explorerWidget.setParent(self.explorer_content)
-        self.progress.setValue(self.progress.value()+step)
+        self.progress.setValue(self.progress.maximum())
         #self.connections()
         self.univers.showResultInfos()
         # connections
         self.univers.askForHerosPage.connect(self.onGoToWarriorPage)
+        self.univers.askForKingdomPage.connect(self.onGoToKingdomPage)
+        self.univers.askForKingdomHomePage.connect(self.onGoToKingdomPage)
+        self.univers.askForGroup.connect(self.onGoToKingdomPage)
+        self.univers.askForMap.connect(self.onGoToMap)
         self.univers.selection_updated.connect(self.explorerWidget.updateSelectionList) 
         self.kingdomLayout.modifiedGroupe.connect(self.onModificationsGroupes)
         self.kingdomLayout.modifiedKingdom.connect(self.onModificationsRoyaumes)
@@ -179,14 +245,18 @@ class MainWindow(QMainWindow,Ui_MainWindow):
 
         self.current_css = ""
         if self.settings.value("mainView/stylesheet")!= "":
-            file = QtCore.QFile(os.path.join(self.settings.value("global/resources_qss"),self.settings.value("mainView/stylesheet")))
+            file = QtCore.QFile(os.path.join(Config().instance.path_to_qss(),self.settings.value("mainView/stylesheet")))
             if file.open(QtCore.QFile.ReadOnly|QtCore.QFile.Text):
                 text = QTextStream(file)
                 QApplication.instance().setStyleSheet(text.readAll())
                 QApplication.setStyle(self.settings.value("mainView/style"))       
                 self.current_css = self.settings.value("mainView/stylesheet")
+        
+        self.tabWidget.setCurrentIndex(2)
+        self.actionAll.setChecked(True)
+        self.onPresetAll()
         self.tabWidget.setCurrentIndex(int(self.settings.value("mainView/ind_current_tab")))
-
+        
     def onGenerateThumbnail(self):
         dlg = DialogThumbGenerator(self.univers,self)
         if dlg.exec_() == QDialog.Accepted :
@@ -244,6 +314,13 @@ class MainWindow(QMainWindow,Ui_MainWindow):
 
     def onGoToWarriorPage (self):
         self.tabWidget.setCurrentIndex(2)
+        
+    def onGoToKingdomPage(self):
+        self.tabWidget.setCurrentIndex(1)
+
+    def onGoToMap (self):
+        self.tabWidget.setCurrentIndex(0)
+        
     def onModificationsHeros (self,id_heros):
         self.modified_heros.append(id_heros)
         if not self.actionSave.isEnabled():
@@ -265,7 +342,28 @@ class MainWindow(QMainWindow,Ui_MainWindow):
 
     def onQuit (self):
         self.close()
-    
+
+    def onPresetAll(self):
+        current_index = self.tabWidget.currentIndex()
+        widget = self.tabWidget.widget(current_index)
+        self.actionFilter.setChecked(False)
+        self.actionSelection.setChecked(False)
+        if widget == self.warriors :
+            self.warriorLayout.onPresetAll()
+    def onPresetSelection(self):
+        self.actionFilter.setChecked(False)
+        self.actionAll.setChecked(False)
+        current_index = self.tabWidget.currentIndex()
+        widget = self.tabWidget.widget(current_index)
+        if widget == self.warriors :
+            self.warriorLayout.onPresetSelection()
+    def onPresetFilter(self):
+        self.actionAll.setChecked(False)
+        self.actionSelection.setChecked(False)
+        current_index = self.tabWidget.currentIndex()
+        widget = self.tabWidget.widget(current_index)
+        if widget == self.warriors :
+            self.warriorLayout.onPresetFilter()
     
     def onEdit (self):
         current_index = self.tabWidget.currentIndex()
@@ -281,12 +379,20 @@ class MainWindow(QMainWindow,Ui_MainWindow):
 #             dlg.close()
 
     def onHome (self):
-        current_index = self.tabWiget.currentIndex()
+        current_index = self.tabWidget.currentIndex()
         widget = self.tabWidget.widget(current_index)
         if widget == self.warriors :
             self.warriorLayout.onHome()
             self.warriorLayout.setFocus()
-
+            if self.actionAll.isChecked() :
+                self.onPresetAll()
+            elif self.actionFilter.isChecked():
+                self.onPresetFilter()
+            else:
+                self.onPresetSelection()
+        elif widget == self.kingdoms :
+            self.kingdomLayout.onHome()
+            self.kingdomLayout.setFocus()
     
     def onSaveAs (self):
         filename = QFileDialog.getSaveFileName(self, caption='Save Database', directory=self.settings.value("global/current_dir"), filter='Database (*.sqlite)')
@@ -337,6 +443,12 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.profilView.open()
         pass
     
+    def keyPressEvent(self,event):
+        if event.key()== QtCore.Qt.Key_F :
+            if self.menubar.isHidden():
+                self.menubar.show()
+            else:
+                self.menubar.hide()
     def onEditFilters (self):
         self.filterView = FilterView(self.univers,self)
         self.filterView.open()

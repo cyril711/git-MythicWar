@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'python_modules/main_view/main_window.ui'
 #
-# Created: Sat Feb 14 22:21:58 2015
+# Created: Mon Aug 24 21:06:56 2015
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -77,15 +77,12 @@ class Ui_MainWindow(object):
         self.explorer_content.setObjectName("explorer_content")
         self.explorerDockWidget.setWidget(self.explorer_content)
         MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(1), self.explorerDockWidget)
-        self.toolBar = QtWidgets.QToolBar(MainWindow)
-        self.toolBar.setObjectName("toolBar")
-        MainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
         self.actionLock = QtWidgets.QAction(MainWindow)
         self.actionLock.setCheckable(True)
         icon3 = QtGui.QIcon()
         icon3.addPixmap(QtGui.QPixmap(":/icons/24x24/unlock"), QtGui.QIcon.Selected, QtGui.QIcon.Off)
-        icon3.addPixmap(QtGui.QPixmap(":/icons/24x24/unlock"), QtGui.QIcon.Active, QtGui.QIcon.On)
         icon3.addPixmap(QtGui.QPixmap(":/icons/24x24/lock"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon3.addPixmap(QtGui.QPixmap(":/icons/24x24/unlock"), QtGui.QIcon.Active, QtGui.QIcon.On)
         self.actionLock.setIcon(icon3)
         self.actionLock.setObjectName("actionLock")
         self.actionHome = QtWidgets.QAction(MainWindow)
@@ -129,6 +126,24 @@ class Ui_MainWindow(object):
         self.actionStylesheet.setObjectName("actionStylesheet")
         self.actionApplyStyleSheet = QtWidgets.QAction(MainWindow)
         self.actionApplyStyleSheet.setObjectName("actionApplyStyleSheet")
+        self.actionSelection = QtWidgets.QAction(MainWindow)
+        self.actionSelection.setCheckable(True)
+        icon8 = QtGui.QIcon()
+        icon8.addPixmap(QtGui.QPixmap(":/icons/32x32/selected"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionSelection.setIcon(icon8)
+        self.actionSelection.setObjectName("actionSelection")
+        self.actionFilter = QtWidgets.QAction(MainWindow)
+        self.actionFilter.setCheckable(True)
+        icon9 = QtGui.QIcon()
+        icon9.addPixmap(QtGui.QPixmap(":/icons/32x32/filtered"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionFilter.setIcon(icon9)
+        self.actionFilter.setObjectName("actionFilter")
+        self.actionAll = QtWidgets.QAction(MainWindow)
+        self.actionAll.setCheckable(True)
+        icon10 = QtGui.QIcon()
+        icon10.addPixmap(QtGui.QPixmap(":/icons/32x32/all"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionAll.setIcon(icon10)
+        self.actionAll.setObjectName("actionAll")
         self.menuFIle.addAction(self.actionNew)
         self.menuFIle.addAction(self.actionOpen)
         self.menuFIle.addAction(self.actionSave_2)
@@ -142,11 +157,6 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuFIle.menuAction())
         self.menubar.addAction(self.menuTools.menuAction())
         self.menubar.addAction(self.menuDesign.menuAction())
-        self.toolBar.addAction(self.actionLock)
-        self.toolBar.addAction(self.actionHome)
-        self.toolBar.addAction(self.actionQuit)
-        self.toolBar.addAction(self.actionSave)
-        self.toolBar.addAction(self.actionSettings)
 
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(3)
@@ -160,7 +170,6 @@ class Ui_MainWindow(object):
         self.menuTools.setTitle(_translate("MainWindow", "Database"))
         self.menuDesign.setTitle(_translate("MainWindow", "Tools"))
         self.explorerDockWidget.setWindowTitle(_translate("MainWindow", "Explorer"))
-        self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar"))
         self.actionLock.setText(_translate("MainWindow", "Lock"))
         self.actionLock.setToolTip(_translate("MainWindow", "Lock"))
         self.actionLock.setShortcut(_translate("MainWindow", "Ctrl+L"))
@@ -181,5 +190,8 @@ class Ui_MainWindow(object):
         self.actionNew.setText(_translate("MainWindow", "New"))
         self.actionStylesheet.setText(_translate("MainWindow", "EditStyleSheet"))
         self.actionApplyStyleSheet.setText(_translate("MainWindow", "ApplyStyleSheet"))
+        self.actionSelection.setText(_translate("MainWindow", "selection"))
+        self.actionFilter.setText(_translate("MainWindow", "filter"))
+        self.actionAll.setText(_translate("MainWindow", "all"))
 
 import resources_rc

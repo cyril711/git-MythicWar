@@ -14,10 +14,25 @@ class Groupe:
     def isSub (self):
         return self.sub
 
+    def kingdom (self):
+        if self.isSub():
+            return self.parent.parent
+        else:
+            return self.parent
+
     def getDictAttributes (self):
         attribs = {}
-        attribs ["Description"]=self.attribs['description']
-        attribs['color']=self.attribs["color"]
+        attribs ['description']=self.attribs['description']
+        attribs['color']=str(self.attribs["color"])
+        attribs['rank']=int(self.attribs["rank"])
+        attribs['name']=self.name
+        attribs['ID']=self.id
+        if self.isSub():
+            attribs['parent'] = self.parent.id
+            attribs['ID_kingdom'] =  self.parent.parent.id
+        else:
+            attribs['parent']=0
+            attribs['ID_kingdom'] =  self.parent.id
         return attribs
 
     def getWarriorList(self):

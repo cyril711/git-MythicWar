@@ -315,10 +315,9 @@ class BookWarriorHomepage ( QWidget,Ui_BookWarriorHomepage):
         if warrior.masterGroupe() != None : 
             groupe_name = warrior.masterGroupe().name+"/"+groupe_name
         
-        kingdom_name = warrior.kingdom().name
-        empire_name = warrior.empire().name
-        faction_name = warrior.faction().name
-        icon = QIcon(QPixmap(self.settings.value("global/resources_path")+"/"+faction_name+"/"+empire_name+"/"+kingdom_name+"/Picture/"+groupe_name+"/"+warrior.name+"/portrait_thumbnail.jpg"))
+
+        #path = os.path.join(Config().instance.path_to_pic(),faction_name,empire_name,kingdom_name,"Picture",groupe_name,warrior_name
+        icon = QIcon(warrior.thumb)
 
         #print (basepath+"/"+faction_name+"/"+empire_name+"/"+kingdom_name+"/Picture/"+groupe_name+"/"+warrior.name+"/portrait_thumbnail.jpg")
         warrior_button.setIcon(icon)

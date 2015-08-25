@@ -86,11 +86,13 @@ class TempleItem (QtWidgets.QGraphicsItem):
 
 class HerosItem (QtWidgets.QGraphicsItem):
     SIZE_MULTIPLICATOR = 2
-    def __init__(self,model,warrior,size,parent=None):
+    def __init__(self,model,warrior,size,scene_coord,parent=None):
         super (HerosItem,self).__init__(parent)
         self.settings = Config().instance.settings
         self.heros = warrior
         self.model = model
+        self.scene_coord = scene_coord
+        self.heros.on_move.connect(self.updatePos)
 #        self.image  = warrior.thumb
 #        self.ratio = 1.29
 #        if not self.image.isNull():
@@ -117,10 +119,23 @@ class HerosItem (QtWidgets.QGraphicsItem):
         self.timer.setSingleShot(True)
         self.timer.timeout.connect(self.showPicture)
 
+    def updatePos(self):
+        print ('update pos',self.heros.attribs['place'] )
+        if int(self.heros.attribs['place']) == 0:
+            print ('kkkkk')
+            lat = self.heros.attribs['latitude']
+            lon = self.heros.attribs['longitude']
+   
+            mx,my = self.scene_coord.LatLonToScene(lat,lon)
+            self.setPos(mx,my)
+
     def itemChange (self, change,value):
         if change == QGraphicsItem.ItemSelectedChange :
             self.heros.setSelected(value)
     #    return super(HerosItem,self).itemChange(change,value) 
+        if (change == QGraphicsItem.ItemPositionChange) and (self.pos().x()!= self.pos().y()) and (self.pos().x()!=0) :
+            self.heros.attribs['latitude'],self.heros.attribs['longitude'] = self.scene_coord.SceneToLatLon(self.pos().x(),self.pos().y())
+            print ('position changed',self.heros.attribs['latitude'],self.heros.attribs['longitude']) 
         return QGraphicsItem.itemChange(self,change,value)
     def boundingRect(self):
        # return self.path.boundingRect()
@@ -138,16 +153,37 @@ class HerosItem (QtWidgets.QGraphicsItem):
  #       return path
 
 
-    def drawShape(self,painter,size):
+    def drawFactionShape(self,painter,size):
         if self.iconShape == 0 :
             painter.drawEllipse(0,0,self.size,self.size)
         elif self.iconShape == 1 :
             painter.drawRect(self.boundingRect())
+            
+    def drawEmpireShape(self,painter,size,empire_color):
+        #print ('empire_color',empire_color)
+        if empire_color == "foudre" :
+            brush = QBrush(QColor(102,0,153))
+        else:
+            brush = QBrush(QColor(0,0,0))
+
+        painter.setBrush(brush)
+        pen = QPen()
+        pen.setStyle(QtCore.Qt.NoPen)
+        painter.setPen(pen)
+        size = size/2
+        painter.translate(size*0.25,size)
+        painter.rotate(-45)
+        painter.drawRect(0,0,size,size)    
+
+        painter.rotate(45)
+        painter.translate(-size*0.25,-size)
+
     def showPicture (self):
+
         self.framePicture  = QFrame()
         self.framePicture.setWindowModality(QtCore.Qt.WindowModal)
         if self.settings.value("mainView/stylesheet")!= "":
-            file = QtCore.QFile(os.path.join(self.settings.value("global/resources_qss"),self.settings.value("mainView/stylesheet")))
+            file = QtCore.QFile(os.path.join(self.settings.path_to_qss(),self.settings.value("mainView/stylesheet")))
             if file.open(QtCore.QFile.ReadOnly|QtCore.QFile.Text):
                 text = QTextStream(file)
                 QApplication.instance().setStyleSheet(text.readAll())
@@ -164,7 +200,8 @@ class HerosItem (QtWidgets.QGraphicsItem):
         kingdom_name = self.heros.kingdom().name
         empire_name = self.heros.empire().name
         faction_name = self.heros.faction().name
-        pixmap = QPixmap(self.settings.value("global/resources_path")+"/"+faction_name+"/"+empire_name+"/"+kingdom_name+"/Picture/"+groupe_name+"/"+self.heros.name+"/portrait.jpg")
+        pixmap = QPixmap(self.settings.value("global/resources_path")+"/"+faction_name+"/"+empire_name+"-"+self.heros.empire().attrib['color']+"/"+kingdom_name+"/Picture/"+groupe_name+"/"+self.heros.name+"/portrait.jpg")
+        print ('ppppppppp:',)
         if not pixmap.isNull():
             pixmap = pixmap.scaled(pixmap.width()/5.0,pixmap.height()/5.0)
             self.picture.setPixmap(pixmap)
@@ -182,7 +219,8 @@ class HerosItem (QtWidgets.QGraphicsItem):
                     
     def hoverEnterEvent(self, event):
         if not self.isSelected():
-            self.timer.start(3000)
+            self.timer.start(2000)
+
         else:
             self.timer.stop()
 
@@ -197,6 +235,7 @@ class HerosItem (QtWidgets.QGraphicsItem):
     def dropEvent(self, event):
         print ('leave drag event')
         self.setSelected(False)
+
         return QGraphicsItem.dropEvent(self,event)
     def paint (self,painter,option, widget):
         #painter.setRenderHints(QtGui.QPainter.Antialiasing)
@@ -218,8 +257,8 @@ class HerosItem (QtWidgets.QGraphicsItem):
 
         brush = QBrush(self.heros.kingdom().color)
         painter.setBrush(brush)
-        self.drawShape(painter,self.size)
-
+        self.drawFactionShape(painter,self.size)
+        self.drawEmpireShape(painter,self.size,self.heros.empire().attrib['color'])
         
         ##painter.drawPath(self.path)
         #diff_height = self.path.boundingRect().height() - self.image.height()

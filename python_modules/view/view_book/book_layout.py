@@ -396,7 +396,7 @@ class BookLayout (QWidget, Ui_BookLayout):
             
         else:
             if chapitre.content != None :
-                basepath = Config().instance.settings.value("global/resources_book_path")
+                basepath = Config().instance.path_to_book()
                 filename= os.path.join(basepath,chapitre.content)
                 w_page = PageWidget (filename, self)
                 self.stackedWidget.addWidget(w_page)
@@ -439,7 +439,7 @@ class BookLayout (QWidget, Ui_BookLayout):
             self.load()
     def onAddPage(self, chapter):
         print ('onAddPage')
-        filename = QFileDialog.getOpenFileName(self, caption='Choisir le contenu de la page', directory=Config().instance.settings.value("global/resources_book_path"))
+        filename = QFileDialog.getOpenFileName(self, caption='Choisir le contenu de la page', directory=Config().instance.settings.path_to_book())
         if filename :
             if chapter.content != None:
                 chapitre = chapter.getParent()
@@ -484,7 +484,7 @@ class BookLayout (QWidget, Ui_BookLayout):
         if current != None :    
             textEdit = HtmlEditor(self)#BookEditWindow(self.stackedWidget.currentIndex(),current.content, self)
             textEdit.fileSaved.connect(self.onUpdatePage)
-            textEdit.load(os.path.join(Config().instance.settings.value("global/resources_book_path"),current.content))
+            textEdit.load(os.path.join(Config().instance.settings.path_to_book(),current.content))
             #textEdit.setWindowModality(QtCore.Qt.ApplicationModal)
             #textEdit.resize(700, 800)
             textEdit.show()

@@ -10,7 +10,12 @@ class Faction:
     def addEmpire (self, empire):
         self.empires[empire.name] = empire
         
-    def getDictAttributes(self):  
+    def getDictAttributes(self):
+        attribs = {}
+        attribs['ID']=self.id
+        attribs['name']=self.name
+
+        attribs['icon']=self.attribs['icon']  
         return self.attribs
     
     def getWarriorList(self):

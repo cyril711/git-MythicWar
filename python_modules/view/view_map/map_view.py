@@ -7,7 +7,7 @@ from python_modules.config import Config
 #from foreground_items import ForegroundItems
 #from touch_event import TouchEvent
 #from marker_item import MarkerItem
-
+from python_modules.view.view_map.map_item import TempleItem
 
 from python_modules.utils import projection
 from PyQt5.Qt import QMenu, QAction, QRectF, QCursor, QBrush, QColor,\
@@ -28,11 +28,12 @@ class MapWindow( QtWidgets.QGraphicsView ):
     double_click = QtCore.pyqtSignal( QtCore.QPointF )
     contextMenu = QtCore.pyqtSignal( QtCore.QPointF, QtWidgets.QMenu )
     mode_free = QtCore.pyqtSignal()
-    move_heroes = QtCore.pyqtSignal()
+    #move_heroes = QtCore.pyqtSignal()
     def __init__( self,univers, parent=None ):
         ''' Initialisation of the QGraphicsView '''
         super( MapWindow, self ).__init__( parent )
         self.univers = univers
+        self.univers.askForMap.connect(self.goToHeros)
         # scene coordinates
         self.scene_coord = None
         self.settings = Config().instance.settings
@@ -94,7 +95,9 @@ class MapWindow( QtWidgets.QGraphicsView ):
 
         layers_list = self.settings.value("map/instanciated_layers",[])
         first = True
+        print ('len layer_list',len(layers_list), layers_list)
         for layer in layers_list:
+            print ('layer list item : ',layer)
             self.onLayerAdded(layer,first)
             first = False
     def viewportEvent( self, event ):
@@ -126,16 +129,16 @@ class MapWindow( QtWidgets.QGraphicsView ):
         self.setMouseTracking( True )
         self.setDragMode( QtWidgets.QGraphicsView.ScrollHandDrag )
 
-    def keyPressEvent(self, event):
-        
-        if event.key() == QtCore.Qt.Key_Control:
-            print ('press Ctrl')
-            self.setDragMode( QtWidgets.QGraphicsView.NoDrag )        
-    def keyReleaseEvent(self, event):
-            
-        if event.key() == QtCore.Qt.Key_Control:
-            print ('press Ctrl')
-            self.setDragMode( QtWidgets.QGraphicsView.ScrollHandDrag )        
+#     def keyPressEvent(self, event):
+#         
+#         if event.key() == QtCore.Qt.Key_Control:
+#             print ('press Ctrl')
+#             self.setDragMode( QtWidgets.QGraphicsView.NoDrag )        
+#     def keyReleaseEvent(self, event):
+#             
+#         if event.key() == QtCore.Qt.Key_Control:
+#             print ('press Ctrl')
+#             self.setDragMode( QtWidgets.QGraphicsView.ScrollHandDrag )        
         
 
     def initGraphicsView( self, projection_name, level, lat, lon ):
@@ -171,6 +174,7 @@ class MapWindow( QtWidgets.QGraphicsView ):
 
     def updateTiles( self ):
         ''' update displaying '''
+
         if 'dist' in self.drag:
             if self.drag['dist'].manhattanLength() < 100:
                 self.drag = {}
@@ -188,6 +192,10 @@ class MapWindow( QtWidgets.QGraphicsView ):
         if self.scene_coord:
             mx, my = self.scene_coord.LatLonToScene( lat, lon )
             self.centerOn( mx, my )
+
+    def goToHeros (self,lat,lon):
+        self.centerOnLatLong(lat, lon)
+        
 
     def getSceneViewCenter( self ):
         ''' return the point in the view center '''
@@ -236,6 +244,8 @@ class MapWindow( QtWidgets.QGraphicsView ):
                 self.updateLevel( view_scale, new_level )
 
     def keyPressEvent(self, event):
+        if event.key()== QtCore.Qt.Key_Control:
+            self.setDragMode( QtWidgets.QGraphicsView.RubberBandDrag )
         if self.moveShape != None : 
 #             if event.key() == QtCore.Qt.Key_A :
 #                 self.width_movable_region = self.width_movable_region + 10
@@ -246,20 +256,30 @@ class MapWindow( QtWidgets.QGraphicsView ):
                 self.changeSizeMoveShape = True
                 
     def keyReleaseEvent(self, event):
+        if event.key()== QtCore.Qt.Key_Control:
+            self.setDragMode( QtWidgets.QGraphicsView.ScrollHandDrag  )
+
         if self.moveShape != None : 
             if event.key() == QtCore.Qt.Key_Shift :
                 self.changeSizeMoveShape = False
 
     def mousePressEvent( self, event ):
         ''' allows target or view displacement '''
+        print ('mouse press event')
         super( MapWindow, self ).mousePressEvent( event )
         if self.moveShape == None :
             if self.scene_coord:
                 if self.draw_distance and not self.origin:
                     self.origin = self.destination = self.mapToScene( event.pos() )
+
         else:
-            self.univers.dispatchCircleWarriors (self.mapToScene( event.pos() ),self.width_movable_region/2)
-            self.move_heroes.emit()
+            # on fait le dispatch
+            print ('on fait le dispatch on est en coordonne scene')
+            self.univers.dispatchCircleWarriors (self.scene_coord,self.mapToScene( event.pos() ),self.width_movable_region/2)
+            #on update les position des items
+            #self.move_heroes.emit()
+
+
 #             for item in self.scene.items():
 #                 print ('type',type(item.parent),item)
 #                 if type(item) == "toto" :
@@ -293,7 +313,7 @@ class MapWindow( QtWidgets.QGraphicsView ):
                 #self.moveShape.setRect(QRectF(pos.x(),pos.y(),self.width_movable_region*1000,self.height_movable_region*1000))
                 self.moveShape.setPos(QPointF(pos.x(),pos.y()))
                 item = self.itemAt(event.pos())
-                if item and type(item) == python_modules.View.map.place_item.TempleItem: 
+                if item and type(item) == TempleItem: 
                     self.moveShape.hide()
                 else:
                     self.moveShape.show()
@@ -469,6 +489,7 @@ class MapWindow( QtWidgets.QGraphicsView ):
             print ('init graphicsView')
             self.initGraphicsView( 'WebMercator', int(self.settings.value("map/initial_level",6)), float(self.settings.value("map/initial_lat",48.858093)), float(self.settings.value("map/initial_lon",2.294694)) )
         self.manager.addLayer( layer )
+        print ('add layer finished ',layer)
     def onLayerRemoved( self, layer ):
         ''' a layer was removed (slot) '''
         self.manager.removeLayer( layer )

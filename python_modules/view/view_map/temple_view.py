@@ -2,9 +2,9 @@ from PyQt5 import QtCore, QtWidgets
 
 from python_modules.view.view_map.map_scene import MapScene 
 from python_modules.config import Config
-#from python_modules.View.map.place_item import HerosItem
-from PyQt5.Qt import QPointF,  QRectF
 
+from PyQt5.Qt import QPointF,  QRectF
+from python_modules.view.view_map.map_item import *
 
 
 class TempleView( QtWidgets.QGraphicsView ):
@@ -32,8 +32,8 @@ class TempleView( QtWidgets.QGraphicsView ):
         for item in self.items_heroes : 
             self.scene.removeItem(item)
         for heros in self.temple.heros  :
-            h = python_modules.View.map.place_item.HerosItem(heros,20)
-            h.setPos(QPointF(heros.latitude,heros.longitude))
+            h = HerosItem(heros,20)
+            h.setPos(QPointF(heros.attribs['latitude'],heros.attribs['longitude']))
             self.items_heroes.append(h)
             self.scene.addItem(h)
     def viewportEvent( self, event ):

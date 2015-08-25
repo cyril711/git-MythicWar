@@ -16,7 +16,7 @@ class DatabaseManager (QtCore.QObject):
         if self.in_place :
             self.database.setDatabaseName(self.database_name)
         else:
-            temp_filename = "toto.txt"
+            temp_filename = "toto3.txt"
             try : 
                 
                 if not QtCore.QFile.remove(temp_filename):

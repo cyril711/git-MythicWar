@@ -28,17 +28,17 @@ class DialogKingdomImport (QDialog, Ui_DialogKingdomImport):
 #            self.factionComboBox.addItem(str(faction_name))
 
     def onKingdomChanged (self):
-        filename = QFileDialog.getExistingDirectory(self, caption='Kingdom ? ', directory=self.settings.value("global/resources_path"))
+        filename = QFileDialog.getExistingDirectory(self, caption='Kingdom ? ', directory=Config().instance.path_to_pic())
         if filename != None:
             self.lineEditKingdom.setText(os.path.basename(filename))
     
     def onFactionChanged (self):
-        filename = QFileDialog.getExistingDirectory(self, caption='Faction ? ', directory=self.settings.value("global/resources_path"))
+        filename = QFileDialog.getExistingDirectory(self, caption='Faction ? ', directory=Config().instance.path_to_pic())
         if filename != None:
             self.lineEditFaction.setText(os.path.basename(filename))
                     
     def onEmpireChanged (self):
-        filename = QFileDialog.getExistingDirectory(self, caption='Empire ? ', directory=self.settings.value("global/resources_path"))
+        filename = QFileDialog.getExistingDirectory(self, caption='Empire ? ', directory=Config().instance.path_to_pic())
         if filename != None:
             self.lineEditEmpire.setText(os.path.basename(filename))
     def processWidget (self, w):

@@ -1,20 +1,20 @@
 from PyQt5 import QtCore
 from python_modules.view.view_map.layer import Layer
-#import map_items.entity_item
+# import map_items.entity_item
 
 from python_modules.view.view_map import layer_adapter
 from python_modules.view.view_map.map_item import TempleItem, HerosItem
-#import shapes
+# import shapes
 import math
 from python_modules.config import Config
 
-#import property_delegate
-#import menu_item
+# import property_delegate
+# import menu_item
 
-class KingdomItemAdapter( layer_adapter.AbstractLayerAdapter ):
+class KingdomItemAdapter(layer_adapter.AbstractLayerAdapter):
     ''' Adapter for using properties and animation '''
-    def __init__( self, object_to_animate ):
-        super( KingdomItemAdapter, self ).__init__( object_to_animate )
+    def __init__(self, object_to_animate):
+        super(KingdomItemAdapter, self).__init__(object_to_animate)
 
 #     @QtCore.pyqtProperty( QtGui.QColor )
 #     def carrier_color( self ):
@@ -37,7 +37,7 @@ class KingdomItemAdapter( layer_adapter.AbstractLayerAdapter ):
    
    
 
-class KingdomLayer( Layer ):
+class KingdomLayer(Layer):
 
 #     properties = ['carrier_color', 'carrier_size']
 # 
@@ -46,18 +46,18 @@ class KingdomLayer( Layer ):
 #                          }
 
     @staticmethod
-    def name( cls ):
+    def name(cls):
         ''' return name of layer without instantied itself '''
         return 'Kingdom Layer'
 
     @staticmethod
-    def projection( cls ):
+    def projection(cls):
         ''' return projection of layer without instantied itself '''
         return None
 
-    def __init__( self, scene, z_value, model, scene_coord, parent=None ):
+    def __init__(self, scene, z_value, model, scene_coord, parent=None):
         ''' initialisation of the carrier pod layer '''
-        super( KingdomLayer, self ).__init__( scene, z_value, scene_coord, parent )
+        super(KingdomLayer, self).__init__(scene, z_value, scene_coord, parent)
 
         # init member variables
         self.model = model
@@ -67,34 +67,37 @@ class KingdomLayer( Layer ):
         self.items_heros = []
         self.items_temples = []
         # init
-        #self.instantiateItems()
+        # self.instantiateItems()
         self.instantiateTemplesItems(self.model.temples)
         self.connections()
 
         # adapter
-        self.adapter = KingdomItemAdapter( self )
+        self.adapter = KingdomItemAdapter(self)
         
 
 
-    def connections( self ):
+    def connections(self):
         ''' make connections between simulation and items '''
-        #view = self.parent().parent()
+        # view = self.parent().parent()
+        print ('connnnection',type(self.model))
         self.model.filtered_changed.connect (self.instantiateHerosItems)
-        self.parent().parent().move_heroes.connect(self.instantiateHerosItems)
+       # self.parent().parent().move_heroes.connect(self.instantiateHerosItems)
         self.model.selection_updated.connect (self.reloadHerosItems)
+        print ('fin connections')
     def reloadHerosItems (self):
         print ('relods heros items')
         for heros_item in self.items_heros :
-            if heros_item.isSelected()!= heros_item.heros.selected :
+            if heros_item.isSelected() != heros_item.heros.selected :
                 heros_item.setSelected(heros_item.heros.selected)
-    def disconnections( self ):
-        #self.simulation.carrier_position.disconnect()
+    def disconnections(self):
+        # self.simulation.carrier_position.disconnect()
         pass
 
-    def instantiateTemplesItems( self ,temples):
+    def instantiateTemplesItems(self , temples):
         ''' instantiates items and adds them to the scene '''
-        for key,value in zip(temples.keys(),temples.values()):
-            t_item =  TempleItem(value,10)
+        print ('instantiate temple items')
+        for key, value in zip(temples.keys(), temples.values()):
+            t_item = TempleItem(value, 10)
             
             try:
                 lat = value.position.x()
@@ -102,48 +105,51 @@ class KingdomLayer( Layer ):
             except KeyError :
                 lat = float(Config().instance.settings.value("map/initial_lat"))
                 lon = float(Config().instance.settings.value("map/initial_lon"))
-            mx,my = self.scene_coord.LatLonToScene(lat,lon)
+            mx, my = self.scene_coord.LatLonToScene(lat, lon)
 
-            #ittt.setScale( self.scene_coord.getResolution() )
-            t_item.setPos( mx,my )
-            t_item.setZValue( self.z_value+10 )
-            self.items_temples.append( t_item)
-            self.scene.addItem( t_item )
+            # ittt.setScale( self.scene_coord.getResolution() )
+            t_item.setPos(mx, my)
+            t_item.setZValue(self.z_value + 10)
+            self.items_temples.append(t_item)
+            self.scene.addItem(t_item)
 
-                    #self.items[kingdom.id].setPos(0.0, -6261721.357121639)
+                    # self.items[kingdom.id].setPos(0.0, -6261721.357121639)
 
 
-                    #self.items[kingdom.id].item_change_callback = self.onKingdomPositionChanged#self.onCarrierItemChange
+                    # self.items[kingdom.id].item_change_callback = self.onKingdomPositionChanged#self.onCarrierItemChange
                    # self.items[kingdom.id].position_changed.connect(self.onKingdomPositionChanged)
-
+        print ('fin instantiate temple items')
     def instantiateHerosItems (self):
+        print ('instantiate heroes items')
         for heros_item in self.items_heros :
             self.scene.removeItem(heros_item)
         self.items_heros.clear()
-        print ('len self.filteredWarriors',len(self.model.filteredWarriors()))
+        print ('len self.filteredWarriors', len(self.model.filteredWarriors()))
         for heros in self.model.filteredWarriors():
             if heros.attribs['place'] != '':
                 try:
                     lat = heros.attribs['latitude']
                     lon = heros.attribs['longitude']
+                    if heros.name == "Artemis":
+                        print ('artemis pos test in kingom layer',lat,lon)
                 except KeyError :
                     lat = 48.858093
                     lon = 2.294694
-                lat = float(Config().instance.settings.value("map/initial_lat"))
-                lon = float(Config().instance.settings.value("map/initial_lon"))
-                mx,my = self.scene_coord.LatLonToScene(lat,lon)
+               # lat = float(Config().instance.settings.value("map/initial_lat"))
+               # lon = float(Config().instance.settings.value("map/initial_lon"))
+                mx, my = self.scene_coord.LatLonToScene(lat, lon)
 
-                item = HerosItem(self.model,heros,50)
-                item.setPos(mx,my)
-                item.setZValue( self.z_value+10 )
+                item = HerosItem(self.model, heros, 30, self.scene_coord)
+                item.setPos(mx, my)
+                item.setZValue(self.z_value + 10)
                 self.items_heros.append(item)
-                self.scene.addItem( item)
+                self.scene.addItem(item)
 
-    def onKingdomPositionChanged (self,kingdom_id,mx,my):
-        lat, lon = self.scene_coord.SceneToLatLon( mx, my)
-        lat = math.radians( lat )
-        lon = math.radians( lon )
-        self.model.updateKingdom(kingdom_id,lat,lon)
+    def onKingdomPositionChanged (self, kingdom_id, mx, my):
+        lat, lon = self.scene_coord.SceneToLatLon(mx, my)
+        lat = math.radians(lat)
+        lon = math.radians(lon)
+        self.model.updateKingdom(kingdom_id, lat, lon)
 
 #     def onCarrierPositionChanged( self, mx, my, alt ):
 #         ''' update items position '''
@@ -172,14 +178,14 @@ class KingdomLayer( Layer ):
 #             menu.addAction( self.dial_action )
 
 
-    def doubleClick( self, pos ):
+    def doubleClick(self, pos):
 #         lat, lon = self.scene_coord.SceneToLatLon( pos.x(), pos.y() )
 #         self.simulation.publishCamera( M.radians( lat ), M.radians( lon ) )
         pass
 
     
 
-    def setTouchMode( self, value ):
+    def setTouchMode(self, value):
         self.items['temple'].touch_mode = value
 
 
@@ -199,18 +205,18 @@ class KingdomLayer( Layer ):
 #         else :
 #             return QtCore.QPoint( 0, 0 ), dist, pts_RT
 
-    def _setCarrierVector( self, mx, my ):
+    def _setCarrierVector(self, mx, my):
         ''' update vector shape '''
         # vector length
         if self.items['speed_vector'].elapsed_time != 0:
-            length = ( self.items['speed_vector'].forecasting / self.items['speed_vector'].elapsed_time ) * M.sqrt( ( mx - self.mx ) ** 2 + ( my - self.my ) ** 2 )
+            length = (self.items['speed_vector'].forecasting / self.items['speed_vector'].elapsed_time) * M.sqrt((mx - self.mx) ** 2 + (my - self.my) ** 2)
             length /= self.scene_coord.getRealResolution()
-            self.items['speed_vector'].setArrow( length, 0.25 * length, 0.5 * length )
+            self.items['speed_vector'].setArrow(length, 0.25 * length, 0.5 * length)
 
         # vector rotation
-        north_line = QtCore.QLineF( self.mx, self.my, self.mx, self.my - 1 )
-        current_line = QtCore.QLineF( self.mx, self.my, mx, my )
+        north_line = QtCore.QLineF(self.mx, self.my, self.mx, self.my - 1)
+        current_line = QtCore.QLineF(self.mx, self.my, mx, my)
         if current_line.dx() != 0 and current_line.dy() != 0 :
-            self.items['speed_vector'].rotation = current_line.angleTo( north_line )
+            self.items['speed_vector'].rotation = current_line.angleTo(north_line)
 
 
