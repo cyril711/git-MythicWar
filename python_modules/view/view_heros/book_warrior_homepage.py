@@ -9,6 +9,8 @@ from python_modules.config import Config
 
 
 
+
+
 class BaseTreeItem(object):
     """
     an item that can be used to populate a tree view, knowing it's place in the model
@@ -149,8 +151,6 @@ class TreeModel(QAbstractItemModel):
     def data(self, index, role):
         if not index.isValid():
             return None
-
-
         item = index.internalPointer()
         if role != QtCore.Qt.DisplayRole:
             return None
@@ -252,6 +252,7 @@ class BookWarriorHomepage ( QWidget,Ui_BookWarriorHomepage):
         self.treeView.setWindowTitle("Simple Tree Model")
         self.treeView.header().hide()
         self.treeView.setAlternatingRowColors(True)
+
 #         i = 0
 #         self.treeKingdom.setColumnCount(3)
 #         for faction in self.model.factions.values() :
@@ -289,6 +290,8 @@ class BookWarriorHomepage ( QWidget,Ui_BookWarriorHomepage):
         for i in range (min(len(list_warrior),self.max_vignettes)):
             self.addVignette(list_warrior[i],i)
 
+    def updateContent(self):
+        pass
         
     def addVignette (self,warrior,i):
         widget_vignette = QWidget(self.vignettes)        

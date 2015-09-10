@@ -1,4 +1,4 @@
-from PyQt5.Qt import QDialog, QListWidgetItem
+from PyQt5.Qt import QDialog, QListWidgetItem, QTableWidgetItem, QBrush
 from PyQt5 import QtCore
      
 from python_modules.main_view.ui_dialog_save import Ui_DialogSave
@@ -32,11 +32,15 @@ class DialogSave (QDialog, Ui_DialogSave):
             item.setCheckState(QtCore.Qt.Checked)
             self.list_modified_kingdom.addItem(item)
     
-    def addGroupe (self,groupe_id):
-        self.model.database.setVerbose(True)
-        groupe_sqlite = self.model.database.select("*", "gm_groupes",False,"IDGroupe=="+str(groupe_id))
-        while (groupe_sqlite.next()):
-            text = str(groupe_sqlite.value("IDGroupe"))+"->"+ str(groupe_sqlite.value("Name"))
-            item = QListWidgetItem(text)
-            item.setCheckState(QtCore.Qt.Checked)
-            self.list_modified_groupe.addItem(item)
+    def addGroupe (self,groupe_name,type_alert):
+        item_name =QTableWidgetItem(groupe_name)
+        item_type =QTableWidgetItem(type_alert)
+        if item_type == "delete":
+            item_name.setBackground(QBrush("red"))
+            item_type.setBackground(QBrush("red"))
+        elif item_type == "new":
+            item_name.setBackground(QBrush("green"))
+            item_type.setBackground(QBrush("green"))    
+        self.list_modified_groupes.insertRow(0)
+        self.list_modified_groupes.setItem(0,0,item_name)
+        self.list_modified_groupes.setItem(0,1,item_type)

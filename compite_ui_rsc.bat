@@ -13,6 +13,7 @@ call %UIC% python_modules/view/view_heros/book_warrior_homepage.ui > python_modu
 call %UIC% python_modules/view/view_heros/book_warrior_page.ui > python_modules/view/view_heros/ui_book_warrior_page.py
 call %UIC% python_modules/view/view_heros/book_warrior_page_reverse.ui > python_modules/view/view_heros/ui_book_warrior_page_reverse.py
 call %UIC% python_modules/main_view/explorer.ui > python_modules/main_view/ui_explorer_widget.py
+call %UIC% python_modules/main_view/profil.ui > python_modules/main_view/ui_profil_widget.py
 call %UIC% python_modules/main_view/dialog_save.ui > python_modules/main_view/ui_dialog_save.py
 call %UIC% python_modules/main_view/dialog_thumb_generator.ui > python_modules/main_view/ui_dialog_thumb_generator.py
 call %UIC% python_modules/main_view/dialog_settings.ui > python_modules/main_view/ui_dialog_settigns.py

@@ -7,6 +7,8 @@ class Config:
             self.settings = QSettings(filename,QSettings.IniFormat)
         def __str__(self):
             return repr(self) + self.val
+        def basepath (self):
+            return self.settings.value("global/resources_path")
         def path_to_pic(self):
             return os.path.join(self.settings.value("global/resources_path"),self.settings.value("global/resources_pic"))
         def path_to_qss(self):
@@ -18,6 +20,10 @@ class Config:
         def path_to_icons(self):
             return os.path.join(self.settings.value("global/resources_path"),self.settings.value("global/resources_icons"))
 
+        def model_database (self):
+            return os.path.join(self.settings.value("global/current_dir"),self.settings.value("global/default_database"))
+        def current_database (self):
+            return os.path.join(self.settings.value("global/current_dir"),self.settings.value("global/current_database"))        
     
     instance = None
     def __init__(self, arg=None):

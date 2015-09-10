@@ -27,35 +27,42 @@ class Kingdom :
         attribs['temples'] = temples
         return attribs 
     
-    def getWarriorList(self):
+    def getWarriorList(self, func=None):
         warrior_list = []
         for groupe in self.groupes.values():
-            warrior_list+=groupe.getWarriorList()
+            warrior_list+=groupe.getWarriorList(func)
         return warrior_list
+
+    def removeGroupe(self,groupe_name):
+        for groupe in self.groupes.values():
+            if groupe.name == groupe_name:
+                self.groupes.pop(groupe.id)
+            else:
+                for sub in groupe.sub_groupes:
+                    if sub.name == groupe_name :
+                        groupe.removeSubGroupe(sub)
+            
+        
     
     def empire (self):
         return self.parent
+    
+    def findGroupeFromName(self,name):
+        for groupe in self.groupes.values():
+            print ('name ;',groupe.name)
+            if groupe.name == name:
+                return groupe
+            for sub in groupe.sub_groupes:
+                if sub.name == name:
+                    return sub
+        return None
     def avancement (self):
-        total = 4.0 # description + armee + picture armee + picture land
-        completed = 0.0
-        if self.attribs['armee']:
-            completed = completed + 1
-        if self.attribs['description']:
-            completed = completed + 1
-        faction_name = self.parent.parent.name
-        empire_name = self.parent.name
-        if QFile(os.path.join(self.settings.value("global/resources_path"),faction_name,empire_name,self.name,"Land.jpg")).exists():
-            completed = completed + 1
-        if QFile(os.path.join(self.settings.value("global/resources_path"),faction_name,empire_name,self.name,"Army.png")).exists():
-            completed = completed + 1    
-        for g in self.groupes.values():
-            if len (g.sub_groupes)!=0:
-                for sub in  g.sub_groupes:
-                    if sub.attribs['description']!= '':
-                        completed = completed + 1
-                    total = total + 1
-            else:
-                if g.attribs['description']!= '':
-                    completed = completed + 1
-                total = total + 1
-        return int((completed/total)*100)
+        warrior_list = self.getWarriorList()
+        nb_complete = 0
+        nb_alive= 0
+        for w in warrior_list :
+            if w.attribs['complete']==2:
+                nb_complete +=1
+            if w.attribs['HP'] > 0:
+                nb_alive += 1
+        return len(warrior_list),nb_complete,nb_alive

@@ -20,6 +20,9 @@
     <file alias="target">ressources/icons/png/128x128/target.png</file>
   </qresource>
   <qresource prefix="icons/16x16">
+    <file alias="delete">ressources/icons/png/16x16/delete.png</file>
+    <file alias="jump">ressources/icons/png/16x16/jump.png</file>
+    <file alias="update">ressources/icons/png/16x16/update.png</file>
     <file alias="page">ressources/icons/png/16x16/page.png</file>
     <file alias="validate">ressources/icons/png/16x16/validate.png</file>
     <file alias="warning">ressources/icons/png/16x16/warning.png</file>
@@ -38,6 +41,14 @@
   </qresource>
   <qresource prefix="textures">
     <file alias="ambre">ressources/textures/ambre.png</file>
+    <file alias="tex_blue">ressources/textures/tex_blue.png</file>
+    <file alias="tex_dark_blue">ressources/textures/tex_dark_blue.png</file>
+    <file alias="tex_green">ressources/textures/tex_green.png</file>
+    <file alias="tex_pink">ressources/textures/tex_pink.png</file>
+    <file alias="tex_red">ressources/textures/tex_red.png</file>
+    <file alias="tex_turquoise">ressources/textures/tex_turquoise.png</file>
+    <file alias="tex_violet">ressources/textures/tex_violet.png</file>
+    <file alias="tex_yellow">ressources/textures/tex_yellow.png</file>
     <file alias="amethiste">ressources/textures/amethiste.png</file>
     <file alias="diamond">ressources/textures/diamond.png</file>
     <file alias="emeraude">ressources/textures/emeraude.png</file>
@@ -46,4 +57,5 @@
     <file alias="rubis">ressources/textures/rubis.png</file>
     <file alias="saphir">ressources/textures/saphir.png</file>
   </qresource>
+  <qresource prefix="newPrefix"/>
 </RCC>

@@ -16,7 +16,7 @@ class DatabaseManager (QtCore.QObject):
         if self.in_place :
             self.database.setDatabaseName(self.database_name)
         else:
-            temp_filename = "toto3.txt"
+            temp_filename = "totor.txt"
             try : 
                 
                 if not QtCore.QFile.remove(temp_filename):
@@ -27,13 +27,17 @@ class DatabaseManager (QtCore.QObject):
 
                 if not QtCore.QFile.copy(self.database_name,temp_filename):
                     QtCore.qDebug("copy impossible")    
+                else:
+                    print ('copy reussit de ',self.database_name,temp_filename)
             except IOError :
                 QtCore.qDebug("not able to copy file")
                 pass
-        self.database.setDatabaseName(temp_filename)
+            self.database.setDatabaseName(temp_filename)
         if not self.database.open():
             QtCore.qDebug("Database not OPen")
-                 
+    
+    def __del__(self):
+        self.database.close()                    
     def insert (self,table_name,record):
         query = QtSql.QSqlQuery(self.database)
         query_str = "INSERT INTO "+str(table_name)+" ( "

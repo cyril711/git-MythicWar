@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'python_modules/view/view_heros/book_warrior_page.ui'
 #
-# Created: Mon Aug 24 21:06:57 2015
+# Created: Thu Sep 10 22:05:24 2015
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!

@@ -1,8 +1,10 @@
 from PyQt5.Qt import QWidget, QVBoxLayout, QLabel, QIcon, QSize, QFont
 from PyQt5 import QtCore
 from python_modules.view.view_kingdom.ui_book_world_army import Ui_BookWorldArmy
-from python_modules.view.heros_vignette import HerosButton, HerosLabel
+from python_modules.view.heros_vignette import HerosButton, HerosLabel,\
+    TempleButton, TempleLabel
 from python_modules.config import Config
+from python_modules.model.temple import Temple
 # basepath = "C:/Users/cyril/Documents/Travail/Workspace/MythicWar/ressources/images/La_Guerre_Mythique"   
 
 
@@ -16,53 +18,57 @@ class BookWorldArmy (QWidget, Ui_BookWorldArmy):
         self.settings = Config().instance.settings
 
     def connections (self):
-        self.description_gauche.textChanged.connect(self.onModificationLeft)
-        self.comboBoxColorLeft.currentIndexChanged.connect(self.onComboBoxLeftChanged)
-        self.description_droite.textChanged.connect(self.onModificationRight)
-        self.comboBoxColorRight.currentIndexChanged.connect(self.onComboBoxRightChanged)
+        self.description_gauche.textChanged.connect(self.onChanges)
+        self.comboBoxColorLeft.currentIndexChanged.connect(self.onChanges)
+        self.description_droite.textChanged.connect(self.onChanges)
+        self.comboBoxColorRight.currentIndexChanged.connect(self.onChanges)
         
-    def onModificationLeft (self):
-        print ('modification')
-        self.parent().parent().modifiedGroupe.emit(self.groupe_left)
-        
-    def onModificationRight (self):
-        print ('modification')
-        self.parent().parent().modifiedGroupe.emit(self.groupe_right)
-    
-    def onComboBoxRightChanged (self):
-        self.groupe_right.attribs['color'] = self.comboBoxColorRight.currentText().replace(" ", "") 
-        # self.right_page.setStyleSheet("#vignettes_droite{background-image: url(:/textures/"+self.groupe_right.attribs['color']+");}")
-        # self.title_droite.setStyleSheet("#title_droite{background-image: url(:/textures/"+self.groupe_right.attribs['color']+");}")
-        self.right_page.setStyleSheet("#label_vignette_right{background-image: url(" + Config().instance.path_to_texture() + "/" + self.groupe_right.attribs['color'] + ".jpg);}")
-        
-        self.onModificationRight()
-        
-    def onComboBoxLeftChanged (self):
-#         ind = self.comboBoxColorLeft.currentIndex()
-#         couleur = self.comboBoxColorLeft.itemIcon(ind).themeName()
-        self.groupe_left.attribs['color'] = self.comboBoxColorLeft.currentText().replace(" ", "")
-        self.left_page.setStyleSheet("#label_vignette_left{background-image: url(" + Config().instance.path_to_texture() + "/" + self.groupe_left.attribs['color'] + ");}")
-        # self.left_page.setStyleSheet("#vignettes_gauche{background-image: url(:/textures/"+self.groupe_left.attribs['color']+");}")
-        # self.title_gauche.setStyleSheet("#title_gauche{background-image: url(:/textures/"+self.groupe_left.attribs['color']+");}")
-        # self.left_page.show()
-        self.onModificationLeft()
-    
+    def onChanges(self):
+        if self.sender()==self.description_gauche:
+            self.groupe_left.changeDescription(self.description_gauche.text())
+        elif self.sender()==self.description_gauche:
+            self.groupe_left.changeDescription(self.description_gauche.text())
+        elif self.sender()== self.comboBoxColorRight:
+            self.groupe_right.changeColor(self.comboBoxColorRight.currentText().replace(" ", ""))
+            self.right_page.setStyleSheet("#label_vignette_right{background-image: url(:/textures/" + self.groupe_right.attribs['color'] + ");}")
+            self.title_droite.setStyleSheet("#title_droite{background-image: url(:/textures/"+self.groupe_right.attribs['color']+");}")
+        elif self.sender()== self.comboBoxColorLeft :
+            self.groupe_left.changeColor(self.comboBoxColorLeft.currentText().replace(" ", ""))
+            self.left_page.setStyleSheet("#label_vignette_left{background-image: url(:/textures/"+ self.groupe_left.attribs['color'] + ");}")
+            self.title_gauche.setStyleSheet("#title_gauche{background-image: url(:/textures/"+self.groupe_left.attribs['color']+");}")
+
+    def updateContent (self):
+        pass
     def setEnableEditableItems (self, enable):
         self.description_gauche.setEnabled(enable)
         self.description_droite.setEnabled(enable)    
         self.comboBoxColorLeft.setEnabled(enable)
         self.comboBoxColorRight.setEnabled(enable)
         
+    def setTemple (self,temples_ids,left):
+        if left == True:
+            self.title_gauche.setText("Temples")
+            self.current_page = 0
+        else:
+            self.title_droite.setText("Temples")
+            self.current_page = 1
+        self.nb_row = 0
+        self.nb_col = 0
+        for t in temples_ids:
+            temple = self.model.getTempleById(t)
+            if temple != None:
+                self.addVignette(temple)
+        
     def setLeftContent (self, groupe, sub_groupe=None):
         if sub_groupe != None : 
             self.groupe_left = sub_groupe
         else : 
             self.groupe_left = groupe
-        self.left_page.setStyleSheet("#label_vignette_left{background-image: url(" + Config().instance.path_to_texture() + "/" + self.groupe_left.attribs['color'] + ");}")
+        self.left_page.setStyleSheet("#label_vignette_left{background-image: url(:/textures/"+ self.groupe_left.attribs['color'] + ");}")
 
         # self.left_page.setStyleSheet("#vignettes_gauche{background-image: url(:/textures/"+self.groupe_left.attribs['color']+");}")
         self.title_gauche.setText(groupe.name.replace("_"," "))
-        # self.title_gauche.setStyleSheet("#title_gauche{background-image: url(:/textures/"+self.groupe_left.attribs['color']+");}")
+        self.title_gauche.setStyleSheet("#title_gauche{background-image: url(:/textures/"+self.groupe_left.attribs['color']+");}")
         self.description_gauche.setPlainText(self.groupe_left.attribs['description'])
         # self.description_gauche.setEnabled(False)
         self.nb_row = 0
@@ -78,6 +84,7 @@ class BookWorldArmy (QWidget, Ui_BookWorldArmy):
             font.setStyle(QFont.StyleItalic)
             sub_groupe_name.setFont(font)
         self.comboBoxColorLeft.addItem("")
+        
         for key, icon in zip(self.model.groupe_color_icons.keys(), self.model.groupe_color_icons.values()):
             self.comboBoxColorLeft.addItem(icon, key)       
             if key == groupe.attribs['color']:
@@ -90,9 +97,11 @@ class BookWorldArmy (QWidget, Ui_BookWorldArmy):
             self.groupe_right = groupe
         # self.right_page.setObjectName("vignette_droite"+groupe.name)
         print ('self.groupe_right.attribs[]', Config().instance.path_to_texture() + "/" + self.groupe_right.attribs['color'].strip())
-        self.right_page.setStyleSheet("#label_vignette_right{background-image: url(" + Config().instance.path_to_texture() + "/" + self.groupe_right.attribs['color'].strip() + "saphir.jpg);}")
+        self.right_page.setStyleSheet("#label_vignette_right{background-image: url(:/textures/"+ self.groupe_right.attribs['color'] + ");}")
+        
         # self.title_droite.setStyleSheet("#title_droite{background-image: url(:/textures/"+self.groupe_right.attribs['color']+");}")
         self.title_droite.setText(groupe.name.replace("_"," "))
+        self.title_droite.setStyleSheet("#title_droite{background-image: url(:/textures/"+self.groupe_right.attribs['color']+");}")        
         self.description_droite.setPlainText(self.groupe_right.attribs['description'])
       # self.description_droite.setEnabled(False)
         self.current_page = 1
@@ -125,7 +134,10 @@ class BookWorldArmy (QWidget, Ui_BookWorldArmy):
         layout_one_vignette = QVBoxLayout(widget_vignette)
         layout_one_vignette.setSpacing(0)
         layout_one_vignette.setContentsMargins(0, 0, 0, 0)
-        warrior_button = HerosButton(self.model, warrior, widget_vignette)
+        if type(warrior)== Temple:
+            warrior_button = TempleButton(self.model, warrior, widget_vignette)
+        else:
+            warrior_button = HerosButton(self.model, warrior, widget_vignette)
         warrior_button.connect()
         layout_one_vignette.setAlignment(QtCore.Qt.AlignCenter)
 #         warrior_button.setStyleSheet("QPushButton { background-color: rgb(170, 255, 0);border-style: outset; border-width: 2px; border-color: beige;}")
@@ -133,7 +145,10 @@ class BookWorldArmy (QWidget, Ui_BookWorldArmy):
         layout_one_vignette.addWidget(warrior_button)
         
         # label
-        warrior_label = HerosLabel(warrior, widget_vignette)
+        if (type(warrior)==Temple):
+            warrior_label = TempleLabel(warrior, widget_vignette)
+        else:
+            warrior_label = HerosLabel(warrior, widget_vignette)
         warrior_label.connect()
         warrior_label.setObjectName(label_name)
         layout_one_vignette.addWidget(warrior_label)
@@ -142,9 +157,9 @@ class BookWorldArmy (QWidget, Ui_BookWorldArmy):
 #         warrior_button.setFixedSize(QSize(100,120))
         max_col = 3
 
-        groupe_name = warrior.groupe().name
-        if warrior.masterGroupe() != None : 
-            groupe_name = warrior.masterGroupe().name + "/" + groupe_name
+#         groupe_name = warrior.groupe().name
+#         if warrior.masterGroupe() != None : 
+#             groupe_name = warrior.masterGroupe().name + "/" + groupe_name
         
  
         
@@ -168,6 +183,7 @@ class BookWorldArmy (QWidget, Ui_BookWorldArmy):
         warrior_button.setIcon(icon)
         warrior_button.setIconSize(QSize(picture.width() - 3, picture.height() - 3))
 
+            
 
         if self.nb_col == 0:
             self.nb_row = self.nb_row + 1

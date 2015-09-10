@@ -2,6 +2,7 @@ eclipse.preferences.version=1
 encoding//python_modules/main_view/ui_dialog_import_kingdom.py=utf-8
 encoding//python_modules/main_view/ui_dialog_thumb_generator.py=utf-8
 encoding//python_modules/main_view/ui_main_window.py=utf-8
+encoding//python_modules/main_view/ui_profil_widget.py=utf-8
 encoding//python_modules/tools/pyhtmleditor/highlighter.py=utf-8
 encoding//python_modules/tools/pyhtmleditor/htmleditor.py=utf-8
 encoding//python_modules/tools/pyhtmleditor/ui/htmleditor_ui.py=utf-8

@@ -115,9 +115,9 @@ class HerosItem (QtWidgets.QGraphicsItem):
         self.setAcceptHoverEvents (True)
         self.framePicture = None
 
-        self.timer = QTimer()
-        self.timer.setSingleShot(True)
-        self.timer.timeout.connect(self.showPicture)
+
+    def showPicture (self):
+        self.model.askForProfil.emit(self.heros)
 
     def updatePos(self):
         print ('update pos',self.heros.attribs['place'] )
@@ -178,58 +178,53 @@ class HerosItem (QtWidgets.QGraphicsItem):
         painter.rotate(45)
         painter.translate(-size*0.25,-size)
 
-    def showPicture (self):
-
-        self.framePicture  = QFrame()
-        self.framePicture.setWindowModality(QtCore.Qt.WindowModal)
-        if self.settings.value("mainView/stylesheet")!= "":
-            file = QtCore.QFile(os.path.join(self.settings.path_to_qss(),self.settings.value("mainView/stylesheet")))
-            if file.open(QtCore.QFile.ReadOnly|QtCore.QFile.Text):
-                text = QTextStream(file)
-                QApplication.instance().setStyleSheet(text.readAll())
-        self.framePicture.setObjectName("Frame")
-        self.framePicture.setFrameShape(QFrame.NoFrame)
-        #self.framePicture.setFrameShadow(QFrame.Raised)
-        self.verticalLayout = QVBoxLayout(self.framePicture)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.picture = QLabel()
-        self.picture.setFrameShape(QFrame.NoFrame)
-        groupe_name = self.heros.groupe().name
-        if self.heros.masterGroupe() != None : 
-            groupe_name = self.heros.masterGroupe().name+"/"+groupe_name
-        kingdom_name = self.heros.kingdom().name
-        empire_name = self.heros.empire().name
-        faction_name = self.heros.faction().name
-        pixmap = QPixmap(self.settings.value("global/resources_path")+"/"+faction_name+"/"+empire_name+"-"+self.heros.empire().attrib['color']+"/"+kingdom_name+"/Picture/"+groupe_name+"/"+self.heros.name+"/portrait.jpg")
-        print ('ppppppppp:',)
-        if not pixmap.isNull():
-            pixmap = pixmap.scaled(pixmap.width()/5.0,pixmap.height()/5.0)
-            self.picture.setPixmap(pixmap)
-            self.verticalLayout.addWidget(self.picture)
-            self.title = QLabel()
-            self.title.setAlignment(QtCore.Qt.AlignHCenter)
-            self.title.setFrameShape(QFrame.NoFrame)
-            self.framePicture.setGeometry(QtGui.QCursor().pos().x()+30,QtGui.QCursor().pos().y()+50,pixmap.width(),pixmap.height())
-          
-            self.title.setText(self.heros.name)
-            self.verticalLayout.addWidget(self.title)
-            self.framePicture.show()
-        else:
-            print ('picture is null')
+#     def showPicture (self):
+# 
+#         self.framePicture  = QFrame()
+#         self.framePicture.setWindowModality(QtCore.Qt.WindowModal)
+#         if self.settings.value("mainView/stylesheet")!= "":
+#             file = QtCore.QFile(os.path.join(self.settings.path_to_qss(),self.settings.value("mainView/stylesheet")))
+#             if file.open(QtCore.QFile.ReadOnly|QtCore.QFile.Text):
+#                 text = QTextStream(file)
+#                 QApplication.instance().setStyleSheet(text.readAll())
+#         self.framePicture.setObjectName("Frame")
+#         self.framePicture.setFrameShape(QFrame.NoFrame)
+#         #self.framePicture.setFrameShadow(QFrame.Raised)
+#         self.verticalLayout = QVBoxLayout(self.framePicture)
+#         self.verticalLayout.setObjectName("verticalLayout")
+#         self.picture = QLabel()
+#         self.picture.setFrameShape(QFrame.NoFrame)
+#         groupe_name = self.heros.groupe().name
+#         if self.heros.masterGroupe() != None : 
+#             groupe_name = self.heros.masterGroupe().name+"/"+groupe_name
+#         kingdom_name = self.heros.kingdom().name
+#         empire_name = self.heros.empire().name
+#         faction_name = self.heros.faction().name
+#         pixmap = QPixmap(self.settings.value("global/resources_path")+"/"+faction_name+"/"+empire_name+"-"+self.heros.empire().attrib['color']+"/"+kingdom_name+"/Picture/"+groupe_name+"/"+self.heros.name+"/portrait.jpg")
+#         print ('ppppppppp:',)
+#         if not pixmap.isNull():
+#             pixmap = pixmap.scaled(pixmap.width()/5.0,pixmap.height()/5.0)
+#             self.picture.setPixmap(pixmap)
+#             self.verticalLayout.addWidget(self.picture)
+#             self.title = QLabel()
+#             self.title.setAlignment(QtCore.Qt.AlignHCenter)
+#             self.title.setFrameShape(QFrame.NoFrame)
+#             self.framePicture.setGeometry(QtGui.QCursor().pos().x()+30,QtGui.QCursor().pos().y()+50,pixmap.width(),pixmap.height())
+#           
+#             self.title.setText(self.heros.name)
+#             self.verticalLayout.addWidget(self.title)
+#             self.framePicture.show()
+#         else:
+#             print ('picture is null')
                     
     def hoverEnterEvent(self, event):
-        if not self.isSelected():
-            self.timer.start(2000)
-
-        else:
-            self.timer.stop()
+        self.showPicture()
 
         return QGraphicsItem.hoverEnterEvent(self,event)
 
     def hoverLeaveEvent(self,event):
         print ('leave event')
-        self.timer.stop()
-        self.framePicture = None
+
         return QGraphicsItem.hoverLeaveEvent(self,event)
         
     def dropEvent(self, event):

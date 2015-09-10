@@ -1,10 +1,11 @@
-from PyQt5.Qt import QWidget
+from PyQt5.Qt import QWidget, QPushButton
 from PyQt5 import QtCore
      
 from python_modules.view.view_heros.ui_warrior_layout import Ui_WarriorLayout
 from python_modules.view.view_heros.book_warrior_homepage import BookWarriorHomepage
 from python_modules.view.view_heros.book_warrior_page import BookWarriorPage
 from python_modules.tools.pyhtmleditor.htmleditor import HtmlEditor
+
 
 class WarriorLayout (QWidget, Ui_WarriorLayout):
     modified = QtCore.pyqtSignal(int)
@@ -24,6 +25,7 @@ class WarriorLayout (QWidget, Ui_WarriorLayout):
         self.init(model)
         self.previous_button.setEnabled(False)
         self.next_button.setEnabled(False)
+
         self.new_page = None
         print ('fin init')
         #self.editable = True

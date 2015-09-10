@@ -1,11 +1,12 @@
 
 
 class Faction:
-    def __init__ (self, id_i, name,attribs):
+    def __init__ (self, id_i, name,attribs,parent):
         self.id = id_i
         self.name = name
         self.empires= {}
         self.attribs = attribs
+        self.parent = parent
         
     def addEmpire (self, empire):
         self.empires[empire.name] = empire
@@ -16,7 +17,7 @@ class Faction:
         attribs['name']=self.name
 
         attribs['icon']=self.attribs['icon']  
-        return self.attribs
+        return attribs
     
     def getWarriorList(self):
         warrior_list = []

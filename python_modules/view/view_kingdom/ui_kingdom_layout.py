@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'python_modules/view/view_kingdom/kingdom_layout.ui'
 #
-# Created: Mon Aug 24 21:06:56 2015
+# Created: Thu Sep 10 22:05:23 2015
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -23,7 +23,11 @@ class Ui_KingdomLayout(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.previous_button.sizePolicy().hasHeightForWidth())
         self.previous_button.setSizePolicy(sizePolicy)
-        self.previous_button.setMinimumSize(QtCore.QSize(10, 0))
+        self.previous_button.setMinimumSize(QtCore.QSize(20, 0))
+        self.previous_button.setText("")
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/icons/24x24/previous"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.previous_button.setIcon(icon)
         self.previous_button.setObjectName("previous_button")
         self.horizontalLayout.addWidget(self.previous_button)
         self.stackedWidget = QtWidgets.QStackedWidget(KingdomLayout)
@@ -48,7 +52,11 @@ class Ui_KingdomLayout(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.next_button.sizePolicy().hasHeightForWidth())
         self.next_button.setSizePolicy(sizePolicy)
-        self.next_button.setMinimumSize(QtCore.QSize(10, 0))
+        self.next_button.setMinimumSize(QtCore.QSize(20, 0))
+        self.next_button.setText("")
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(":/icons/24x24/next"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.next_button.setIcon(icon1)
         self.next_button.setObjectName("next_button")
         self.horizontalLayout.addWidget(self.next_button)
 
@@ -58,6 +66,5 @@ class Ui_KingdomLayout(object):
     def retranslateUi(self, KingdomLayout):
         _translate = QtCore.QCoreApplication.translate
         KingdomLayout.setWindowTitle(_translate("KingdomLayout", "Form"))
-        self.previous_button.setText(_translate("KingdomLayout", "Previous"))
-        self.next_button.setText(_translate("KingdomLayout", "Next"))
 
+import resources_rc

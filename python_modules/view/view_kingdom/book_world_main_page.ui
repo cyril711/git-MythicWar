@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>566</width>
-    <height>425</height>
+    <height>431</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,19 +16,20 @@
   <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,1">
    <item>
     <widget class="QWidget" name="widget" native="true">
-     <layout class="QVBoxLayout" name="verticalLayout" stretch="1,10,10,0">
+     <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,10">
       <item>
        <widget class="QLabel" name="Title">
         <property name="font">
          <font>
-          <family>Old English Text MT</family>
+          <family>Nyala</family>
           <pointsize>24</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
          </font>
         </property>
+        <property name="styleSheet">
+         <string notr="true"/>
+        </property>
         <property name="text">
-         <string>TextLabel</string>
+         <string>Artemis</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
@@ -42,18 +43,26 @@
           <widget class="QWidget" name="widget_content2" native="true">
            <layout class="QVBoxLayout" name="verticalLayout_3">
             <item>
-             <widget class="QWidget" name="widget_7" native="true">
-              <layout class="QHBoxLayout" name="horizontalLayout_6">
+             <widget class="QWidget" name="widget_5" native="true">
+              <layout class="QHBoxLayout" name="horizontalLayout_4">
                <item>
-                <widget class="QLabel" name="label">
-                 <property name="font">
-                  <font>
-                   <family>Nyala</family>
-                   <pointsize>18</pointsize>
-                  </font>
-                 </property>
+                <widget class="QLabel" name="label_4">
                  <property name="text">
-                  <string>Description</string>
+                  <string>Completion :</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QProgressBar" name="progressBar">
+                 <property name="value">
+                  <number>24</number>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="label_3">
+                 <property name="text">
+                  <string>Warriors :</string>
                  </property>
                 </widget>
                </item>
@@ -70,6 +79,25 @@
                  </property>
                  <property name="text">
                   <string/>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QWidget" name="widget_7" native="true">
+              <layout class="QHBoxLayout" name="horizontalLayout_6">
+               <item>
+                <widget class="QLabel" name="label">
+                 <property name="font">
+                  <font>
+                   <family>Nyala</family>
+                   <pointsize>18</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Description</string>
                  </property>
                 </widget>
                </item>
@@ -127,41 +155,115 @@
         </layout>
        </widget>
       </item>
-      <item>
-       <widget class="QWidget" name="widget_5" native="true">
-        <layout class="QHBoxLayout" name="horizontalLayout_4"/>
-       </widget>
-      </item>
      </layout>
     </widget>
    </item>
    <item>
     <widget class="QWidget" name="right_page" native="true">
-     <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0">
+     <layout class="QVBoxLayout" name="verticalLayout_2" stretch="2,1">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
       <item>
-       <widget class="QLabel" name="army_picture">
-        <property name="frameShape">
-         <enum>QFrame::WinPanel</enum>
+       <widget class="QTabWidget" name="tabWidget">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
         </property>
-        <property name="frameShadow">
-         <enum>QFrame::Raised</enum>
+        <property name="tabPosition">
+         <enum>QTabWidget::East</enum>
         </property>
-        <property name="text">
-         <string>TextLabel</string>
+        <property name="tabShape">
+         <enum>QTabWidget::Triangular</enum>
         </property>
+        <property name="currentIndex">
+         <number>1</number>
+        </property>
+        <property name="elideMode">
+         <enum>Qt::ElideNone</enum>
+        </property>
+        <property name="tabsClosable">
+         <bool>false</bool>
+        </property>
+        <widget class="QWidget" name="histo_warrior_page">
+         <attribute name="title">
+          <string/>
+         </attribute>
+         <layout class="QVBoxLayout" name="histo_warrior_layout"/>
+        </widget>
+        <widget class="QWidget" name="pie_page">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <attribute name="title">
+          <string/>
+         </attribute>
+         <layout class="QVBoxLayout" name="pie_layout">
+          <property name="sizeConstraint">
+           <enum>QLayout::SetDefaultConstraint</enum>
+          </property>
+         </layout>
+        </widget>
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="land_picture">
-        <property name="frameShape">
-         <enum>QFrame::WinPanel</enum>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Raised</enum>
-        </property>
-        <property name="text">
-         <string>TextLabel</string>
-        </property>
+       <widget class="QWidget" name="groupe_boutton" native="true">
+        <layout class="QVBoxLayout" name="verticalLayout_11">
+         <item>
+          <widget class="QScrollArea" name="scrollArea_3">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="widgetResizable">
+            <bool>true</bool>
+           </property>
+           <widget class="QWidget" name="groupes_buttons">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>184</width>
+              <height>118</height>
+             </rect>
+            </property>
+            <layout class="QGridLayout" name="groupes_bouttons_layout">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+            </layout>
+           </widget>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
      </layout>
@@ -169,6 +271,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../../../resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -277,9 +277,7 @@ class BookWarriorPage ( QWidget):
             separator = QtWidgets.QWidget(self.ui.picture_widget)
             separator.setSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding)
             self.ui.picture_layout_2.addWidget(separator)
-        kingdom_name = self.warrior.kingdom().name
-        empire_name = self.warrior.empire().name
-        faction_name = self.warrior.faction().name
+
 
         self.ui.progressBar_HP.setStyleSheet("  QProgressBar {border-radius: 5px;} QProgressBar::chunk {     background-color: #05B8CC;width: 20px;}")
         self.ui.progressBar_HP.setAlignment(QtCore.Qt.AlignCenter)
@@ -397,6 +395,7 @@ class BookWarriorPage ( QWidget):
         value = image.pixel(image.width()/2.0,image.height()/2.0)
         pal.setColor(QPalette.WindowText, QColor(value))
         self.ui.rank_text.setPalette(pal)
+        self.ui.rank_text.setText(str(rank))
         for i in range (len(self.l_stars)) :
             if i < rank:
                 self.l_stars[i].setIcon(QIcon(os.path.join(Config().instance.path_to_icons(),"rank")+"/star_"+self.warrior.groupe().attribs["color"]+".png"))
@@ -414,10 +413,7 @@ class BookWarriorPage ( QWidget):
         print ('q')
         return super(BookWarriorPage,self).mouseMoveEvent(event)
         
-    def onModification (self):
-        print ('modification')
-        self.parent().modified.emit(self.warrior.id)
-        
+
         
         
     def paintEvent(self, event):
