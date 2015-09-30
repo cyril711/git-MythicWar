@@ -72,7 +72,7 @@ class HistoChart (QGraphicsView):
         else :
             data = temp
         self.size_text_width = QGraphicsTextItem(data).boundingRect().width()+10
-        print ('width:',self.size_text_width)
+        #print ('width:',self.size_text_width)
         horizontal_size = self.parent().size().width()- self.margin['left']- self.margin['right']-self.size_text_width- size_text_number
         try:
             ratio = horizontal_size/ max

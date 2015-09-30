@@ -2,9 +2,14 @@ from PyQt5.Qt import QPixmap, QObject
 from python_modules.config import Config
 from PyQt5 import QtCore
 import os
+from enum import Enum
+
+
+
 class Warrior (QObject):
     selection_changed = QtCore.pyqtSignal(bool,object)
     on_move = QtCore.pyqtSignal()
+    
     def __init__(self, id_i, name, attribs, parent):
         super(Warrior,self).__init__()
         self.id = id_i
@@ -19,7 +24,7 @@ class Warrior (QObject):
         groupe_name = self.parent.name
         if self.masterGroupe() != None : 
             groupe_name = self.masterGroupe().name+"/"+groupe_name
-        
+
         kingdom_name = self.kingdom().name
         empire_name = self.empire().name
         faction_name = self.faction().name
@@ -33,14 +38,25 @@ class Warrior (QObject):
 #         if self.attribs['HP_max'] == '':
 #             self.attribs['HP_max'] =
 
+
+
     def onChange (self,type_modif="update"):
         if self.modification == False :
             self.modification = True
             self.model().addModifications(self,type_modif)
+
+    def delete (self):
+        self.model().database._delete("gm_heros","ID="+str(self.id))
+        self.groupe().warriors.pop(self.id)
             
     def changeLeaderStatus (self,value):
         self.leader = value
         self.onChange()
+    
+    def changeRank(self, value):
+        self.attribs["rank"] = value 
+        self.onChange()
+    
     def masterGroupe (self):
         if self.parent.isSub():
             return self.parent.parent
@@ -50,6 +66,10 @@ class Warrior (QObject):
     def model(self):
         return self.faction().parent
     
+    def move(self,lat,lon):
+        self.attribs['latitude'] = lat
+        self.attribs['longitude'] = lon
+        self.on_move.emit()
     def getDictAttributes (self):
         attribs = {}
         for key,value in zip (self.attribs.keys(),self.attribs.values()):

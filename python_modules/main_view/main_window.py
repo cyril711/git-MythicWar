@@ -65,8 +65,8 @@ class MainWindow(QMainWindow,Ui_MainWindow):
 
         self.time_label.setText(self.time.toString("ddd MMM hh:mm:ss"))
         self.toolBarPlay.addWidget(self.time_label)
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.onUpdateTime)
+        self.global_timer = QTimer()
+        self.global_timer.timeout.connect(self.onUpdateTime)
         self.c_box_speed = QComboBox(self)
         self.c_box_speed.addItem('1x', 1)
         self.c_box_speed.addItem('2x', 2)
@@ -141,18 +141,19 @@ class MainWindow(QMainWindow,Ui_MainWindow):
   
   
     def onPlay (self):
-        if self.timer.isActive():
+        if self.global_timer.isActive():
             self.play_button.setIcon(QIcon(":/icons/24x24/player"))
-            self.timer.stop()
+            self.global_timer.stop()
         else:
             self.play_button.setIcon(QIcon(":/icons/24x24/pause"))
-            self.timer.start(1000)
+            self.global_timer.start(1000)
     def onUpdateTime (self):
-        print ('current speed  :',self.c_box_speed.currentData())
-        new_date = self.time.addSecs(self.c_box_speed.currentData())
+        deltaT = self.c_box_speed.currentData()
+        new_date = self.time.addSecs(deltaT)
         self.time.setDate(new_date.date())
         self.time.setTime(new_date.time())
         self.time_label.setText(self.time.toString("ddd MMM hh:mm:ss"))
+        self.univers.updateActions(deltaT)
     def onChangeStylesheet(self, css):
         self.current_css = css
     def onOpen(self):
@@ -306,8 +307,9 @@ class MainWindow(QMainWindow,Ui_MainWindow):
             self.msgBox.setText("Impossible de creer un nouveau projet car "+filename+" n a put etre trouve");
             self.msgBox.exec_()
         
-    def onKingdomReload (self):
-        self.kingdomLayout.init(self.univers)
+    def onKingdomReload (self, kingdom_name):
+        #self.kingdomLayout.init(self.univers)
+        self.kingdomLayout.loadKingdom(kingdom_name)
     def onResetAttributes (self):
         pass
     

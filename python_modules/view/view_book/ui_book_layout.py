@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'python_modules/view/view_book/book_layout.ui'
 #
-# Created: Thu Sep 10 22:05:25 2015
+# Created: Fri Sep 25 23:11:04 2015
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!

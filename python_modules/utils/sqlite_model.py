@@ -50,8 +50,8 @@ class SqliteModel ():
         self.progress.canceled.connect(self.onCanceled)
 
 
-
-    def isValid (self, name):
+    @staticmethod
+    def isValid (name):
         return (name[0] != '~' and name!="Thumbs.db")
 
    

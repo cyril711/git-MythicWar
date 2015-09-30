@@ -38,7 +38,7 @@ class PieChart (QGraphicsView):
     def setData (self,list_items):
         size = min(self.frameSize().width()/2.0,self.frameSize().height())
         self.size_pie = QSize(size,size)
-        print ('size pie ',self.size_pie)
+        #print ('size pie ',self.size_pie)
         if self.initialize == False:
             self.c_box = QComboBox()
             self.c_box.addItem("all")
@@ -62,7 +62,7 @@ class PieChart (QGraphicsView):
             self.my_scene.removeItem(item)
         self.pie_items = []
         self.scene().setSceneRect(QRectF(0,0,self.frameSize().width(),self.frameSize().height()))
-        print ('size',self.scene().sceneRect())
+        #print ('size',self.scene().sceneRect())
         #proxy = QGraphicsProxyWidget ()
 
         for item in self.data :

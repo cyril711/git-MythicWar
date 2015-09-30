@@ -12,6 +12,18 @@ from python_modules.config import Config
 from random import randint
 import math
 from PyQt5 import QtCore, QtWidgets
+import collections
+from python_modules.model.actions import ActionMoveToTargets, ActionMoveToPosition
+from enum import Enum
+
+
+
+class ActionType (Enum):
+    MoveToPosition = 1
+    MoveToTargets = 2
+    Attack = 3
+
+
 class Univers (QObject):
     #selection_changed = pyqtSignal()
     selection_updated = pyqtSignal()
@@ -22,7 +34,7 @@ class Univers (QObject):
     askForMap = pyqtSignal(float,float)
     askForGroup = pyqtSignal (Groupe)
     askForProfil = pyqtSignal (Warrior)
-    askForKingdomReload = pyqtSignal()
+    askForKingdomReload = pyqtSignal(str)
     saveEnabled = pyqtSignal(bool)
     def __init__ (self,database,progressBar,parent=None):
         super(Univers,self).__init__(parent)
@@ -30,7 +42,7 @@ class Univers (QObject):
         self.factions = {}
         self.temples = {}
         self.database = database
-        self.database.setVerbose(False)
+        self.list_actions = []
         self.modifications = []
         self.loadFromFile()
         self.currentFaction = None
@@ -50,8 +62,28 @@ class Univers (QObject):
             value = image.pixel(image.width()/2.0,image.height()/2.0)
             # pour view map donner une couleur a item warrior
             self.groupe_color_value[color]  = QColor(value)
-
-
+    def getSelectionList (self):
+        my_list  = []
+        for heros in self.selected_Warriors:
+            my_list.append(heros)
+        return my_list
+    def addAction (self,type_i,value,left_part,right_part):
+        if type_i == ActionType.MoveToPosition:
+            print ('add action',left_part,right_part,value)
+            print ('type de left',type(left_part),len(left_part))
+            action = ActionMoveToPosition(len(self.list_actions)+1 ,left_part,right_part,True,value)
+            self.list_actions.append(action)
+        elif type == ActionType.MoveToTargets:
+            pass
+        
+    def updateActions (self, deltaT):
+        print ('nombre d action dans la pile',len(self.list_actions))
+        for action in self.list_actions : 
+            if action.isActive() :
+                print ('elle est active')
+                action.process(deltaT)
+            else:
+                pass
     def addModifications(self,item,modification_type):
         if len(self.modifications)==0:
             self.saveEnabled.emit(True)
@@ -71,6 +103,19 @@ class Univers (QObject):
             if faction.name == faction_name :
                     return faction
         return None
+
+
+    def delete (self):
+        for faction in self.factions:
+            faction.delete()
+        self.temples = {}
+        self.currentFaction = None
+        self.currentEmpire = None
+        self.currentKingdom= None
+        self.currentGroupe= None     
+        self.selected_Warriors = []
+        self.filtered_Warriors = []
+        
 
     def clear (self):
         self.factions = {}
@@ -122,19 +167,27 @@ class Univers (QObject):
 
     def dispatchCircleWarriors(self,scene_coord, origin, radius):
         print ('dispatch circle warriors')
+        l = []
         for heros in self.selectedWarriors():
-            x = randint(int(-radius),int(radius))
-            y = (radius*radius) - (x*x)
-            print ('sqrt(y)',math.sqrt(y))
-            print ('rrr',origin,radius,y,x)
-            print ('randrange',int(origin.y()-math.sqrt(y)),int(origin.y()+math.sqrt(y)))
-            y = randint (int(-math.sqrt(y)),int(math.sqrt(y)))
-            latitude = origin.x()  +x 
-            longitude = -origin.y()  +y
-            print ('position AVT dispatch :',heros.attribs['latitude'],heros.attribs['longitude'])
-            heros.attribs['latitude'],heros.attribs['longitude'] = scene_coord.SceneToLatLon(latitude,longitude)
-            print ('position du dispatch :',heros.attribs['latitude'],heros.attribs['longitude']) 
-            heros.on_move.emit()
+            try:
+                x = randint(int(-radius),int(radius))
+                y = (radius*radius) - (x*x)
+                print ('sqrt(y)',math.sqrt(y))
+                print ('rrr',origin,radius,y,x)
+                print ('randrange',int(origin.y()-math.sqrt(y)),int(origin.y()+math.sqrt(y)))
+                y = randint (int(-math.sqrt(y)),int(math.sqrt(y)))
+                latitude = origin.x()  +x 
+                longitude = -origin.y()  +y
+                print ('position AVT dispatch :',heros.attribs['latitude'],heros.attribs['longitude'])
+                #heros.attribs['latitude'],heros.attribs['longitude'] = scene_coord.SceneToLatLon(latitude,longitude)
+                #print ('position du dispatch :',heros.attribs['latitude'],heros.attribs['longitude']) 
+                #heros.on_move.emit()
+                mx,my = scene_coord.SceneToLatLon(latitude,longitude)
+                new_pos = QPointF(mx,my)
+            except ValueError :
+                new_pos = QPointF(heros.attribs['latitude'],heros.attribs['longitude'] )
+            l.append(new_pos)
+        return l
 
     def selectedWarriors (self):
         return self.selected_Warriors
@@ -180,84 +233,119 @@ class Univers (QObject):
             result = None
         return result
 
-    def save (self,filename = None):
-        print ("sauvegarde")
-        try :
-            temp_filename = "mon_test.sqlite"
-            if QFile.remove(temp_filename) == False :
-                qWarning("echec suppression ")
-        except OSError :
-            qWarning("echec suppression ")
-            pass
-        result = QFile.copy(Config().instance.model_database(),temp_filename)
-        if result == True :
-            print("copy du model reussit")
-        else:
-            print("echec de la copy ",Config().instance.model_database(),temp_filename)
-        database = DatabaseManager(temp_filename,True)
-        database.createConnection()
-        database.setVerbose(True)
-       # self.database.setVerbose(True)
-        print ('nb temples',len(self.temples.values() ))
-        for temple in self.temples.values() :
-            attribs = temple.getDictAttributes ()
-            database.insert("gm_temple",attribs)
+#     def save (self,filename = None):
+#         print ("sauvegarde")
+#         try :
+#             temp_filename = "mon_test.sqlite"
+#             if QFile.remove(temp_filename) == False :
+#                 qWarning("echec suppression ")
+#         except OSError :
+#             qWarning("echec suppression ")
+#             pass
+#         result = QFile.copy(Config().instance.model_database(),temp_filename)
+#         if result == True :
+#             print("copy du model reussit")
+#         else:
+#             print("echec de la copy ",Config().instance.model_database(),temp_filename)
+#         database = DatabaseManager(temp_filename,True)
+#         database.createConnection()
+#         database.setVerbose(True)
+#        # self.database.setVerbose(True)
+#         print ('nb temples',len(self.temples.values() ))
+#         for temple in self.temples.values() :
+#             attribs = temple.getDictAttributes ()
+#             database.insert("gm_temple",attribs)
+#         for faction in self.factions.values() :
+#             attribs = faction.getDictAttributes ()
+#             print ('ajout faction')
+#             #attribs = {"name":faction.name,'icon':faction.name+'.png'}
+#             database.insert("gm_faction",attribs)
+#             #id_faction = self.database.select("*","gm_faction",False,'name=="'+faction.name+'"')
+#             for empire in faction.empires.values():
+#                 #attribs = {"name":empire.name,"ID_faction":id_faction,"icon":str(empire.name)+".png","color":empire.attribs['color']}
+#                 attribs = empire.getDictAttributes()
+#                 print ('ajout empire')
+#                 database.insert("gm_empire",attribs)        
+#                 for kingdom in empire.kingdoms.values():
+#                     print ('ajour kingdom')
+#                     attribs = kingdom.getDictAttributes()
+#                     database.insert("gm_kingdom",attribs) 
+#                     for groupe in kingdom.groupes.values():
+#                         print ('ajout groupe')
+#                         attribs = groupe.getDictAttributes ()
+#                         database.insert("gm_groupe",attribs)
+#                         for sub_groupe in groupe.sub_groupes:
+#                             print ('ajout sub groupe')                            
+#                             attribs = sub_groupe.getDictAttributes ()
+#                             database.insert("gm_groupe",attribs)
+#                             for perso in sub_groupe.warriors.values():
+#                                 print ('ajout perso 1')
+#                                 attribs = perso.getDictAttributes ()
+#                                 database.insert("gm_perso",attribs)
+#                         for perso in groupe.warriors.values():
+#                             print ('ajout perso2')
+#                             attribs = perso.getDictAttributes ()
+#                             if perso.name == "Artemis":
+#                                 print ("artemie pos pour test",attribs["latitude"],attribs["longitude"])
+#                             database.insert("gm_perso",attribs)
+#         print ("FIN AJOUT DES ELEMENTS")
+#         if filename == None : 
+#             filename = Config().instance.current_database()
+#             try :
+#                 print ('filename',type(filename))
+#                 print ('value',filename)
+#                 if QFile.remove(filename) == False :
+#                     qWarning("echec suppression ")
+#                     
+#             except OSError :
+#                 qWarning("echec suppression ")
+#                 pass
+# 
+# 
+#         if QFile.copy(database.databaseName(),filename):
+#             print("sauvegarde reussit db name",database.databaseName(), filename)
+#             self.modifications = []
+#             self.saveEnabled.emit(False)
+#         else:
+#             qDebug("Echec sauvegarde")
+#             print ('kkk',database.databaseName(),filename)
+
+
+    def getFirstFreeGroupId(self):
+        dict_groupes = self.getAllGroupes ()
+        dict_groupes = {'0':'llll','2':'ooooo','5':'lllll'}
+        print ('type sorted',type(sorted(dict_groupes)),sorted(dict_groupes.items()))   
+        l = collections.OrderedDict(sorted(dict_groupes.items()))
+        id = 0
+        for item in l : 
+            if item[0] == id : 
+                id+=1
+            else:
+                
+                return id
+    def getFirstFreeherosId(self):
+        dict_heros = self.getAllWarriors()   
+        print ('type sorted',type(sorted(dict_heros)),sorted(dict_heros))   
+        l = collections.OrderedDict(sorted(dict_heros.items()))
+        id = 0
+        for item in l : 
+            if item[0] == id : 
+                id+=1
+            else:
+                
+                return id
+    def getAllWarriors(self):            
+        dict_heros = {}
         for faction in self.factions.values() :
-            attribs = faction.getDictAttributes ()
-            print ('ajout faction')
-            #attribs = {"name":faction.name,'icon':faction.name+'.png'}
-            database.insert("gm_faction",attribs)
-            #id_faction = self.database.select("*","gm_faction",False,'name=="'+faction.name+'"')
-            for empire in faction.empires.values():
-                #attribs = {"name":empire.name,"ID_faction":id_faction,"icon":str(empire.name)+".png","color":empire.attribs['color']}
-                attribs = empire.getDictAttributes()
-                print ('ajout empire')
-                database.insert("gm_empire",attribs)        
-                for kingdom in empire.kingdoms.values():
-                    print ('ajour kingdom')
-                    attribs = kingdom.getDictAttributes()
-                    database.insert("gm_kingdom",attribs) 
-                    for groupe in kingdom.groupes.values():
-                        print ('ajout groupe')
-                        attribs = groupe.getDictAttributes ()
-                        database.insert("gm_groupe",attribs)
-                        for sub_groupe in groupe.sub_groupes:
-                            print ('ajout sub groupe')                            
-                            attribs = sub_groupe.getDictAttributes ()
-                            database.insert("gm_groupe",attribs)
-                            for perso in sub_groupe.warriors.values():
-                                print ('ajout perso 1')
-                                attribs = perso.getDictAttributes ()
-                                database.insert("gm_perso",attribs)
-                        for perso in groupe.warriors.values():
-                            print ('ajout perso2')
-                            attribs = perso.getDictAttributes ()
-                            if perso.name == "Artemis":
-                                print ("artemie pos pour test",attribs["latitude"],attribs["longitude"])
-                            database.insert("gm_perso",attribs)
-        print ("FIN AJOUT DES ELEMENTS")
-        if filename == None : 
-            filename = Config().instance.current_database()
-            try :
-                print ('filename',type(filename))
-                print ('value',filename)
-                if QFile.remove(filename) == False :
-                    qWarning("echec suppression ")
-                    
-            except OSError :
-                qWarning("echec suppression ")
-                pass
-
-
-        if QFile.copy(database.databaseName(),filename):
-            print("sauvegarde reussit db name",database.databaseName(), filename)
-            self.modifications = []
-            self.saveEnabled.emit(False)
-        else:
-            qDebug("Echec sauvegarde")
-            print ('kkk',database.databaseName(),filename)
-
-    def save_old (self,filename = None):
+            dict_heros.update(faction.getAllWarriors())
+        return dict_heros
+    def getAllGroupes (self):
+        dict_groupes = {}
+        for faction in self.factions.values() :
+            dict_groupes.update(faction.getAllGroupes())
+            
+        return dict_groupes
+    def save (self,filename = None):
         print ("sauvegarde")
        # self.database.setVerbose(True)
         for temple in self.temples.values() :
@@ -331,7 +419,7 @@ class Univers (QObject):
             self.addFaction(faction)
             empire_sqlite = self.database.select("*", "gm_empire",False, "ID_faction=="+str(faction_sqlite.value("ID")),"ID ASC")         
             while empire_sqlite.next():
-                attribs = {'color':str(empire_sqlite.value("color")),'icon':str(empire_sqlite.value("icon"))}
+                attribs = {'color':str(empire_sqlite.value("color"))}
                 print ('coloooooor',str(empire_sqlite.value("icon")),empire_sqlite.value("name"),str(empire_sqlite.value("color")))
                 empire = Empire(empire_sqlite.value("ID"), empire_sqlite.value("name"),attribs,faction)
                 faction.addEmpire(empire)
@@ -357,7 +445,7 @@ class Univers (QObject):
                             attribs['place'] = warrior_sqlite.value("place")
                             attribs['level'] = warrior_sqlite.value("level") 
                             attribs['leader'] = bool(warrior_sqlite.value("leader")) 
-                            attribs['rank'] = bool(warrior_sqlite.value("rank"))
+                            attribs['rank'] = int(warrior_sqlite.value("rank"))
                             attribs['HP'] = int(warrior_sqlite.value("HP"))
                             attribs['MP'] = int(warrior_sqlite.value("MP"))
                             attribs['HP_max'] = int(warrior_sqlite.value("HP_max"))
@@ -373,7 +461,7 @@ class Univers (QObject):
                                 attribs['complete'] = int(warrior_sqlite.value("complete"))
                             except ValueError: 
                                 attribs['complete'] = 0
-                            attribs['state'] = "repos"
+                            attribs['status'] = "repos"
                             warrior = Warrior(warrior_sqlite.value("ID"), warrior_sqlite.value("name"),attribs, groupe)
                             nb_heros_added+=1
                             self.progress.setValue(nb_heros_added)
@@ -415,7 +503,7 @@ class Univers (QObject):
                 except ValueError: 
                     attribs['complete'] = 0
                 #TODO compute state with history and life state
-                attribs['state'] = "repos"
+                attribs['status'] = "repos"
                 warrior = Warrior(warrior_sqlite.value("ID"), warrior_sqlite.value("name"),attribs, groupe)
                 nb_heros_added+=1
                 self.progress.setValue(nb_heros_added)

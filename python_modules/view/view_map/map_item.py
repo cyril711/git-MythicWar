@@ -8,6 +8,7 @@ from PyQt5 import QtWidgets
 from python_modules.config import Config
 from functools import partial
 import os
+import PyQt5
 class TempleItem (QtWidgets.QGraphicsItem):
     SIZE_MULTIPLICATOR = 2
     def __init__(self,temple,size,parent=None):
@@ -82,10 +83,59 @@ class TempleItem (QtWidgets.QGraphicsItem):
         self.frame.show()
 
 
+class ActionsItem (QtWidgets.QGraphicsItem):
+    SIZE_MULTIPLICATOR = 2
+    def __init__(self,temple,size,parent=None):
+        super (ActionsItem,self).__init__(parent)
+        self.polygon  = self.getTriangle (size)
+        self.rotation = 0.0
+        self.color = QColor(0,0,125)
+        self.name_visible = True
+        self.name = temple.name
+        self.model = temple
+        #set flags
+        self.setFlag(QGraphicsItem.ItemIgnoresTransformations)
+
+        
+    def boundingRect(self):
+        return self.polygon.boundingRect()
+        
+
+
+
+    def itemChange(self, change, value):
+        if change == QGraphicsItem.ItemPositionHasChanged :
+            self.model.position = value
+            print ('new position ',self.model.position)
+        else:
+            return QGraphicsItem.itemChange(self,change,value)
+    def paint (self,painter,option, widget):
+
+        painter.setRenderHints(QtGui.QPainter.Antialiasing)
+        painter.rotate(self.rotation)
+        #painter.scale(300,600)
+        if self.isSelected() == True : 
+            pen = QPen(QColor(255,0,0,self.color.alpha()))
+        else:   
+            pen = QPen(QColor(255-self.color.red(),255-self.color.green(),255-self.color.blue(),self.color.alpha()))
+        painter.setPen(pen)
+        brush = QBrush(self.color)
+        painter.setBrush(brush)
+        
+        painter.drawPolygon(self.polygon)
+        if self.name_visible == True :
+            painter.setPen(QPen(QColor('black')))
+            painter.translate(0,10)
+            painter.drawText (self.boundingRect(),QtCore.Qt.AlignHCenter|QtCore.Qt.AlignBottom, self.name)
+
+
+
+
 
 
 class HerosItem (QtWidgets.QGraphicsItem):
     SIZE_MULTIPLICATOR = 2
+    on_action = QtCore.pyqtSignal()
     def __init__(self,model,warrior,size,scene_coord,parent=None):
         super (HerosItem,self).__init__(parent)
         self.settings = Config().instance.settings
@@ -122,7 +172,6 @@ class HerosItem (QtWidgets.QGraphicsItem):
     def updatePos(self):
         print ('update pos',self.heros.attribs['place'] )
         if int(self.heros.attribs['place']) == 0:
-            print ('kkkkk')
             lat = self.heros.attribs['latitude']
             lon = self.heros.attribs['longitude']
    
@@ -133,9 +182,9 @@ class HerosItem (QtWidgets.QGraphicsItem):
         if change == QGraphicsItem.ItemSelectedChange :
             self.heros.setSelected(value)
     #    return super(HerosItem,self).itemChange(change,value) 
-        if (change == QGraphicsItem.ItemPositionChange) and (self.pos().x()!= self.pos().y()) and (self.pos().x()!=0) :
-            self.heros.attribs['latitude'],self.heros.attribs['longitude'] = self.scene_coord.SceneToLatLon(self.pos().x(),self.pos().y())
-            print ('position changed',self.heros.attribs['latitude'],self.heros.attribs['longitude']) 
+        #if (change == QGraphicsItem.ItemPositionChange) and (self.pos().x()!= self.pos().y()) and (self.pos().x()!=0) :
+            #self.heros.attribs['latitude'],self.heros.attribs['longitude'] = self.scene_coord.SceneToLatLon(self.pos().x(),self.pos().y())
+            #print ('position changed',self.heros.attribs['latitude'],self.heros.attribs['longitude']) 
         return QGraphicsItem.itemChange(self,change,value)
     def boundingRect(self):
        # return self.path.boundingRect()
@@ -266,13 +315,7 @@ class HerosItem (QtWidgets.QGraphicsItem):
             rect = QRectF(0,0,self.size,self.size*self.ratio)
             painter.drawText (rect,QtCore.Qt.AlignHCenter|QtCore.Qt.AlignBottom, self.name)
 
-    def contextMenuEvent(self, event):
-        menu = QMenu()
-        testAction = QAction('Test', None)
-        testAction.triggered.connect(self.print_out)
-        menu.addAction(testAction)
-        menu.exec_(event.screenPos())
-        
+ 
     def print_out (self):
         pass
 

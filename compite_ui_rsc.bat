@@ -19,6 +19,7 @@ call %UIC% python_modules/main_view/dialog_thumb_generator.ui > python_modules/m
 call %UIC% python_modules/main_view/dialog_settings.ui > python_modules/main_view/ui_dialog_settigns.py
 call %UIC% python_modules/main_view/dialog_kingdom_choice.ui > python_modules/main_view/ui_dialog_kingdom_choice.py
 call %UIC% python_modules/main_view/dialog_import_kingdom.ui > python_modules/main_view/ui_dialog_import_kingdom.py
+call %UIC% python_modules/main_view/dialog_import_groupe.ui > python_modules/main_view/ui_dialog_import_groupe.py
 call %UIC% python_modules/view/view_book/book_layout.ui > python_modules/view/view_book/ui_book_layout.py
 call %UIC% python_modules/view/view_book/book_page.ui > python_modules/view/view_book/ui_book_page.py
 call %UIC% python_modules/tools/pyhtmleditor/ui/htmleditor.ui > python_modules/tools/pyhtmleditor/ui/htmleditor_ui.py

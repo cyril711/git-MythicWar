@@ -1,11 +1,15 @@
 
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtWidgets
      
 from python_modules.view.view_kingdom.ui_kingdom_layout import Ui_KingdomLayout
 from python_modules.view.view_kingdom.book_world_homepage import BookWorldHomepage
 from python_modules.view.view_kingdom.book_world_main_page import BookWorldMainPage
 from python_modules.view.view_kingdom.book_world_army import BookWorldArmy     
-from PyQt5.Qt import QWidget
+from PyQt5.Qt import QWidget, QPushButton, QMenu, QIcon, QPixmap
+
+
+
+
 
 class KingdomLayout ( QWidget):
     modifiedGroupe = QtCore.pyqtSignal(int)
@@ -20,24 +24,32 @@ class KingdomLayout ( QWidget):
         self.init(model)
         self.nb_pages = 0
         self.empire_selected_name = None
-
+        self.ui.next_button.setEnabled(True)
+        self.ui.previous_button.setEnabled(True)
+        
     def updateContent(self):
         widget = self.ui.stackedWidget.currentWidget()
         widget.updateContent()
 
     def connections (self):
+#        self.ui.stackedWidget.currentChanged.connect(self.onUpdateNavButton)
         self.ui.next_button.clicked.connect(self.goNextPage)
         self.ui.previous_button.clicked.connect(self.goPreviousPage)
         self.model.askForKingdomPage.connect(self.goToKingdom)
         self.model.askForKingdomHomePage.connect(self.goToEmpire)
         self.model.askForGroup.connect(self.goToGroupe)
+#     def onUpdateNavButton (self):
+#         if self.ui.stackedWidget.currentIndex()== 0 :
+#             self.ui.previous_button.setEnabled(False)
+#             self.ui.previous_button.setEnabled(True)
+#         elif self.ui.stackedWidget.currentIndex()== (self.ui.stackedWidget.count()-1) :
     def init (self,model):
         self.model = model
         #chapitre World - kingdoms
         if self.kingdom_homepage != None :
             self.ui.stackedWidget.removeWidget(self.kingdom_homepage)
             self.kingdom_homepage.setParent(None)
-            self.removeAllKingdomWidgets()
+            self.removeKingdomWidgets()
         self.kingdom_widgets_list = []
         faction = []
         for value in self.model.factions.values() :
@@ -84,6 +96,8 @@ class KingdomLayout ( QWidget):
     def loadKingdom(self,kingdom_name):
         self.removeKingdomWidgets()
         #on est dans le cas ou la methode est appellee depuis le click sur un boutton kingdom
+        if kingdom_name == None:
+            return
         if (type(kingdom_name)==bool):
             kingdom_name = self.sender().objectName()
         # dans la cas depuis un chargement depuis l exterieur de la page
@@ -114,6 +128,7 @@ class KingdomLayout ( QWidget):
                     kingdom_widget.addVignette(warrior)                
             else: 
                 for sg in groupe.sub_groupes:
+                    print ('loadKingdom',sg.name)
                     if self.nb_pages == 1 : 
                         kingdom_widget.setRightContent(groupe,sg)
                     else:
@@ -126,16 +141,19 @@ class KingdomLayout ( QWidget):
                             kingdom_widget.setRightContent(groupe,sg)
                     self.nb_pages+=1
                     for warrior in sg.warriorsList().values():
+                        print ('....warrior')
                         kingdom_widget.addVignette(warrior)
+                        print ('*...warrior')
         #ajout de la page pour les temples
         if self.nb_pages%2 == 0:
             kingdom_widget = BookWorldArmy (self.model,self.ui.stackedWidget)
-            kingdom_widget.setTemple (True)
+            kingdom_widget.setTemple (kingdom.attribs['temples'],True)
             self.kingdom_widgets_list.append(kingdom_widget)
             self.ui.stackedWidget.addWidget(kingdom_widget)
         else:
             kingdom_widget.setTemple (kingdom.attribs['temples'],False)
-        self.ui.next_button.setEnabled(True)                      
+ 
+        print ('.....fin du loadKingdom')                     
         self.ui.stackedWidget.setCurrentIndex(first_page_ind)
         
 #     def addKingdomWidget (self, kingdom):
@@ -181,14 +199,14 @@ class KingdomLayout ( QWidget):
 #         self.ui.next_button.setEnabled(True)                            
 
     def goNextPage (self):
-        self.ui.stackedWidget.setCurrentIndex(self.ui.stackedWidget.currentIndex()+1)
-        if self.ui.stackedWidget.currentIndex() == (self.ui.stackedWidget.count()-1):
-            self.ui.next_button.setEnabled(False)
-
-        if self.ui.stackedWidget.currentIndex() == 0:
-            self.ui.previous_button.setEnabled(False)
-        else :
-            self.ui.previous_button.setEnabled (True)
+        self.ui.stackedWidget.setCurrentIndex(min(self.ui.stackedWidget.currentIndex()+1,self.ui.stackedWidget.count()))
+#         if self.ui.stackedWidget.currentIndex() == (self.ui.stackedWidget.count()-1):
+#             self.ui.next_button.setEnabled(False)
+# 
+#         if self.ui.stackedWidget.currentIndex() == 0:
+#             self.ui.previous_button.setEnabled(False)
+#         else :
+#             self.ui.previous_button.setEnabled (True)
 
     def goToKingdom (self, kingdom):
         print ('goToKingdom...',kingdom.name)
@@ -224,13 +242,13 @@ class KingdomLayout ( QWidget):
         self.ui.stackedWidget.setCurrentIndex(0)
                 
     def goPreviousPage (self):
-        self.ui.stackedWidget.setCurrentIndex(self.ui.stackedWidget.currentIndex()-1)
-        if self.ui.stackedWidget.currentIndex() == (self.ui.stackedWidget.count()-1):
-            self.ui.next_button.setEnabled(False)
-        else :
-            self.ui.next_button.setEnabled(True)
-        if self.ui.stackedWidget.currentIndex() == 0:
-            self.ui.previous_button.setEnabled(False)
+        self.ui.stackedWidget.setCurrentIndex(max(self.ui.stackedWidget.currentIndex()-1,0))
+#         if self.ui.stackedWidget.currentIndex() == (self.ui.stackedWidget.count()-1):
+#             self.ui.next_button.setEnabled(False)
+#         else :
+#             self.ui.next_button.setEnabled(True)
+#         if self.ui.stackedWidget.currentIndex() == 0:
+#             self.ui.previous_button.setEnabled(False)
 
 
 #     def changeKingdomPage (self ):

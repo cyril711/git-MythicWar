@@ -99,7 +99,7 @@ class ThumbnailGenerator (SqliteModel):
         self.progress.setMaximum(self.total_heros)
         try:
             if os.path.exists(self.fullPath):
-                list_group = list(filter(self.isValid,os.listdir (self.fullPath)))
+                list_group = list(filter(SqliteModel.isValid,os.listdir (self.fullPath)))
                 for group in list_group : 
                     currentPath = os.path.join(self.fullPath ,group)              
                     list_perso = os.listdir (currentPath)
@@ -111,7 +111,7 @@ class ThumbnailGenerator (SqliteModel):
                             list_perso = os.listdir(currentPath)
                     else:
                         print(' not dir')
-                    for perso in list(filter(self.isValid,list_perso)):
+                    for perso in list(filter(SqliteModel.isValid,list_perso)):
                         path_to_perso = os.path.join(currentPath,perso)
                         self.createThumb(path_to_perso)
                         nb_perso +=1

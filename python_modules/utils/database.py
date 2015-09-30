@@ -37,7 +37,20 @@ class DatabaseManager (QtCore.QObject):
             QtCore.qDebug("Database not OPen")
     
     def __del__(self):
-        self.database.close()                    
+        self.database.close()
+        
+    def _delete (self,from_, condition):
+        query = QtSql.QSqlQuery(self.database)
+        query_str = "DELETE FROM "+ str(from_)
+        if condition != None: 
+            query_str+=" WHERE "+ str(condition)
+
+        query_str+=";"                
+        if self.verbose == True :
+            QtCore.qDebug(query_str)    
+        query.exec_(query_str)
+        return query
+                    
     def insert (self,table_name,record):
         query = QtSql.QSqlQuery(self.database)
         query_str = "INSERT INTO "+str(table_name)+" ( "

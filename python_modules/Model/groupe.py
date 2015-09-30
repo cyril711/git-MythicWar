@@ -48,72 +48,167 @@ class Groupe:
         self.attribs['description']= decsription
         self.onChange("update")
         
-    def updateFromDisk (self):
-        print ('update from disk ',Config().instance.basepath(),self.faction,self.empire,self.kingdom)
-        path = os.path.join(Config().instance.basepath(),self.faction,self.empire,self.kingdom,"Picture")
+
+
+    def updateFromDisk (self,default={}):
+        path = os.path.join(Config().instance.path_to_pic(),self.faction().name,self.empire().name,self.kingdom().name,"Picture")
+        print ('update from disk ',path)
         currentPath = os.path.join(path,self.name)
+        print ('default : ',default)
+        print ('current path',currentPath)
         if os.path.exists(currentPath):
+            print ('le groupe',self.name," exist")
             if (ExportToSqlite.hasSubGroup(currentPath)):
                 list_sub_group = list(filter(SqliteModel.isValid,os.listdir(currentPath)))
                 #on supprime les sous groupe devenus inutiles
+                list_sub_to_delete = []
                 for sg in self.sub_groupes:
                     if (sg.name in list_sub_group) == False:
-                        self.removeSubGroupe(sg)
+                        print ('suppression de sous groupes obsoletes',sg.name)    
+                        list_sub_to_delete.append(sg)
+                for sg in list_sub_to_delete:
+                    sg.delete()
+                        #self.removeSubGroupe(sg)
                 for sub in list_sub_group :
                     # on ajoute un sous groupe si besoin
-                    if not self.containGroupe(sub):
-                        attribs = {'description':Config().instance.settings.value ("database/default_groupe_description="),'color':Config().instance.settings.value ("database/default_groupe_color"),'rank':Config().instance.settings.value ("database/default_groupe_rank")}
-                        result = self.model().database.select("ID+1","gm_groupe",True,"ID + 1 not in (select ID from table)","ID")
-                        groupe = Groupe(result.next().value("ID"), sub,attribs,self.kingdom())
+                    print ('list des sub')
+                    subGroupe = self.containGroupe(sub)
+                    if subGroupe == None:
+                        print ('ajout d un nouveau subgroupe',sub)
+                        if not ('groupe' in default) or default['groupe'] == {}:
+                            attribs = {'description':Config().instance.settings.value ("database/default_groupe_description="),'color':Config().instance.settings.value ("database/default_groupe_color"),'rank':Config().instance.settings.value ("database/default_groupe_rank")}
+                        else:
+                            attribs = default['groupe']
+                        result = self.model().database.select("ID+1","gm_groupe",True,"ID + 1 not in (select ID from gm_groupe)","ID")
+                        result.first()
+                        groupe = Groupe(result.value("ID+1"), sub,attribs,self,True)
+                        attribs['parent']=self.id
+                        attribs['name']=groupe.name
+                        attribs['ID'] =  groupe.id
+                        attribs['ID_kingdom']=self.kingdom().id
+                        self.model().database.insert("gm_groupe",attribs)
                         self.addSubGroupe(groupe)
+                    else:
+                        groupe = subGroupe
                     list_heros = list(filter(SqliteModel.isValid,os.listdir(os.path.join(currentPath,sub))))
-                    sub.updateHeros(list_heros)
+                    groupe.updateHeros(list_heros,default)
             else:
                 list_heros = list(filter(SqliteModel.isValid,os.listdir(currentPath)))
-                self.updateHeros(list_heros)
+                self.updateHeros(list_heros,default)
         else:
-            self.empire().pop(self)
+            self.delete()
+        print ('resultat de l update',self.warriors)
+        for sg in self.sub_groupes :
+            print ('sub.name',sg.name)
+            for w in sg.warriors.values():
+                print ('warrior name',w.name)
     
     
-    def updateHeros (self,list_heros_name):
+    def updateHeros (self,list_heros_name,default={}):
         #on supprime les heros qui n existent plus
         for warrior in self.getWarriorList():
-            if (warrior in list_heros_name) == False:
-                self.removeWarrior()
+            if (warrior.name in list_heros_name) == False:
+                print ('suppression de heros',warrior.name)
+                warrior.delete()
         # on ajoute les nouveaux heros
+        print ('list_heros_name',list_heros_name)
         for heros in list_heros_name :
+            print ('traitement du heros',heros)
             if not self.containWarrior(heros):
                 #ExportToSqlite.createDescriptionFile( heros, path_file)
-                attribs = {} 
-                attribs['latitude'] = Config().instance.settings.value ("database/default_heros_latitude")
-                attribs['longitude'] = Config().instance.settings.value ("database/default_heros_longitude")
-                attribs['place'] = Config().instance.settings.value ("database/default_heros_place")
-                attribs['level'] = Config().instance.settings.value ("database/default_heros_level")
-                attribs['leader'] = Config().instance.settings.value ("database/default_heros_leader")
-                attribs['rank'] = Config().instance.settings.value ("database/default_heros_rank")
-                attribs['HP'] = 1000
-                attribs['MP'] = 1000
-                attribs['HP_max'] = 1000
-                attribs['MP_max'] = 1000
-                attribs['ATK'] = 0
-                attribs['DEF'] = 0
-                attribs['MATK'] = 0
-                attribs['MDEF'] = 0
-                attribs['AGL'] = 0
-                attribs['LUCK'] = 0
-                attribs['description'] = Config().instance.settings.value ("database/default_heros_description")
-                attribs['complete'] = Config().instance.settings.value ("database/default_heros_complete")
-                #TODO compute state with history and life state
-                attribs['state'] = Config().instance.settings.value ("database/default_heros_status")
-                result = self.model().database.select("ID+1","gm_perso",True,"ID + 1 not in (select ID from table)","ID")
-                warrior = Warrior(result.next.value("ID"), heros, attribs, self)
+                print ('ajout de heros',heros)
+                if not "heros" in default or default['heros'] == {}:
+                    print ('cas 1')
+                    attribs = {} 
+                    attribs['latitude'] = float(Config().instance.settings.value ("database/default_heros_latitude"))
+                    attribs['longitude'] = float(Config().instance.settings.value ("database/default_heros_longitude"))
+                    attribs['place'] = int(Config().instance.settings.value ("database/default_heros_place"))
+                    attribs['level'] = int(Config().instance.settings.value ("database/default_heros_level"))
+                    attribs['leader'] = bool(Config().instance.settings.value ("database/default_heros_leader"))
+                    attribs['rank'] = int(Config().instance.settings.value ("database/default_heros_rank"))
+                    attribs['HP'] = 1000
+                    attribs['MP'] = 1000
+                    attribs['HP_max'] = 1000
+                    attribs['MP_max'] = 1000
+                    attribs['ATK'] = 0
+                    attribs['DEF'] = 0
+                    attribs['MATK'] = 0
+                    attribs['MDEF'] = 0
+                    attribs['AGL'] = 0
+                    attribs['LUCK'] = 0
+                    attribs['victoires'] = 0
+                    attribs['defaites'] = 0
+                    attribs['egalites'] = 0
+                    attribs['kills'] = 0
+                    attribs['description'] = Config().instance.settings.value ("database/default_heros_description")
+                    attribs['techniques'] = Config().instance.settings.value ("database/default_heros_techniques")
+                    attribs['historique'] = Config().instance.settings.value ("database/default_heros_historique")
+                    attribs['complete'] = int(Config().instance.settings.value ("database/default_heros_complete"))
+                    #TODO compute state with history and life state
+                    attribs['status'] = Config().instance.settings.value ("database/default_heros_status")
+                else:
+                    print ('cas 2')
+                    #print ('la',default['heros'])
+                    attribs = default['heros']
+                    attribs['HP'] = 1000
+                    attribs['MP'] = 1000
+                    attribs['HP_max'] = 1000
+                    attribs['MP_max'] = 1000
+                    attribs['ATK'] = 0
+                    attribs['DEF'] = 0
+                    attribs['MATK'] = 0
+                    attribs['MDEF'] = 0
+                    attribs['AGL'] = 0
+                    attribs['LUCK'] = 0
+                    attribs['complete'] = 0
+                    attribs['victoires'] = 0
+                    attribs['defaites'] = 0
+                    attribs['egalites'] = 0
+                    attribs['kills'] = 0
+                
+                self.model().database.setVerbose(True)
+                result = self.model().database.select("ID+1","gm_perso",True,"ID + 1 not in (select ID from gm_perso)","ID")
+                result.first()
+                warrior = Warrior(result.value("ID+1"), heros, attribs, self)
                 self.addWarrior(warrior)
+                attribs['name']=warrior.name
+                attribs['ID'] =  warrior.id
+                attribs['ID_groupe']=self.id
+                print ('attribs',attribs)
+                self.model().database.insert("gm_perso",attribs)
+        else:
+            print ('heros deja present on ne fait rien')
         
-    def removeSubGroupe (self,sub):
-        self.sub_groupes.remove(sub)
-        
-    def removeWarrior (self,warrior):
-        self.warriors.pop(warrior.id)
+    def delete (self):
+        print ('delete groupe', self.name)
+        if len(self.sub_groupes) > 0:
+            for sub in self.sub_groupes:
+                sub.delete()
+                #sub.parent.sub_groupes.remove(sub)
+
+        while (len(self.warriors)!= 0):
+            
+            for warrior in self.warriors.values():
+                warrior.delete()
+                break
+
+
+        self.model().database._delete("gm_groupe","ID="+str(self.id))
+        if self.isSub():
+            self.parent.sub_groupes.remove(self)
+        else:
+            self.kingdom().groupes.pop(self.name)    
+#     def removeWarrior (self,warrior):
+#         self.model().database._delete("gm_perso","ID="+str(warrior.id))
+#         self.warriors.pop(warrior.id)
+    
+#     def getAllWarriors (self):
+#         dict_heros = {}
+#         for w in self.warriors.values():
+#             dict_heros[w.id] = w
+#             
+#         return dict_heros
+    
     def getDictAttributes (self):
         attribs = {}
         attribs ['description']=self.attribs['description']
@@ -138,13 +233,14 @@ class Groupe:
             for w in self.warriors.values():
                 if w.name == name:
                     return True
-        return False
+        
+            return False
 
     def containGroupe(self,name):
         for g in self.sub_groupes :
             if g.name == name :
-                return True
-        return False
+                return g
+        return None
     def getWarriorList(self,func=None):
         warrior_list = []
         if len(self.sub_groupes)!=0:

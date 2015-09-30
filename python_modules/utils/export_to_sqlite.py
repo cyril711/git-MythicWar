@@ -94,11 +94,15 @@ class ExportToSqlite (SqliteModel):
             self.nb_heros_unchanged[1] = self.nb_heros_unchanged[1] + 1 
         return result
     
-    def hasSubGroup (self,path):
+    @staticmethod
+    def hasSubGroup (path):
         sub_list = os.listdir (path)
-        if os.path.isdir(os.path.join(path,sub_list[0])):
+        print ('hasSubGroup',sub_list)
+        if len(sub_list)!= 0 and os.path.isdir(os.path.join(path,sub_list[0])):
             sub_list2 = os.listdir(os.path.join(path,sub_list[0]))
+            print ('sub_list_2',sub_list2)
             if os.path.isdir(os.path.join(path,sub_list[0],sub_list2[0])):
+                print ('return true')
                 return True
         return False
     
@@ -133,27 +137,27 @@ class ExportToSqlite (SqliteModel):
         result.next() 
         id_kingdom= result.value("ID")            
         print ('ID kingdom',id_kingdom)
-        list_group = list(filter(self.isValid,os.listdir (self.fullPath)))
+        list_group = list(filter(SqliteModel.isValid,os.listdir (self.fullPath)))
         for group in list_group : 
             result = self.addGroupe(group,id_kingdom)
             result.next()
             id_groupe= result.value("ID")            
             currentPath = os.path.join(self.fullPath,group)
-            if (self.hasSubGroup(currentPath)):
-                list_sub_group = list(filter(self.isValid,os.listdir(currentPath))) 
+            if (ExportToSqlite.hasSubGroup(currentPath)):
+                list_sub_group = list(filter(SqliteModel.isValid,os.listdir(currentPath))) 
                 id_master_group = id_groupe
                 for sub in list_sub_group :
                     result = self.addGroupe(sub, id_kingdom, id_master_group)
                     result.next()
                     id_groupe= result.value("ID")
-                    list_heros = list(filter(self.isValid,os.listdir(os.path.join(currentPath,sub))))
+                    list_heros = list(filter(SqliteModel.isValid,os.listdir(os.path.join(currentPath,sub))))
                     for heros in list_heros :
                         self.createDescriptionFile(heros,os.path.join(currentPath,sub,heros))
                         self.addHeros(heros,id_groupe)
                         nb_heros+=1
                         self.progress.setValue(nb_heros)      
             else:
-                list_heros = list(filter(self.isValid,os.listdir(currentPath)))
+                list_heros = list(filter(SqliteModel.isValid,os.listdir(currentPath)))
                 for heros in list_heros :
                     self.createDescriptionFile(heros,os.path.join(currentPath,heros))
                     self.success = True

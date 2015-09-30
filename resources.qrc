@@ -28,6 +28,7 @@
     <file alias="warning">ressources/icons/png/16x16/warning.png</file>
   </qresource>
   <qresource prefix="icons/32x32">
+    <file alias="update">ressources/icons/png/32x32/update.png</file>
     <file alias="kingdom">ressources/icons/png/32x32/chart.png</file>
     <file alias="all">ressources/icons/png/32x32/users.png</file>
     <file alias="selected">ressources/icons/png/32x32/user_accept.png</file>
@@ -41,18 +42,11 @@
   </qresource>
   <qresource prefix="textures">
     <file alias="ambre">ressources/textures/ambre.png</file>
-    <file alias="tex_blue">ressources/textures/tex_blue.png</file>
-    <file alias="tex_dark_blue">ressources/textures/tex_dark_blue.png</file>
-    <file alias="tex_green">ressources/textures/tex_green.png</file>
-    <file alias="tex_pink">ressources/textures/tex_pink.png</file>
-    <file alias="tex_red">ressources/textures/tex_red.png</file>
-    <file alias="tex_turquoise">ressources/textures/tex_turquoise.png</file>
-    <file alias="tex_violet">ressources/textures/tex_violet.png</file>
-    <file alias="tex_yellow">ressources/textures/tex_yellow.png</file>
     <file alias="amethiste">ressources/textures/amethiste.png</file>
     <file alias="diamond">ressources/textures/diamond.png</file>
     <file alias="emeraude">ressources/textures/emeraude.png</file>
-    <file alias="gold">ressources/textures/gold.png</file>
+    <file alias="aquamarine">ressources/textures/aquamarine.png</file>
+    <file alias="topaze">ressources/textures/topaze.png</file>
     <file alias="onyx">ressources/textures/onyx.png</file>
     <file alias="rubis">ressources/textures/rubis.png</file>
     <file alias="saphir">ressources/textures/saphir.png</file>

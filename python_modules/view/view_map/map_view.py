@@ -14,8 +14,14 @@ from PyQt5.Qt import QMenu, QAction, QRectF, QCursor, QBrush, QColor,\
     QPen, QPointF
 
 from PyQt5.QtWidgets import QGraphicsEllipseItem
+from enum import Enum
 
+from python_modules.model.univers import ActionType
 
+class Mode (Enum):
+        Normal = 0
+        Move = 1
+        Attack = 2
 
 class MapWindow( QtWidgets.QGraphicsView ):
 
@@ -76,6 +82,7 @@ class MapWindow( QtWidgets.QGraphicsView ):
         self.mode = None
         self.observer_x, self.observer_y = 0, 0
 
+        self.mode_action = Mode.Normal
         # members variables used in viewportEvent
         #self.touch_event = TouchEvent( self )
         self.drag = {}
@@ -84,7 +91,7 @@ class MapWindow( QtWidgets.QGraphicsView ):
         self.draw_distance = False
 
         #move warriors
-        self.moveShape = None
+        self.dispatch_item = None
         self.shape = "Circle"
         self.changeSizeMoveShape = False
 
@@ -100,6 +107,8 @@ class MapWindow( QtWidgets.QGraphicsView ):
             print ('layer list item : ',layer)
             self.onLayerAdded(layer,first)
             first = False
+            
+        self.current_action  = {}
     def viewportEvent( self, event ):
         ''' viewport event manager '''
         if event.type() == QtCore.QEvent.TouchBegin or event.type() == QtCore.QEvent.TouchUpdate or event.type() == QtCore.QEvent.TouchEnd:
@@ -246,50 +255,66 @@ class MapWindow( QtWidgets.QGraphicsView ):
     def keyPressEvent(self, event):
         if event.key()== QtCore.Qt.Key_Control:
             self.setDragMode( QtWidgets.QGraphicsView.RubberBandDrag )
-        if self.moveShape != None : 
-#             if event.key() == QtCore.Qt.Key_A :
-#                 self.width_movable_region = self.width_movable_region + 10
-#             elif event.key() == QtCore.Qt.Key_Q :
-#                 self.width_movable_region = max(0,self.width_movable_region - 10)
-#             self.height_movable_region = self.width_movable_region
+        if self.dispatch_item != None : 
             if event.key() == QtCore.Qt.Key_Shift :
                 self.changeSizeMoveShape = True
-                
+            elif  event.key() == QtCore.Qt.Key_A and  self.changeSizeMoveShape == True :
+                self.width_movable_region = self.width_movable_region+ 100000
+                self.height_movable_region = self.height_movable_region+ 100000
+                self.dispatch_item.setRect(QRectF(-self.width_movable_region/2,-self.height_movable_region/2,self.width_movable_region,self.height_movable_region))
+            elif  event.key() == QtCore.Qt.Key_Q and  self.changeSizeMoveShape == True :
+                self.width_movable_region = self.width_movable_region- 100000
+                self.height_movable_region = self.height_movable_region- 100000                
+                self.dispatch_item.setRect(QRectF(-self.width_movable_region/2,-self.height_movable_region/2,self.width_movable_region,self.height_movable_region))
     def keyReleaseEvent(self, event):
         if event.key()== QtCore.Qt.Key_Control:
             self.setDragMode( QtWidgets.QGraphicsView.ScrollHandDrag  )
 
-        if self.moveShape != None : 
+        if self.dispatch_item != None : 
             if event.key() == QtCore.Qt.Key_Shift :
                 self.changeSizeMoveShape = False
 
     def mousePressEvent( self, event ):
         ''' allows target or view displacement '''
+
         print ('mouse press event')
         super( MapWindow, self ).mousePressEvent( event )
-        if self.moveShape == None :
+        if self.mode_action == Mode.Normal:
             if self.scene_coord:
                 if self.draw_distance and not self.origin:
                     self.origin = self.destination = self.mapToScene( event.pos() )
 
-        else:
-            # on fait le dispatch
-            print ('on fait le dispatch on est en coordonne scene')
-            self.univers.dispatchCircleWarriors (self.scene_coord,self.mapToScene( event.pos() ),self.width_movable_region/2)
-            #on update les position des items
-            #self.move_heroes.emit()
+        elif self.mode_action == Mode.Move :
+            print ('....action move')
+            if len(self.univers.selectedWarriors())> 1:
+                self.scene.removeItem(self.dispatch_item)
+                self.dispatch_item = None
+                l_positions = self.univers.dispatchCircleWarriors (self.scene_coord,self.mapToScene( event.pos() ),self.width_movable_region/2)
+            else:
+                print ('type de left',type(self.univers.selectedWarriors()),len(self.univers.selectedWarriors()))
+                mx,my = self.mapToScene( event.pos()).x(),self.mapToScene( event.pos()).y()
+                pos_dest = self.scene_coord.SceneToLatLon(mx,my)
+                pos_dest = QPointF(-pos_dest[0],pos_dest[1])
+                l_positions = [pos_dest]
 
-
-#             for item in self.scene.items():
-#                 print ('type',type(item.parent),item)
-#                 if type(item) == "toto" :
-#                     latitude = item.heros.latitude
-#                     longitude = item.heros.longitude
-#                     item.setPos(latitude ,longitude)
-#                     print ('ok')
-
-            self.scene.removeItem(self.moveShape)            
-            self.moveShape = None
+            self.univers.addAction(self.current_action["type"],self.current_action["value"],self.univers.getSelectionList(),l_positions)
+            self.mode_action = Mode.Normal
+        elif self.mode_action == Mode.Attack:
+            pass
+            
+        elif self.mode_action == Mode.Heal :
+            pass
+            
+        
+ 
+#         else:
+#             # on fait le dispatch
+#             print ('on fait le dispatch on est en coordonne scene')
+#             self.univers.dispatchCircleWarriors (self.scene_coord,self.mapToScene( event.pos() ),self.width_movable_region/2)
+# 
+# 
+#             self.scene.removeItem(self.moveShape)            
+#             self.moveShape = None
 
     def mouseMoveEvent( self, event ):
         ''' allows target or view displacement or carrier displacement '''
@@ -302,21 +327,21 @@ class MapWindow( QtWidgets.QGraphicsView ):
             self.scene.addItem( self.distance_line )
         elif self.scene_coord:
             self.collectAndSendCursorInformations()
-        if self.moveShape != None:
+        if self.mode_action == Mode.Move and len(self.univers.selectedWarriors())> 1:
             if self.changeSizeMoveShape == True : 
-                self.incrSizeMoveShape = self.mapToScene( event.pos() ) - self.moveShape.pos()
+                self.incrSizeMoveShape = self.mapToScene( event.pos() ) - self.dispatch_item.pos()
                 self.width_movable_region = self.width_movable_region + self.incrSizeMoveShape.x()
                 self.height_movable_region= self.width_movable_region
-                self.moveShape.setRect(QRectF(-self.width_movable_region/2,-self.height_movable_region/2,self.width_movable_region,self.height_movable_region))
+                self.dispatch_item.setRect(QRectF(-self.width_movable_region/2,-self.height_movable_region/2,self.width_movable_region,self.height_movable_region))
             else:
                 pos = self.mapToScene( event.pos() )
                 #self.moveShape.setRect(QRectF(pos.x(),pos.y(),self.width_movable_region*1000,self.height_movable_region*1000))
-                self.moveShape.setPos(QPointF(pos.x(),pos.y()))
+                self.dispatch_item.setPos(QPointF(pos.x(),pos.y()))
                 item = self.itemAt(event.pos())
                 if item and type(item) == TempleItem: 
-                    self.moveShape.hide()
+                    self.dispatch_item.hide()
                 else:
-                    self.moveShape.show()
+                    self.dispatch_item.show()
     def mouseReleaseEvent( self, event ):
         ''' allows target or view displacement '''
         super( MapWindow, self ).mouseReleaseEvent( event )
@@ -345,36 +370,104 @@ class MapWindow( QtWidgets.QGraphicsView ):
 
 
 
-    def contextMenuEvent(self,event):
+    def menuHeros(self,event):
+        #====== Menu Move ==========
+        print ('context menu event de heros')
+        menu_move = QMenu("Move")
+        moveNormal = QAction("Normal",None)
+        moveNormal.setData(1.0)
+        moveNormal.triggered.connect(self.onActionMove)
+        menu_move.addAction(moveNormal)
+        moveSlow= QAction("Slow",None)
+        moveSlow.setData(0.5)
+        menu_move.addAction(moveSlow)
+        moveVerySlow= QAction("Very Slow",None)
+        moveVerySlow.setData(0.25)
+        menu_move.addAction(moveVerySlow)
+        moveFast= QAction("Fast",None)
+        moveFast.setData(2.0)
+        menu_move.addAction(moveFast)
+        moveVeryFast= QAction("Very Fast",None)
+        moveVeryFast.setData(4.0)
+        menu_move.addAction(moveVeryFast)
+        actionTeleport= QAction("Teleport",None)
+        menu_move.addAction(actionTeleport)        
+        #========== Menu Actions ========
+        menu_actions = QMenu("Action")
+        actionAttack= QAction("Attack",None)
+        menu_actions.addAction(actionAttack)
+        actionHeal= QAction("Soigne",None)
+        menu_actions.addAction(actionHeal)        
+        
+        #======== MENU GENERAL ================
         menu = QMenu()
-        if len(self.univers.selectedWarriors()) != 0 : 
-            
-            testAction = QAction('Move', None)
-            testAction.triggered.connect(self.onMoveMode)
-            menu.addAction(testAction)
-        addTempleAction = QAction('Add Temple', None)
-        addTempleAction.triggered.connect(self.onAddTemple)
-        menu.addAction(addTempleAction)
+        menu.addMenu(menu_move)
+        menu.addMenu(menu_actions)
+        actionPlacement= QAction("Placement",None)
+        menu.addAction(actionPlacement)
+        action_running = False
+        for w in self.univers.selectedWarriors():
+            if w.attribs['status']!= "Attente":
+                action_running = True
+                
+        if action_running == True :
+            actionCancel= QAction("Cancel",None)
+            menu.addAction(actionCancel)            
+                
+        if len(self.univers.selectedWarriors())==1 : 
+            if self.univers.selectedWarriors()[0].attribs['HP']== 0:
+                actionRebirth= QAction("Rebirth",None)
+                menu.addAction(actionRebirth)  
+            else:
+                actionKill= QAction("Kill",None)
+                menu.addAction(actionKill)
+                    
+        #menu.exec_(event.screenPos())
+        #event.accept()
         menu.exec_(event.globalPos())
+
+
+    def onActionMove(self):
+        self.sender().data()
+        self.current_action["type"]= ActionType.MoveToPosition
+        self.current_action["value"] = self.sender().data()
+        if len(self.univers.selectedWarriors()) > 1 : 
+            if self.dispatch_item!= None : 
+                self.scene.removeItem(self.moveShape)
+            self.dispatch_item = QGraphicsEllipseItem()
+            brush = QBrush(QColor(255,0,0,125))
+            pen = QPen(QColor(255,0,0))
+            self.dispatch_item.setRect(QRectF(-self.width_movable_region/2,-self.height_movable_region/2,self.width_movable_region,self.height_movable_region))
+            self.dispatch_item.setPen(pen)
+            self.dispatch_item.setBrush(brush)
+            self.dispatch_item.setZValue(2)
+            self.scene.addItem(self.dispatch_item)
+        self.mode_action = Mode.Move
+        
+    def contextMenuEvent(self,event):
+        #super(MapWindow,self).contextMenuEvent(event)
+        
+        if len(self.univers.selectedWarriors()) != 0 : 
+            self.menuHeros(event)
+            
+     
+#                 testAction = QAction('Move', None)
+#                 testAction.triggered.connect(self.onMoveMode)
+
+#         actionAddTemple = QAction('Add Temple', None)
+#         actionAddTemple.triggered.connect(self.onAddTemple)
+#         menu.addAction(actionAddTemple)
+#         menu.exec_(event.globalPos())
             
     def onAddTemple (self):
         print ('add temple')
         #todo
         return False
-    def onMoveMode (self):
-        if self.moveShape!= None : 
-            self.scene.removeItem(self.moveShape)
-        self.moveShape = QGraphicsEllipseItem()
-        brush = QBrush(QColor(255,0,0,125))
-        pen = QPen(QColor(255,0,0))
-        self.moveShape.setRect(QRectF(-self.width_movable_region/2,-self.height_movable_region/2,self.width_movable_region,self.height_movable_region))
-        self.moveShape.setPen(pen)
-        self.moveShape.setBrush(brush)
+
 
     
        
-        self.moveShape.setZValue(2)
-        self.scene.addItem(self.moveShape)
+
 
 #     def contextMenuEvent( self, event ):
 #         super(MapWindow,self).contextMenuEvent(event)

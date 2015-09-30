@@ -91,12 +91,13 @@ class BookWorldArmy (QWidget, Ui_BookWorldArmy):
                 self.comboBoxColorLeft.setCurrentIndex(self.comboBoxColorLeft.count() - 1)
         # self.comboBoxColorLeft.setEnabled(False)
     def setRightContent (self, groupe, sub_groupe=None):
+        print ('....setRightContent book world army sub_groupe',sub_groupe)
         if sub_groupe != None : 
             self.groupe_right = sub_groupe
         else : 
             self.groupe_right = groupe
         # self.right_page.setObjectName("vignette_droite"+groupe.name)
-        print ('self.groupe_right.attribs[]', Config().instance.path_to_texture() + "/" + self.groupe_right.attribs['color'].strip())
+        #print ('self.groupe_right.attribs[]', Config().instance.path_to_texture() + "/" + self.groupe_right.attribs['color'].strip())
         self.right_page.setStyleSheet("#label_vignette_right{background-image: url(:/textures/"+ self.groupe_right.attribs['color'] + ");}")
         
         # self.title_droite.setStyleSheet("#title_droite{background-image: url(:/textures/"+self.groupe_right.attribs['color']+");}")
@@ -121,7 +122,9 @@ class BookWorldArmy (QWidget, Ui_BookWorldArmy):
             if key == groupe.attribs['color']:
                 self.comboBoxColorRight.setCurrentIndex(self.comboBoxColorRight.count() - 1)
       #  self.comboBoxColorRight.setEnabled(False)
-        self.connections()        
+        
+        self.connections() 
+        print ('.....fin setRightContent')       
     def addVignette (self, warrior):
         label_name = "label_vignette_left"
         if self.current_page == 0 : 

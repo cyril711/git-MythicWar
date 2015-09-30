@@ -86,7 +86,7 @@ class ProfilWidget (QWidget,Ui_ProfilWidget):
             groupe_color = self.warrior.masterGroupe().attribs['color']
         self.iconGroupe.setStyleSheet("#"+self.iconGroupe.objectName()+"{background-image:url(:/textures/"+groupe_color+");}")
         self.iconGroupe.clicked.connect(self.onGroupClicked)
-        path = os.path.join(Config().instance.path_to_icons(),"actions",warrior.attribs['state'])
+        path = os.path.join(Config().instance.path_to_icons(),"actions",warrior.attribs['status'])
         # Icone d etat
         self.iconState.setPixmap(QPixmap(path).scaledToHeight(64))
 

@@ -138,7 +138,6 @@ class KingdomLayer(Layer):
                # lat = float(Config().instance.settings.value("map/initial_lat"))
                # lon = float(Config().instance.settings.value("map/initial_lon"))
                 mx, my = self.scene_coord.LatLonToScene(lat, lon)
-
                 item = HerosItem(self.model, heros, 30, self.scene_coord)
                 item.setPos(mx, my)
                 item.setZValue(self.z_value + 10)
@@ -161,7 +160,7 @@ class KingdomLayer(Layer):
 #         # retains position
 #         self.mx, self.my = mx, my
 
-
+    
 
 #     def contextMenu( self, pos, menu ):
 #         if self.isUnderMouse( pos, self.items['temple'] ):
@@ -183,7 +182,7 @@ class KingdomLayer(Layer):
 #         self.simulation.publishCamera( M.radians( lat ), M.radians( lon ) )
         pass
 
-    
+
 
     def setTouchMode(self, value):
         self.items['temple'].touch_mode = value

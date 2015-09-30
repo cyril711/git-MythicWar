@@ -74,69 +74,7 @@ class ImageLabel(QLabel):
 #         if self.p != None :
 #             self.p.destroy()
         
-        
 
-class RankWidget (QtWidgets.QWidget):
-    def __init__ (self,warrior,parent):
-        super(RankWidget, self).__init__(parent)    
-        self.texture = QPixmap()
-        self.stars = []
-        self.warrior = warrior
-        self.initialized = False
-        self.rank = 4#self.warrior.attribs['rank']
-        self.setMouseTracking(True)
-
-        self.updateGeom()
-
-    def updateGeom (self):
-        
-        if self.rank == 5 : 
-            self.texture = QColor("yellow")
-        elif self.rank == 4 : 
-            self.texture = QColor("blue")
-        elif self.rank == 3 : 
-            self.texture = QColor("green")
-        elif self.rank == 2 : 
-            self.texture = QColor("red")
-        elif self.rank == 1 : 
-            self.texture = QColor("gray")
-
-        self.initialized = True
-
-    def paintEvent (self,event):    
-        if self.initialized == True : 
-            painter = QPainter(self)
-           
-            #painter.setPen(QtCore.Qt.NoPen)
-            brush = QBrush (self.texture)
-            nb_stars = 5
-    
-            for s in range (nb_stars):
-                starPath = QPainterPath()
-                starPath.moveTo(QtCore.QPointF(20,10))
-                for  i in range (5):
-                    starPath.lineTo(10 + 10 * math.cos(0.8 * i * math.pi),10 + 10 * math.sin(0.8 * i * math.pi))
-                starPath.closeSubpath()
-                starPath.setFillRule(QtCore.Qt.WindingFill)
-                painter.translate(QtCore.QPointF(20,0))
-                if (nb_stars-s) > self.rank :
-                    painter.setBrush(QtCore.Qt.NoBrush)
-                else:
-                    painter.setBrush(brush)
-                painter.drawPath(starPath)
-                self.stars.append(starPath)
-           # painter.setBrush(QtCore.Qt.NoBrush)
-    def mouseMoveEvent(self,event):
-        for i in range (len(self.stars)):
-            if (5-i) > 2:#self.warrior.attribs['rank']:
-                if self.stars[i].contains(event.pos()):
-                    print ('event pos',event.pos())
-                    self.rank = i
-                    self.updateGeom()
-        
-
-        
-        
 
 class ProfilHeroWidget (QPushButton):
         
@@ -301,6 +239,8 @@ class BookWarriorPage ( QWidget):
         #rank_widget = RankWidget(warrior,self.ui.rank_widget)
         #self.ui.layout_rank.addWidget(rank_widget)
 
+        self.ui.big_star.clicked.connect(self.onRankChanged)
+        self.ui.big_star.setStyleSheet("#"+self.ui.big_star.objectName()+"{border-width: 0px;background-color:transparent;}")
         self.l_stars = []
         self.l_stars.append(self.ui.star_1)
         self.l_stars.append(self.ui.star_2)
@@ -310,11 +250,13 @@ class BookWarriorPage ( QWidget):
         for w in self.l_stars:
             w.setStyleSheet("#"+w.objectName()+"{border-width: 0px;background-color:transparent;}")
             w.clicked.connect(self.onRankChanged)
+        print ('init book warrior page',self.warrior.attribs["rank"])
         self.updateRank(self.warrior.attribs["rank"]) 
 
         #self.profil_layout.insertWidget(0,profil_widget)
         
         groupe_name = self.warrior.groupe().name
+        print ('groupe.name',groupe_name)
         if self.warrior.masterGroupe() != None : 
             groupe_name = self.warrior.masterGroupe().name+"/"+groupe_name
         path_warrior = os.path.join(Config().instance.path_to_pic(),faction_name,empire_name,kingdom_name,'Picture',groupe_name,self.warrior.name)
@@ -340,11 +282,11 @@ class BookWarriorPage ( QWidget):
         self.ui.iconKingdom.setIcon(QIcon(path))
         self.ui.iconKingdom.setToolTip(self.warrior.kingdom().name)
         self.ui.iconKingdom.clicked.connect(self.onKingdomClicked)
-        path = os.path.join(Config().instance.path_to_icons(),"actions",self.warrior.attribs['state'])
+        path = os.path.join(Config().instance.path_to_icons(),"actions",self.warrior.attribs['status'])
         print ('path icon ',path)
         self.ui.iconState.setPixmap(QPixmap(path).scaledToHeight(64))
         
-        self.ui.iconState.setToolTip(self.warrior.attribs['state'])
+        self.ui.iconState.setToolTip(self.warrior.attribs['status'])
         filename= os.path.join(path_warrior,"description.html")
         if (os.path.exists(filename)):
             self.description_widget = PageWidget(filename,self.ui.right_page)
@@ -386,16 +328,40 @@ class BookWarriorPage ( QWidget):
         return (name != "portrait.jpg" and name!="portrait_thumbnail.jpg" and name!= "description.html")
     
     def onRankChanged (self):
-        new_rank = int(self.sender().objectName().split("_")[1])
-        self.warrior.attribs["rank"] = new_rank
+        print ('onRankChanged')
+        if self.sender().objectName()== "big_star":
+            new_rank = 5
+        elif (self.warrior.attribs['rank']==5) and (int(self.sender().objectName().split("_")[1])==self.warrior.attribs['rank']):
+            new_rank = 6
+        else:
+            new_rank = int(self.sender().objectName().split("_")[1])
+        self.warrior.changeRank(new_rank)
+        print ('new rank',new_rank)
         self.updateRank(new_rank)
     def updateRank(self,rank):
+        print ('update rank',rank)
         pal = QPalette(self.ui.rank_text.palette())
         image = QImage(os.path.join(Config().instance.path_to_icons(),"rank")+"/star_"+self.warrior.groupe().attribs["color"]+".png")
         value = image.pixel(image.width()/2.0,image.height()/2.0)
         pal.setColor(QPalette.WindowText, QColor(value))
         self.ui.rank_text.setPalette(pal)
         self.ui.rank_text.setText(str(rank))
+        if rank== 6 :
+            self.ui.rank_widget_layout.removeWidget(self.ui.rank_text)
+            for star in self.l_stars :
+                self.ui.rank_widget_layout.removeWidget(star)
+                star.setParent(None)
+                self.ui.rank_text.setParent(None)
+            self.ui.rank_widget_layout.addWidget(self.ui.big_star)
+            self.ui.rank_widget_layout.addWidget(self.ui.rank_text)    
+            self.ui.big_star.setIcon(QIcon(os.path.join(Config().instance.path_to_icons(),"rank")+"/big/star_"+self.warrior.groupe().attribs["color"]+".png"))
+        else:
+            self.ui.rank_widget_layout.removeWidget(self.ui.big_star)
+            self.ui.rank_widget_layout.removeWidget(self.ui.rank_text)
+            self.ui.big_star.setParent(None)
+            for star in self.l_stars :
+                self.ui.rank_widget_layout.addWidget(star)    
+            self.ui.rank_widget_layout.addWidget(self.ui.rank_text)
         for i in range (len(self.l_stars)) :
             if i < rank:
                 self.l_stars[i].setIcon(QIcon(os.path.join(Config().instance.path_to_icons(),"rank")+"/star_"+self.warrior.groupe().attribs["color"]+".png"))
