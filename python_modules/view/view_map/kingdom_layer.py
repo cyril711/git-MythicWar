@@ -3,7 +3,8 @@ from python_modules.view.view_map.layer import Layer
 # import map_items.entity_item
 
 from python_modules.view.view_map import layer_adapter
-from python_modules.view.view_map.map_item import TempleItem, HerosItem
+from python_modules.view.view_map.map_item import TempleItem, HerosItem,\
+    ActionsItem
 # import shapes
 import math
 from python_modules.config import Config
@@ -68,7 +69,8 @@ class KingdomLayer(Layer):
         self.items_temples = []
         # init
         # self.instantiateItems()
-        self.instantiateTemplesItems(self.model.temples)
+        self.instantiateTemplesItems(self.model.getAllTemples())
+        self.instantiateActionsItem()
         self.connections()
 
         # adapter
@@ -96,8 +98,8 @@ class KingdomLayer(Layer):
     def instantiateTemplesItems(self , temples):
         ''' instantiates items and adds them to the scene '''
         print ('instantiate temple items')
-        for key, value in zip(temples.keys(), temples.values()):
-            t_item = TempleItem(value, 10)
+        for value in temples:
+            t_item = TempleItem(self.scene.views()[0],self.scene_coord, value, 10)
             
             try:
                 lat = value.position.x()
@@ -119,6 +121,11 @@ class KingdomLayer(Layer):
                     # self.items[kingdom.id].item_change_callback = self.onKingdomPositionChanged#self.onCarrierItemChange
                    # self.items[kingdom.id].position_changed.connect(self.onKingdomPositionChanged)
         print ('fin instantiate temple items')
+    def instantiateActionsItem (self):
+        item = ActionsItem(self.scene.views()[0], self.model.list_actions,self.scene_coord)
+        item.setPos(0, 0)
+        item.setZValue(self.z_value )        
+        self.scene.addItem(item)
     def instantiateHerosItems (self):
         print ('instantiate heroes items')
         for heros_item in self.items_heros :
@@ -138,27 +145,18 @@ class KingdomLayer(Layer):
                # lat = float(Config().instance.settings.value("map/initial_lat"))
                # lon = float(Config().instance.settings.value("map/initial_lon"))
                 mx, my = self.scene_coord.LatLonToScene(lat, lon)
-                item = HerosItem(self.model, heros, 30, self.scene_coord)
+                item = HerosItem(self.scene.views()[0],self.model, heros, 20, self.scene_coord)
                 item.setPos(mx, my)
                 item.setZValue(self.z_value + 10)
                 self.items_heros.append(item)
                 self.scene.addItem(item)
+
 
     def onKingdomPositionChanged (self, kingdom_id, mx, my):
         lat, lon = self.scene_coord.SceneToLatLon(mx, my)
         lat = math.radians(lat)
         lon = math.radians(lon)
         self.model.updateKingdom(kingdom_id, lat, lon)
-
-#     def onCarrierPositionChanged( self, mx, my, alt ):
-#         ''' update items position '''
-#         self.items['carrier'].setFlag( QtWidgets.QGraphicsItem.ItemSendsGeometryChanges, False )
-#         self.items['carrier'].setPos( mx, my )
-#         self.items['carrier'].setFlag( QtWidgets.QGraphicsItem.ItemSendsGeometryChanges, True )
-#         self._setCarrierVector( mx, my )
-#         self._setTrajectory( mx, my )
-#         # retains position
-#         self.mx, self.my = mx, my
 
     
 

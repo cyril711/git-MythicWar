@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QAction, QMainWindow, QWidget, QFileDialog
 from PyQt5.Qt import  QKeySequence, QDate, QTime,QDialog, QProgressDialog,QIcon, QTextStream,\
     QApplication, QSizePolicy, QPushButton, QTimer, QComboBox, \
-    QDateTime, QLabel
+    QDateTime, QLabel, QRectF
 from python_modules.main_view.explorer_view import ExplorerWidget
 from python_modules.main_view.profil_view import ProfilWidget
 from python_modules.view.view_map.map_view import MapWindow
@@ -25,6 +25,7 @@ from python_modules.tools.stylesheet.stylesheeteditor import StyleSheetEditor
 from python_modules.model.groupe import Groupe
 from python_modules.model.warrior import Warrior
 from python_modules.model.kingdom import Kingdom
+from python_modules.view.view_map.map_item import ColorMode
 class MainWindow(QMainWindow,Ui_MainWindow):
     
     def __init__(self):
@@ -47,6 +48,28 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.toolBarPreset.setObjectName("toolBarPreset")
         self.toolBarPreset.addActions([self.actionAll,self.actionSelection,self.actionFilter])
         self.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBarPreset)
+
+        # MENU MAP #
+        self.actionColorizeFaction = QAction(self)
+        self.actionColorizeFaction .setIcon(QIcon(":/icons/256x256/letter_F"))
+        self.actionColorizeFaction.triggered.connect(self.onActionColorizeFaction)
+        self.actionColorizeFaction.setCheckable(True)
+        self.actionColorizeEmpire = QAction(self)
+        self.actionColorizeEmpire.setIcon(QIcon(":/icons/256x256/letter_E"))
+        self.actionColorizeEmpire.triggered.connect(self.onActionColorizeEmpire)
+        self.actionColorizeEmpire.setCheckable(True)
+        self.actionColorizeKingdom= QAction(self)
+        self.actionColorizeKingdom.setIcon(QIcon(":/icons/256x256/letter_K"))
+        self.actionColorizeKingdom.triggered.connect(self.onActionColorizeKingdom)
+        self.actionColorizeKingdom.setCheckable(True)
+        self.actionColorizeGroupe= QAction(self)
+        self.actionColorizeGroupe.setIcon(QIcon(":/icons/256x256/letter_G"))
+        self.actionColorizeGroupe.triggered.connect(self.onActionColorizeGroupe)
+        self.actionColorizeGroupe.setCheckable(True)
+        self.toolBarMap = QtWidgets.QToolBar(self)
+        self.toolBarMap.setObjectName("toolBarMap")
+        self.toolBarMap.addActions([self.actionColorizeFaction, self.actionColorizeEmpire, self.actionColorizeKingdom,self.actionColorizeGroupe])
+        self.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBarMap)
 
         self.play_button = QAction(self)
         self.play_button.setIcon(QIcon(":/icons/24x24/player"))
@@ -104,15 +127,16 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.progress = QProgressDialog ()
         self.progress.setWindowModality(QtCore.Qt.WindowModal)        
         filename = None
-        if os.path.exists(os.path.join(self.settings.value("global/current_dir"),self.settings.value("global/current_database"))):
-            filename = os.path.join(self.settings.value("global/current_dir"),self.settings.value("global/current_database"))
-        elif os.path.exists(os.path.join(self.settings.value("global/current_dir"),self.settings.value("global/default_database"))):
-            filename = os.path.join(self.settings.value("global/current_dir"),self.settings.value("global/default_database"))
+        if os.path.exists(os.path.join(Config().instance.path_to_sqlite(),self.settings.value("global/current_database"))):
+            filename = os.path.join(Config().instance.path_to_sqlite(),self.settings.value("global/current_database"))
+        elif os.path.exists(os.path.join(Config().instance.path_to_sqlite(),self.settings.value("global/default_database"))):
+            filename = os.path.join(Config().instance.path_to_sqlite(),self.settings.value("global/default_database"))
         if filename != None :
             print ('filename',filename)
             self.init(filename)
             self.actionQuit.triggered.connect(self.onQuit)
             self.actionSave.triggered.connect(self.onSave)
+            self.actionSave.setEnabled(True)
             self.actionOpen.triggered.connect(self.onOpen)
             self.actionSave_As.triggered.connect(self.onSaveAs)
             self.actionSettings.triggered.connect(self.onEdit)
@@ -168,6 +192,8 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         if filename != None : 
             self.database = DatabaseManager(filename)
             self.database.createConnection()
+            self.database_history = DatabaseManager(filename)
+            self.database_history.createConnection()            
 
 #         if self.kingdomLayout != None :
 #             self.kingdomLayout.disconnect()
@@ -237,7 +263,9 @@ class MainWindow(QMainWindow,Ui_MainWindow):
             self.explorerWidget = ExplorerWidget(self.univers)
         else:
             self.explorerWidget.initView(self.univers)
-        self.explorerWidget.setParent(self.explorer_content)
+        self.explorerWidget.hide()
+        self.explorerWidget.setWindowModality(QtCore.Qt.WindowModal)
+        #self.explorerWidget.setParent(self.explorer_content)
         
         if self.profilWidget == None :
             self.profilWidget= ProfilWidget(self.univers)
@@ -256,7 +284,8 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         self.univers.askForGroup.connect(self.onGoToKingdomPage)
         self.univers.askForMap.connect(self.onGoToMap)
         self.univers.askForProfil.connect(self.onUpdateProfil)
-        self.univers.selection_updated.connect(self.explorerWidget.updateSelectionList) 
+        self.univers.selection_updated.connect(self.explorerWidget.updateSelectionList)
+        self.univers.selection_updated.connect(self.profilWidget.updateSelectionList) 
         self.univers.askForKingdomReload.connect(self.onKingdomReload)
         self.univers.saveEnabled.connect(self.onSaveEnabled)
 
@@ -273,6 +302,7 @@ class MainWindow(QMainWindow,Ui_MainWindow):
         
         self.tabWidget.setCurrentIndex(2)
         self.actionAll.setChecked(True)
+        self.actionColorizeEmpire.setChecked(True)
         self.onPresetAll()
         self.tabWidget.setCurrentIndex(int(self.settings.value("mainView/ind_current_tab")))
 
@@ -352,6 +382,45 @@ class MainWindow(QMainWindow,Ui_MainWindow):
     def onQuit (self):
         self.close()
 
+
+    def onActionColorizeFaction (self):
+        self.actionColorizeEmpire.setChecked(False)
+        self.actionColorizeKingdom.setChecked(False)
+        self.actionColorizeGroupe.setChecked(False)
+        current_index = self.tabWidget.currentIndex()
+        widget = self.tabWidget.widget(current_index)
+        if widget.objectName() == "map":
+            self.map.changeColorMode(ColorMode.Faction)
+            self.map.update(QtCore.QRect(0,0,999999999,99999999))
+            
+    def onActionColorizeEmpire (self):
+        self.actionColorizeFaction.setChecked(False)
+        self.actionColorizeKingdom.setChecked(False)
+        self.actionColorizeGroupe.setChecked(False)
+        current_index = self.tabWidget.currentIndex()
+        widget = self.tabWidget.widget(current_index)
+        if widget.objectName() == "map":
+            self.map.changeColorMode(ColorMode.Empire)
+            self.map.update(QtCore.QRect(0,0,999999999,99999999))
+    def onActionColorizeKingdom(self):
+        self.actionColorizeFaction.setChecked(False)
+        self.actionColorizeEmpire.setChecked(False)
+        self.actionColorizeGroupe.setChecked(False)
+        current_index = self.tabWidget.currentIndex()
+        widget = self.tabWidget.widget(current_index)
+        if widget.objectName() == "map":
+            self.map.changeColorMode(ColorMode.Kingdom)
+            self.map.update(QtCore.QRect(0,0,999999999,99999999))
+    def onActionColorizeGroupe(self):
+        self.actionColorizeFaction.setChecked(False)
+        self.actionColorizeKingdom.setChecked(False)
+        self.actionColorizeEmpire.setChecked(False)
+        current_index = self.tabWidget.currentIndex()
+        widget = self.tabWidget.widget(current_index)
+        if widget.objectName() == "map":
+            self.map.changeColorMode(ColorMode.Groupe)
+            self.map.update(QtCore.QRect(0,0,999999999,99999999))
+            
     def onPresetAll(self):
         current_index = self.tabWidget.currentIndex()
         widget = self.tabWidget.widget(current_index)
@@ -461,10 +530,17 @@ class MainWindow(QMainWindow,Ui_MainWindow):
     
     def keyPressEvent(self,event):
         if event.key()== QtCore.Qt.Key_F :
-            if self.menubar.isHidden():
-                self.menubar.show()
+            if event.modifiers() == QtCore.Qt.ControlModifier :
+                if self.explorerWidget.isHidden():
+                    self.explorerWidget.show()
+                else:
+                    self.explorerWidget.hide()
             else:
-                self.menubar.hide()
+                if self.menubar.isHidden():
+                    self.menubar.show()
+                else:
+                    self.menubar.hide()
+            
     def onEditFilters (self):
         self.filterView = FilterView(self.univers,self)
         self.filterView.open()

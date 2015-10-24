@@ -93,7 +93,7 @@ class DatabaseManager (QtCore.QObject):
         return query
         
 
-    def update (self,table_name,attributes,condition= None):
+    def update (self,table_name,attributes,condition= None, batch=False):
         if len(attributes)!= 0:
             query = QtSql.QSqlQuery(self.database)
             query_str = "UPDATE "+str(table_name)+" SET "
@@ -118,8 +118,12 @@ class DatabaseManager (QtCore.QObject):
     #                 value = '"'+str(value)+'"'                
     #                 print (value)
            # q_str = 'UPDATE gm_perso SET RepresentativPic= "images/La_Guerre_Mythique/Grec/Hephaistos/Picture/Cyclopes_Forgerons/Zuali/Zuali.jpg", Leader= "False", Latitude= "48.858093", Longitude= "2.294694", Level="0", Place="0" WHERE IDPerso=1114 ;'
-            if not query.exec_():
-                QtCore.qDebug(query.lastError().text())
+            if batch == False : 
+                if not query.exec_():
+                    QtCore.qDebug(query.lastError().text())
+            else:
+                if not query.execBatch():
+                    QtCore.qDebug(query.lastError().text())                
 
 
     def createTable (self,table_name,attribs):

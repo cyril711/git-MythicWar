@@ -316,7 +316,7 @@ class BookWarriorPage ( QWidget):
         
     def onMapClicked (self):
         self.model.clearSelection()
-        self.warrior.setSelected(True)
+        self.warrior.setSelected(True,True)
         self.model.askForMap.emit(self.warrior.attribs['latitude'],self.warrior.attribs['longitude'])
     def onGroupClicked (self):
         self.model.askForGroup.emit(self.warrior.groupe())

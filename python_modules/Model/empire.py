@@ -2,6 +2,7 @@ from python_modules.config import Config
 from python_modules.utils.sqlite_model import SqliteModel
 from python_modules.model.kingdom import Kingdom
 import os
+from PyQt5.Qt import QColor, QFile, QIODevice, QTextStream, QPoint, qDebug
 
 class Empire:
     
@@ -11,12 +12,45 @@ class Empire:
         self.attrib = attrib
         self.attrib['icon'] = self.name+".png"
         self.kingdoms = {}
+        self.color = QColor(int(self.attrib['color'].split(',')[0]),int(self.attrib['color'].split(',')[1]),int(self.attrib['color'].split(',')[2]))
         self.parent= parent
+        self.geometry = self.loadGeom()
     
+    
+    def loadGeom (self):
+        geometry = {'polygon':[]}
+        filename = self.name+"_geometry.txt"
+        filename = filename.lower()
+        filename = os.path.join(Config().instance.path_to_icons(),"empire","32x32",filename)
+        file = QFile(filename)
+        if file.open(QIODevice.ReadOnly):
+
+            stream = QTextStream(file)
+            
+            while (not stream.atEnd()):
+                line = stream.readLine()
+                if line[0]!= "#":
+                    elts = line.split(' ')
+                    l = []
+                    print ('line',line)
+                    for i in range (1,len(elts)):
+                        try :
+                            l.append(QPoint(int(elts[i].split(',')[0]),int(elts[i].split(',')[1])))
+                        except IndexError :
+                            qDebug("Warning : empire.loadgeom, probleme lecture paire de point")
+                    if (elts[0] == "p"):
+                        print ('add polygon')
+                        geometry['polygon'].append( l )
+                    else:
+                        pass
+        else : 
+            print ('not able to load file',filename)
+        return geometry
+            
     def getDictAttributes (self):
         attribs = {}
         attribs['name'] = self.name
-        attribs['color']=self.attrib['color']
+        attribs['color']=str(self.color.red())+','+str(self.color.green())+','+str(self.color.blue())
         attribs['icon']=self.attrib['icon']
         attribs['ID']=self.id
         attribs['ID_faction']=self.parent.id
@@ -100,6 +134,7 @@ class Empire:
             if kingdom.name == kingdom_name:
                 return kingdom
         return None
+    
     
     def getWarriorList(self,func=None):
         warrior_list = []

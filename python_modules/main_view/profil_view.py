@@ -6,12 +6,20 @@ from python_modules.main_view.ui_profil_widget import Ui_ProfilWidget
 import os
 
 
+class HerosListWidgetItem (QListWidgetItem):
+    def __init__(self, heros, parent=0):
+        super(HerosListWidgetItem, self).__init__(parent)
+        self.heros = heros
+        self.setText(self.heros.name)
+        
 class ProfilWidget (QWidget,Ui_ProfilWidget):
     def __init__(self,model,parent=None):
         super(ProfilWidget,self).__init__(parent)
         self.setupUi(self)
       #  self.tableWidget.setUpdatesEnabled(True)    
         self.settings = Config().instance.settings
+        self.list_selected.hide()
+        self.list_selected2.hide()
         self.connections()
         self.initView(model)        
 
@@ -21,7 +29,26 @@ class ProfilWidget (QWidget,Ui_ProfilWidget):
 
 
     def connections (self):
-        pass
+        self.list_selected.itemDoubleClicked.connect(self.onUnselectItem)
+        self.list_selected.itemClicked.connect(self.onSelectItem)
+
+
+    def onSelectItem (self, item):
+        self.update(item.heros)
+        
+    def onUnselectItem (self, item):
+        item.heros.setSelected(False)
+        #self.list_selected.removeItemWidget(item)
+            
+    def updateSelectionList (self):
+        self.list_selected.clear()
+        if len(self.model.selectedWarriors())!= 0 and self.list_selected.isHidden(): 
+            self.list_selected.show()
+        elif len(self.model.selectedWarriors())== 0 and self.list_selected.isHidden()== False: 
+            self.list_selected.hide()
+        for item in self.model.selectedWarriors():
+            item_list = HerosListWidgetItem (item,self.list_selected)
+            self.list_selected.addItem(item_list)
             
     def update (self,warrior):
         self.warrior = warrior

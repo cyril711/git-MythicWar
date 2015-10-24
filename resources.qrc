@@ -19,6 +19,12 @@
     <file alias="state_3">ressources/icons/png/128x128/check_state_3.png</file>
     <file alias="target">ressources/icons/png/128x128/target.png</file>
   </qresource>
+  <qresource prefix="icons/256x256">
+    <file alias="letter_F">ressources/icons/png/256x256/lettre_F.png</file>
+    <file alias="letter_E">ressources/icons/png/256x256/lettre_E.png</file>
+    <file alias="letter_K">ressources/icons/png/256x256/lettre_K.png</file>
+    <file alias="letter_G">ressources/icons/png/256x256/lettre_G.png</file>
+  </qresource>
   <qresource prefix="icons/16x16">
     <file alias="delete">ressources/icons/png/16x16/delete.png</file>
     <file alias="jump">ressources/icons/png/16x16/jump.png</file>
@@ -28,13 +34,26 @@
     <file alias="warning">ressources/icons/png/16x16/warning.png</file>
   </qresource>
   <qresource prefix="icons/32x32">
+    <file alias="book">ressources/icons/png/32x32/book.png</file>
+    <file alias="castle">ressources/icons/png/32x32/castle.png</file>
+    <file alias="fiche_perso">ressources/icons/png/32x32/fiche_perso.png</file>
+    <file alias="info">ressources/icons/png/32x32/info.png</file>
+    <file alias="action_attack">ressources/icons/png/32x32/action_attack.png</file>
+    <file alias="action_attack_inactif">ressources/icons/png/32x32/action_attack_inactif.png</file>
+    <file alias="action_attack_multi">ressources/icons/png/32x32/action_attack_multi.png</file>
+    <file alias="action_go_inside">ressources/icons/png/32x32/action_go_inside.png</file>
+    <file alias="action_heal">ressources/icons/png/32x32/action_heal.png</file>
+    <file alias="action_heal_inactif">ressources/icons/png/32x32/action_heal_inactif.png</file>
+    <file alias="action_heal_multi">ressources/icons/png/32x32/action_heal_multi.png</file>
+    <file alias="action_move">ressources/icons/png/32x32/action_move.png</file>
+    <file alias="action_teleport">ressources/icons/png/32x32/action_teleport.png</file>
+    <file alias="action_placement">ressources/icons/png/32x32/action_placement.png</file>
     <file alias="update">ressources/icons/png/32x32/update.png</file>
     <file alias="kingdom">ressources/icons/png/32x32/chart.png</file>
     <file alias="all">ressources/icons/png/32x32/users.png</file>
     <file alias="selected">ressources/icons/png/32x32/user_accept.png</file>
     <file alias="map">ressources/icons/png/32x32/globe.png</file>
     <file alias="fiche_royaume">ressources/icons/png/32x32/application.png</file>
-    <file alias="fiche_perso">ressources/icons/png/32x32/image.png</file>
     <file alias="filtered">ressources/icons/png/32x32/user_search.png</file>
   </qresource>
   <qresource prefix="background">

@@ -25,6 +25,9 @@ call %UIC% python_modules/view/view_book/book_page.ui > python_modules/view/view
 call %UIC% python_modules/tools/pyhtmleditor/ui/htmleditor.ui > python_modules/tools/pyhtmleditor/ui/htmleditor_ui.py
 call %UIC% python_modules/tools/pyhtmleditor/ui/inserthtmldialog.ui > python_modules/tools/pyhtmleditor/ui/inserthtmldialog_ui.py
 call %UIC% python_modules/view/view_map/add_temple_dialog.ui > python_modules/view/view_map/ui_dialog_add_temple.py
+call %UIC% python_modules/view/view_historic/historic_page.ui > python_modules/view/view_historix/historic_page.py
+call %UIC% python_modules/view/view_infos/historic_page.ui > python_modules/view/view_infos/historic_page.py
+call %UIC% python_modules/view/view_infos/action_resolve_page.ui > python_modules/view/view_infos/action_resolve_page.py
 
 
 %RCC% resources.qrc -o python_modules/resources_rc.py

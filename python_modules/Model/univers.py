@@ -13,9 +13,10 @@ from random import randint
 import math
 from PyQt5 import QtCore, QtWidgets
 import collections
-from python_modules.model.actions import ActionMoveToTargets, ActionMoveToPosition
+from python_modules.model.actions import ActionMoveToTargets, ActionMoveToPosition,\
+    ActionHeal, ActionAttack
 from enum import Enum
-
+import os
 
 
 class ActionType (Enum):
@@ -42,14 +43,15 @@ class Univers (QObject):
         self.factions = {}
         self.temples = {}
         self.database = database
-        self.list_actions = []
+        self.list_actions = {}
+        self.cancelled_heros_id = []
         self.modifications = []
         self.loadFromFile()
         self.currentFaction = None
         self.currentEmpire = None
         self.currentKingdom= None
         self.currentGroupe= None     
-        self.selected_Warriors = []
+        self.selected_Warriors = [[],[]]
         self.filtered_Warriors = []
         self.settings = Config().instance.settings
         colors =  self.settings.value ("global/groupe_color").split(",")
@@ -67,23 +69,75 @@ class Univers (QObject):
         for heros in self.selected_Warriors:
             my_list.append(heros)
         return my_list
-    def addAction (self,type_i,value,left_part,right_part):
+    def addAction (self,type_i,value,left_part,right_part,offline=False):
         if type_i == ActionType.MoveToPosition:
-            print ('add action',left_part,right_part,value)
-            print ('type de left',type(left_part),len(left_part))
-            action = ActionMoveToPosition(len(self.list_actions)+1 ,left_part,right_part,True,value)
-            self.list_actions.append(action)
+            action = ActionMoveToPosition(len(self.list_actions)+1 ,left_part,right_part,True,value,offline)
+            if action.offline == False:
+                self.writeHistory("start",action)
+            self.list_actions[action.id] = action
         elif type == ActionType.MoveToTargets:
             pass
-        
+    
+    def setCancelledHeroesId (self, liste_id):
+        self.cancelled_heros_id = liste_id
+    def cancelActions (self):
+        l = []
+        for heros_id in self.cancelled_heros_id:
+            for action in self.list_actions.values() :
+                if action.LeftPartContainHeros (heros_id):
+                    l.append(action.id)
+        for item_id in l :
+            if self.list_actions[item_id].offline == False:
+                self.writeHistory("cancel",self.list_actions[item_id])
+            self.list_actions[item_id].resetHeroesStatus()
+            self.list_actions.pop(item_id)
+        self.cancelled_heros_id = []
+
+                    
     def updateActions (self, deltaT):
-        print ('nombre d action dans la pile',len(self.list_actions))
-        for action in self.list_actions : 
-            if action.isActive() :
-                print ('elle est active')
-                action.process(deltaT)
-            else:
-                pass
+        self.cancelActions ()
+        l_to_finish_id = []
+        for action in self.list_actions.values() : 
+            finished = action.process(deltaT)
+            if finished == True : 
+                l_to_finish_id.append(action.id)
+        self.terminate_actions (l_to_finish_id)
+   
+   
+    def searchDependantAction (self, action_id):
+        l = []
+        for action in self.list_actions.values():
+            if action.parent_action == action_id:
+                l.append(action)
+        return l
+    
+    def writeHistory (self, label, action):
+        pass
+    
+    def  terminate_actions (self, list_id):
+        for action_id in list_id:
+            if self.list_actions[action_id].offline == False:
+                self.writeHistory("finish",self.list_actions[action_id])
+            l = self.searchDependantAction(action_id)
+            self.list_actions[action_id].resetHeroesStatus()
+            self.list_actions.pop(action_id)
+            for item in l :
+                if self.list_actions[item].offline == False:
+                    self.writeHistory("start",self.list_actions[item])
+                item.activate()
+                if (type(item) == ActionAttack) or (type(item) == ActionHeal):
+                    for heros in item.list_right:
+                        l_temp = []
+                        for action in self.list_actions :
+                            if action.LeftPartContainHeros (heros.id):
+                                l_temp.append(action.id)
+                        for item_id in l_temp :
+                            if self.list_actions[item_id].offline == False:
+                                self.writeHistory("interrupted",self.list_actions[item_id])
+                            self.list_actions[item_id].resetHeroesStatus()
+                            self.list_actions.pop(item_id)  
+                
+
     def addModifications(self,item,modification_type):
         if len(self.modifications)==0:
             self.saveEnabled.emit(True)
@@ -91,7 +145,6 @@ class Univers (QObject):
 
     # ici on suppose que chaque empire a un nom unique
     def getEmpireFromName (self, empire_name):
-        print ('getEmpireFromName',empire_name)
         for faction in self.factions.values() :
             for empire in faction.empires.values():
                 if empire.name == empire_name :
@@ -113,7 +166,8 @@ class Univers (QObject):
         self.currentEmpire = None
         self.currentKingdom= None
         self.currentGroupe= None     
-        self.selected_Warriors = []
+        self.selected_Warriors = [[],[]]
+
         self.filtered_Warriors = []
         
 
@@ -124,7 +178,7 @@ class Univers (QObject):
         self.currentEmpire = None
         self.currentKingdom= None
         self.currentGroupe= None     
-        self.selected_Warriors = []
+        self.selected_Warriors = [[],[]]
         self.filtered_Warriors = []
             
     def setCurrentFaction (self, faction):
@@ -145,43 +199,26 @@ class Univers (QObject):
     def previousSelectedWarrior (self):
         self.first_selected = (self.first_selected - 1)% len(self.selected_Warriors)    
 
-    def onSelectionChanged (self, flag,warrior):
+    def onSelectionChanged (self, flag,warrior, first_selection):
         if (warrior in self.selected_Warriors) and (flag == False):
-            self.selected_Warriors.remove(warrior)
-           # print ('remove from selected warriors',warrior.name)
+            self.selected_Warriors[first_selection].remove(warrior)
             self.selection_updated.emit()
         elif (warrior not in self.selected_Warriors) and (flag == True):
-            self.selected_Warriors.append(warrior)
+            print (len(self.selected_Warriors))
+            self.selected_Warriors[first_selection].append(warrior)
             #print ('append from selected warriors',warrior.name)
             self.selection_updated.emit()        
-#     def setSelection (self, list_id):
-#         self.selected_Warriors = []
-#         for w in self.filtered_Warriors:
-#             try :
-#                 if w.id == list_id[len(self.selected_Warriors)]:
-#                     self.selected_Warriors.append(w)
-#             except IndexError :
-#                 pass
-#         self.first_selected = 0
-#         self.selection_changed.emit()
+
 
     def dispatchCircleWarriors(self,scene_coord, origin, radius):
-        print ('dispatch circle warriors')
         l = []
         for heros in self.selectedWarriors():
             try:
                 x = randint(int(-radius),int(radius))
                 y = (radius*radius) - (x*x)
-                print ('sqrt(y)',math.sqrt(y))
-                print ('rrr',origin,radius,y,x)
-                print ('randrange',int(origin.y()-math.sqrt(y)),int(origin.y()+math.sqrt(y)))
                 y = randint (int(-math.sqrt(y)),int(math.sqrt(y)))
                 latitude = origin.x()  +x 
                 longitude = -origin.y()  +y
-                print ('position AVT dispatch :',heros.attribs['latitude'],heros.attribs['longitude'])
-                #heros.attribs['latitude'],heros.attribs['longitude'] = scene_coord.SceneToLatLon(latitude,longitude)
-                #print ('position du dispatch :',heros.attribs['latitude'],heros.attribs['longitude']) 
-                #heros.on_move.emit()
                 mx,my = scene_coord.SceneToLatLon(latitude,longitude)
                 new_pos = QPointF(mx,my)
             except ValueError :
@@ -190,7 +227,7 @@ class Univers (QObject):
         return l
 
     def selectedWarriors (self):
-        return self.selected_Warriors
+        return self.selected_Warriors[1]
     def filteredWarriors (self):
         return self.filtered_Warriors
     
@@ -207,9 +244,18 @@ class Univers (QObject):
                             l.append(perso)
         return l
     def clearSelection (self):
-        l = self.allWarriors()
-        for warrior in l : 
-            warrior.setSelected(False)
+        self.clearSelectionList(True)
+        self.clearSelectionList(False)
+        
+    def clearSelectionList (self, flag):
+        l_w = []
+        for w in self.selected_Warriors[flag]:
+            l_w.append(w)
+        for warrior in l_w : 
+            warrior.setSelected(False,flag)
+            
+            
+
         
     def updateFilteredWarrior(self):
         self.filtered_Warriors = []
@@ -313,7 +359,6 @@ class Univers (QObject):
 
     def getFirstFreeGroupId(self):
         dict_groupes = self.getAllGroupes ()
-        dict_groupes = {'0':'llll','2':'ooooo','5':'lllll'}
         print ('type sorted',type(sorted(dict_groupes)),sorted(dict_groupes.items()))   
         l = collections.OrderedDict(sorted(dict_groupes.items()))
         id = 0
@@ -334,64 +379,135 @@ class Univers (QObject):
             else:
                 
                 return id
-    def getAllWarriors(self):            
-        dict_heros = {}
+            
+    def getWarriorList(self):
+        warrior_list = []
         for faction in self.factions.values() :
-            dict_heros.update(faction.getAllWarriors())
-        return dict_heros
+            warrior_list+=faction.getWarriorList()
+        return warrior_list
+#     def getAllWarriors(self):            
+#         dict_heros = {}
+#         for faction in self.factions.values() :
+#             dict_heros.update(faction.getAllWarriors())
+#         return dict_heros
     def getAllGroupes (self):
         dict_groupes = {}
         for faction in self.factions.values() :
             dict_groupes.update(faction.getAllGroupes())
-            
         return dict_groupes
+    
     def save (self,filename = None):
         print ("sauvegarde")
-       # self.database.setVerbose(True)
-        for temple in self.temples.values() :
-            attribs = temple.getDictAttributes ()
-            self.database.update("gm_temple",attribs,"ID="+str(temple.id))
-        for faction in self.factions.values() :
-            attribs = faction.getDictAttributes ()
-            self.database.update("gm_faction",attribs,"ID="+str(faction.id))
-            for empire in faction.empires.values():
-                attribs = empire.getDictAttributes ()
-                self.database.update("gm_empire",attribs,"ID="+str(empire.id))
-                for kingdom in empire.kingdoms.values():
-                    attribs = kingdom.getDictAttributes ()
-                    self.database.update("gm_kingdom",attribs,"ID="+str(kingdom.id))
-                    for groupe in kingdom.groupes.values():
-                        attribs = groupe.getDictAttributes ()
-                        self.database.update("gm_groupe",attribs,"ID="+str(groupe.id))
-                        for sub_groupe in groupe.sub_groupes:
-                            attribs = sub_groupe.getDictAttributes ()
-                            self.database.update("gm_groupe",attribs,"ID="+str(sub_groupe.id))
-                            for perso in sub_groupe.warriors.values():
-                                attribs = perso.getDictAttributes ()
-                                self.database.update("gm_perso",attribs,"ID="+str(perso.id))
-                        for perso in groupe.warriors.values():
-                            attribs = perso.getDictAttributes ()
-                            if perso.name == "Artemis":
-                                print ("artemie pos pour test",attribs["latitude"],attribs["longitude"])
-                            self.database.update("gm_perso",attribs,"ID="+str(perso.id))
-        db_name = self.database.database.databaseName()
+        progress = QProgressDialog ()
+        progress.setWindowModality(QtCore.Qt.WindowModal)
+        progress.setLabelText("Sauvegarde")
+        progress.setMaximum(len(self.getWarriorList())+1)
+        #db_name = self.database.database.databaseName()
         if filename == None : 
-            filename = self.settings.value("global/current_database")
+            filename = os.path.join(Config().instance.path_to_sqlite(),self.settings.value("global/current_database"))
         try :
-            print ('filename',type(filename))
-            print ('value',filename)
+            print ('current filename', filename)
+            # backup 
+            filename_bkp = filename+"_"+QtCore.QDateTime.currentDateTime().toString("yyyy-MM-dd-hh-mm-ss")
+            QFile.copy(filename,filename_bkp)
             if QFile.remove(filename) == False :
                 qWarning("echec suppression ")
-                
+            else:
+                qWarning("reussite suppression %s"% filename)                
         except OSError :
             qWarning("echec suppression ")
-            pass
 
-        if QFile.copy(db_name,filename):
-            print("sauvegarde reussit db name",db_name, filename)
+        result = QFile.copy(Config().instance.model_database(),filename)
+        if result == False :
+            print("echec de la copy ",Config().instance.model_database(),filename)
+            return
         else:
-            qDebug("Echec sauvegarde")
-            print ('kkk',db_name,filename)
+            print("copy du model reussit")
+            database = DatabaseManager(filename,True)
+            database.createConnection()
+            database.setVerbose(True)
+        for faction in self.factions.values() :
+            attribs = faction.getDictAttributes ()
+            database.insert("gm_faction",attribs)
+            for empire in faction.empires.values():
+                attribs = empire.getDictAttributes ()
+                database.insert("gm_empire",attribs)
+                for kingdom in empire.kingdoms.values():
+                    attribs = kingdom.getDictAttributes ()
+                    database.insert("gm_kingdom",attribs)
+                    for temple in kingdom.temples:
+                        attribs = temple.getDictAttributes ()
+                        database.insert("gm_temple",attribs)                        
+                    for groupe in kingdom.groupes.values():
+                        attribs = groupe.getDictAttributes ()
+                        database.insert("gm_groupe",attribs)
+                        for sub_groupe in groupe.sub_groupes:
+                            attribs = sub_groupe.getDictAttributes ()
+                            database.insert("gm_groupe",attribs)
+                            for perso in sub_groupe.warriors.values():
+                                attribs = perso.getDictAttributes ()
+                                database.insert("gm_perso",attribs)
+                        for perso in groupe.warriors.values():
+                            attribs = perso.getDictAttributes ()
+                            database.insert("gm_perso",attribs)
+                            progress.setValue(progress.value()+1)
+
+
+        
+        
+    
+#     def save (self,filename = None):
+#         print ("sauvegarde")
+#         progress = QProgressDialog ()
+#         progress.setWindowModality(QtCore.Qt.WindowModal)
+#         progress.setLabelText("Sauvegarde")
+#         progress.setMaximum(len(self.getWarriorList())+1)
+#        # self.database.setVerbose(True)
+#         for temple in self.temples.values() :
+#             attribs = temple.getDictAttributes ()
+#             self.database.update("gm_temple",attribs,"ID="+str(temple.id))
+#         for faction in self.factions.values() :
+#             attribs = faction.getDictAttributes ()
+#             self.database.update("gm_faction",attribs,"ID="+str(faction.id))
+#             for empire in faction.empires.values():
+#                 attribs = empire.getDictAttributes ()
+#                 self.database.update("gm_empire",attribs,"ID="+str(empire.id))
+#                 for kingdom in empire.kingdoms.values():
+#                     attribs = kingdom.getDictAttributes ()
+#                     self.database.update("gm_kingdom",attribs,"ID="+str(kingdom.id))
+#                     for groupe in kingdom.groupes.values():
+#                         attribs = groupe.getDictAttributes ()
+#                         self.database.update("gm_groupe",attribs,"ID="+str(groupe.id))
+#                         for sub_groupe in groupe.sub_groupes:
+#                             attribs = sub_groupe.getDictAttributes ()
+#                             self.database.update("gm_groupe",attribs,"ID="+str(sub_groupe.id))
+#                             for perso in sub_groupe.warriors.values():
+#                                 attribs = perso.getDictAttributes ()
+#                                 self.database.update("gm_perso",attribs,"ID="+str(perso.id))
+#                         for perso in groupe.warriors.values():
+#                             attribs = perso.getDictAttributes ()
+#                             self.database.update("gm_perso",attribs,"ID="+str(perso.id))
+#                             progress.setValue(progress.value()+1)
+#         db_name = self.database.database.databaseName()
+#         if filename == None : 
+#             filename = os.path.join(Config().instance.path_to_sqlite(),self.settings.value("global/current_database"))
+#         try :
+#             print ('current filename',type(filename), filename)
+#             if QFile.remove(filename) == False :
+#                 qWarning("echec suppression ")
+#             else:
+#                 qWarning("reussite suppression %s"% filename)
+#                 
+#         except OSError :
+#             qWarning("echec suppression ")
+#             pass
+# 
+#         if QFile.copy(db_name,filename):
+#             print("sauvegarde reussit db name",db_name, filename)
+#         else:
+#             qDebug("Echec sauvegarde")
+#         progress.setValue(progress.maximum())
+#         print ('kkk',db_name,filename)
     def loadFromFile (self):
         all_sqlite = self.database.select("*", "gm_perso",False,None)
         nb_total = 0
@@ -402,16 +518,7 @@ class Univers (QObject):
         self.progress.setMinimum (0)
         self.progress.setMaximum (nb_total*2)
         qWarning("debut chargement de la bdd progess max = ")
-        temples_sqlite = self.database.select("*", "gm_temple",False,None,"ID")
-        while temples_sqlite.next():
-            level_dict = {}
-            for name,background in zip(temples_sqlite.value("levels").split(','),temples_sqlite.value("backgrounds").split(',')):
-                level_dict[name] = background
-            print ('temple :',temples_sqlite.value("name"),temples_sqlite.value("latitude"),temples_sqlite.value("longitude"))
-            pos = QPointF(float(temples_sqlite.value("latitude")),float(temples_sqlite.value("longitude")))
-            master = temples_sqlite.value("master")
-            temple = Temple(temples_sqlite.value("ID"), temples_sqlite.value("name"),pos,level_dict,master)
-            self.addTemple (temple)
+
         faction_sqlite = self.database.select("*", "gm_faction",False,None,"ID ASC")
         while faction_sqlite.next():
             attribs = {'icon':faction_sqlite.value("icon")} 
@@ -420,7 +527,6 @@ class Univers (QObject):
             empire_sqlite = self.database.select("*", "gm_empire",False, "ID_faction=="+str(faction_sqlite.value("ID")),"ID ASC")         
             while empire_sqlite.next():
                 attribs = {'color':str(empire_sqlite.value("color"))}
-                print ('coloooooor',str(empire_sqlite.value("icon")),empire_sqlite.value("name"),str(empire_sqlite.value("color")))
                 empire = Empire(empire_sqlite.value("ID"), empire_sqlite.value("name"),attribs,faction)
                 faction.addEmpire(empire)
                 kingdom_sqlite = self.database.select("*", "gm_kingdom",False,"ID_empire=="+str(empire_sqlite.value("ID")),"ID ASC")
@@ -429,9 +535,23 @@ class Univers (QObject):
                     attribs['temples'] = kingdom_sqlite.value("temples").split(',')
                     kingdom = Kingdom(kingdom_sqlite.value("ID"), kingdom_sqlite.value("name"),attribs,empire)
                     empire.addKingdom(kingdom)
-                    for t in kingdom_sqlite.value("temples").split(','):
-                        if t in self.temples: 
-                            self.temples[t].setOwner(kingdom)      
+                    for t_id in kingdom_sqlite.value("temples").split(','):
+                        temples_sqlite = self.database.select("*", "gm_temple",True,"ID="+t_id)
+                        try :
+                            temples_sqlite.next()
+                            level_dict = {}
+                            for name,background in zip(temples_sqlite.value("levels").split(','),temples_sqlite.value("backgrounds").split(',')):
+                                level_dict[name] = background
+                            pos = QPointF(float(temples_sqlite.value("latitude")),float(temples_sqlite.value("longitude")))
+                            master = temples_sqlite.value("master")
+                            temple = Temple(temples_sqlite.value("ID"), temples_sqlite.value("name"),kingdom,pos,level_dict,master)
+                            kingdom.addTemple(temple)
+                            qWarning("ID : %s" %t_id)
+                        except AttributeError:
+                            qWarning("Temple manquant ID : %s" %t_id)
+#                     for t in kingdom_sqlite.value("temples").split(','):
+#                         if t in self.temples: 
+#                             self.temples[t].setOwner(kingdom)      
                     groupe_sqlite = self.database.select("*", "gm_groupe",False,"ID_kingdom=="+str(kingdom_sqlite.value("ID"))+" and parent==0","ID ASC")
                     while groupe_sqlite.next():
                         attribs = {'description':groupe_sqlite.value("description"),'color':groupe_sqlite.value("color"),'rank':groupe_sqlite.value("rank")}
@@ -576,8 +696,13 @@ class Univers (QObject):
     def addFaction (self, faction):
         self.factions[faction.name] = faction
         
-    def addTemple (self, temple):
-        self.temples[temple.id] = temple
+    def getAllTemples (self):
+        l = []
+        for faction in self.factions.values() :
+            for empire in faction.empires.values():
+                for kingdom in empire.kingdoms.values():
+                    l+=kingdom.temples
+        return l
 
 
         

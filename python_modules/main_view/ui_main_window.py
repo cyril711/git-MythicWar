@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'python_modules/main_view/main_window.ui'
 #
-# Created: Fri Sep 25 23:10:56 2015
+# Created: Wed Oct 21 21:03:13 2015
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -66,19 +66,6 @@ class Ui_MainWindow(object):
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
-        self.explorerDockWidget = QtWidgets.QDockWidget(MainWindow)
-        self.explorerDockWidget.setMinimumSize(QtCore.QSize(150, 800))
-        self.explorerDockWidget.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable|QtWidgets.QDockWidget.DockWidgetFloatable)
-        self.explorerDockWidget.setObjectName("explorerDockWidget")
-        self.explorer_content = QtWidgets.QWidget()
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.explorer_content.sizePolicy().hasHeightForWidth())
-        self.explorer_content.setSizePolicy(sizePolicy)
-        self.explorer_content.setObjectName("explorer_content")
-        self.explorerDockWidget.setWidget(self.explorer_content)
-        MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(1), self.explorerDockWidget)
         self.profilDockWidget = QtWidgets.QDockWidget(MainWindow)
         self.profilDockWidget.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable|QtWidgets.QDockWidget.DockWidgetFloatable)
         self.profilDockWidget.setObjectName("profilDockWidget")
@@ -168,7 +155,6 @@ class Ui_MainWindow(object):
         self.menuFIle.setTitle(_translate("MainWindow", "FIle"))
         self.menuTools.setTitle(_translate("MainWindow", "Database"))
         self.menuDesign.setTitle(_translate("MainWindow", "Tools"))
-        self.explorerDockWidget.setWindowTitle(_translate("MainWindow", "Explorer"))
         self.profilDockWidget.setWindowTitle(_translate("MainWindow", "Profil"))
         self.actionHome.setText(_translate("MainWindow", "home"))
         self.actionQuit.setText(_translate("MainWindow", "quit"))

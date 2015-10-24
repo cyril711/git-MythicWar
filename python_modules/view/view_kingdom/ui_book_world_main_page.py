@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'python_modules/view/view_kingdom/book_world_main_page.ui'
 #
-# Created: Fri Sep 25 23:10:55 2015
+# Created: Wed Oct 21 21:03:13 2015
 #      by: PyQt5 UI code generator 5.3.2
 #
 # WARNING! All changes made in this file will be lost!

@@ -11,11 +11,13 @@ class Kingdom :
         self.attribs = attribs
         self.color=QColor(attribs["red"],attribs["green"],attribs["blue"],attribs["alpha"])
         self.groupes = {}
+        self.temples = []
         self.parent = parent
         self.settings = Config().instance.settings
     def addGroupe (self, groupe):
         self.groupes[groupe.name] = groupe
-        
+    def addTemple (self,temple):
+        self.temples.append(temple)
         
     def delete (self):
         while (len(self.groupes)!= 0):
@@ -104,9 +106,13 @@ class Kingdom :
         attribs['name'] = self.name
         attribs['ID'] = self.id
         attribs['ID_empire'] = self.parent.id
-        temples = ""
+        temples = None
         for t_id in self.attribs['temples']:
-            temples=temples+","+str(t_id)
+            if temples == None:
+                temples=str(t_id)
+            else:
+                temples=temples+","+str(t_id)
+        print ('kingdom temples',temples)
         attribs['temples'] = temples
         return attribs 
     

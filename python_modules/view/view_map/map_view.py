@@ -7,11 +7,11 @@ from python_modules.config import Config
 #from foreground_items import ForegroundItems
 #from touch_event import TouchEvent
 #from marker_item import MarkerItem
-from python_modules.view.view_map.map_item import TempleItem
+from python_modules.view.view_map.map_item import TempleItem, ColorMode
 
 from python_modules.utils import projection
 from PyQt5.Qt import QMenu, QAction, QRectF, QCursor, QBrush, QColor,\
-    QPen, QPointF
+    QPen, QPointF, QPixmap
 
 from PyQt5.QtWidgets import QGraphicsEllipseItem
 from enum import Enum
@@ -19,9 +19,13 @@ from enum import Enum
 from python_modules.model.univers import ActionType
 
 class Mode (Enum):
-        Normal = 0
-        Move = 1
-        Attack = 2
+    Normal = 0
+    Move = 1
+    Attack = 2
+    Drag = 3
+    Selection = 4
+
+
 
 class MapWindow( QtWidgets.QGraphicsView ):
 
@@ -44,6 +48,7 @@ class MapWindow( QtWidgets.QGraphicsView ):
         self.scene_coord = None
         self.settings = Config().instance.settings
         # add a scene
+        self.first_selection = True
         self.scene = MapScene( self )
         self.setScene( self.scene )
 #         zoom_in = QShortcut()
@@ -99,6 +104,7 @@ class MapWindow( QtWidgets.QGraphicsView ):
         self.height_movable_region = 100000
         self.marker_item = None
         self.marker_items = []
+        self.color_mode = ColorMode.Empire
 
         layers_list = self.settings.value("map/instanciated_layers",[])
         first = True
@@ -118,6 +124,9 @@ class MapWindow( QtWidgets.QGraphicsView ):
         return super( MapWindow, self ).viewportEvent( event )
 
 
+    def changeColorMode (self,mode):
+        self.color_mode = mode
+        print ('change color mode',mode)
 
     def setFlags( self ):
         ''' set graphics view flags '''
@@ -137,17 +146,6 @@ class MapWindow( QtWidgets.QGraphicsView ):
         # to send cursor informations
         self.setMouseTracking( True )
         self.setDragMode( QtWidgets.QGraphicsView.ScrollHandDrag )
-
-#     def keyPressEvent(self, event):
-#         
-#         if event.key() == QtCore.Qt.Key_Control:
-#             print ('press Ctrl')
-#             self.setDragMode( QtWidgets.QGraphicsView.NoDrag )        
-#     def keyReleaseEvent(self, event):
-#             
-#         if event.key() == QtCore.Qt.Key_Control:
-#             print ('press Ctrl')
-#             self.setDragMode( QtWidgets.QGraphicsView.ScrollHandDrag )        
         
 
     def initGraphicsView( self, projection_name, level, lat, lon ):
@@ -297,7 +295,7 @@ class MapWindow( QtWidgets.QGraphicsView ):
                 pos_dest = QPointF(-pos_dest[0],pos_dest[1])
                 l_positions = [pos_dest]
 
-            self.univers.addAction(self.current_action["type"],self.current_action["value"],self.univers.getSelectionList(),l_positions)
+            self.univers.addAction(self.current_action["type"],self.current_action["value"],self.univers.getSelectionList(),l_positions, self.current_action["offline"])
             self.mode_action = Mode.Normal
         elif self.mode_action == Mode.Attack:
             pass
@@ -342,6 +340,7 @@ class MapWindow( QtWidgets.QGraphicsView ):
                     self.dispatch_item.hide()
                 else:
                     self.dispatch_item.show()
+            #self.setCursor(QtCore.Qt.ArrowCursor)
     def mouseReleaseEvent( self, event ):
         ''' allows target or view displacement '''
         super( MapWindow, self ).mouseReleaseEvent( event )
@@ -376,21 +375,27 @@ class MapWindow( QtWidgets.QGraphicsView ):
         menu_move = QMenu("Move")
         moveNormal = QAction("Normal",None)
         moveNormal.setData(1.0)
-        moveNormal.triggered.connect(self.onActionMove)
+        moveNormal.triggered.connect(self.onActionMoveNormal)
         menu_move.addAction(moveNormal)
         moveSlow= QAction("Slow",None)
         moveSlow.setData(0.5)
+        moveSlow.triggered.connect(self.onActionMoveNormal)
         menu_move.addAction(moveSlow)
-        moveVerySlow= QAction("Very Slow",None)
-        moveVerySlow.setData(0.25)
-        menu_move.addAction(moveVerySlow)
+#         moveVerySlow= QAction("Very Slow",None)
+#         moveVerySlow.setData(0.25)
+#         moveVerySlow.triggered.connect(self.onActionMove)
+#        menu_move.addAction(moveVerySlow)
         moveFast= QAction("Fast",None)
         moveFast.setData(2.0)
+        moveFast.triggered.connect(self.onActionMoveNormal)
         menu_move.addAction(moveFast)
-        moveVeryFast= QAction("Very Fast",None)
-        moveVeryFast.setData(4.0)
-        menu_move.addAction(moveVeryFast)
+#         moveVeryFast= QAction("Very Fast",None)
+#         moveVeryFast.setData(4.0)
+#         moveVeryFast.triggered.connect(self.onActionMove)
+#         menu_move.addAction(moveVeryFast)
         actionTeleport= QAction("Teleport",None)
+        actionTeleport.setData(0.0)
+        actionTeleport.triggered.connect(self.onActionMoveNormal)
         menu_move.addAction(actionTeleport)        
         #========== Menu Actions ========
         menu_actions = QMenu("Action")
@@ -401,18 +406,33 @@ class MapWindow( QtWidgets.QGraphicsView ):
         
         #======== MENU GENERAL ================
         menu = QMenu()
-        menu.addMenu(menu_move)
-        menu.addMenu(menu_actions)
-        actionPlacement= QAction("Placement",None)
-        menu.addAction(actionPlacement)
+#         ok = True
+#         for w in self.univers.selectedWarriors():
+#             for action in self.univers.list_actions.values():
+#                 if action.LeftPartContainHeros(w.id):
+#                     ok = False
+#                     break
+#         if ok == True : 
         action_running = False
         for w in self.univers.selectedWarriors():
-            if w.attribs['status']!= "Attente":
+            if w.attribs['status']!= "repos":
+                print ("mmmmmmmmm",w.attribs['status'])
                 action_running = True
-                
+
         if action_running == True :
             actionCancel= QAction("Cancel",None)
+            actionCancel.triggered.connect(self.onActionCancel)
             menu.addAction(actionCancel)            
+        else:
+            menu.addMenu(menu_move)
+            menu.addMenu(menu_actions)
+            actionPlacement= QAction("Placement",None)
+            actionPlacement.triggered.connect(self.onActionPlacement)
+            actionPlacement.setData(0.0)  # en placement on teleport forcement
+            menu.addAction(actionPlacement)
+
+                
+
                 
         if len(self.univers.selectedWarriors())==1 : 
             if self.univers.selectedWarriors()[0].attribs['HP']== 0:
@@ -426,24 +446,50 @@ class MapWindow( QtWidgets.QGraphicsView ):
         #event.accept()
         menu.exec_(event.globalPos())
 
+    def onActionCancel (self):
+        liste_id = []
+        for w in self.univers.selectedWarriors():
+            liste_id.append(w.id)
+        self.univers.setCancelledHeroesId(liste_id)
 
-    def onActionMove(self):
+    def onActionPlacement (self):
+        self.onActionMove(True)
+    def onActionMoveNormal (self):
+        self.onActionMove(False)
+    def onActionMove(self, offline):
         self.sender().data()
         self.current_action["type"]= ActionType.MoveToPosition
         self.current_action["value"] = self.sender().data()
+        self.current_action['offline'] = offline
         if len(self.univers.selectedWarriors()) > 1 : 
             if self.dispatch_item!= None : 
                 self.scene.removeItem(self.moveShape)
             self.dispatch_item = QGraphicsEllipseItem()
-            brush = QBrush(QColor(255,0,0,125))
-            pen = QPen(QColor(255,0,0))
+            if self.sender().data()<=0:
+                #pour un mouvement normal en vert
+                brush = QBrush(QColor(0,255,0,125))
+                pen = QPen(QColor(0,255,0))
+            elif offline == True:
+                # pour un placement en vert
+                brush = QBrush(QColor(255,0,0,125))
+                pen = QPen(QColor(255,0,0))
+            else:
+                #pour une teleportation en bleue
+                brush = QBrush(QColor(0,0,255,125))
+                pen = QPen(QColor(0,0,255))
             self.dispatch_item.setRect(QRectF(-self.width_movable_region/2,-self.height_movable_region/2,self.width_movable_region,self.height_movable_region))
             self.dispatch_item.setPen(pen)
             self.dispatch_item.setBrush(brush)
             self.dispatch_item.setZValue(2)
             self.scene.addItem(self.dispatch_item)
+        if self.sender().data()<=0 and offline == False:
+            self.viewport().setCursor(QCursor(QPixmap(":/icons/32x32/action_teleport")))
+        elif offline == True:
+            self.viewport().setCursor(QCursor(QPixmap(":/icons/32x32/action_placement")))            
+        else:
+            self.viewport().setCursor(QCursor(QPixmap(":/icons/32x32/action_move")))
         self.mode_action = Mode.Move
-        
+
     def contextMenuEvent(self,event):
         #super(MapWindow,self).contextMenuEvent(event)
         

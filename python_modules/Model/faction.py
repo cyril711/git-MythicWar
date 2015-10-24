@@ -24,7 +24,7 @@ class Faction:
 
     def getAllWarriors(self):
         dict_heros= {}
-        for empire in self.empires.values :
+        for empire in self.empires.values() :
                 dict_heros.update(empire.getAllWarriors())
         return dict_heros
     

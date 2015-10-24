@@ -4,10 +4,10 @@ from PyQt5 import QtCore
 import os
 from enum import Enum
 
-
+# attene combat moving
 
 class Warrior (QObject):
-    selection_changed = QtCore.pyqtSignal(bool,object)
+    selection_changed = QtCore.pyqtSignal(bool, object, bool)
     on_move = QtCore.pyqtSignal()
     
     def __init__(self, id_i, name, attribs, parent):
@@ -75,12 +75,15 @@ class Warrior (QObject):
         for key,value in zip (self.attribs.keys(),self.attribs.values()):
             attribs[key] = value
         attribs['leader'] = self.leader
+        attribs['ID'] = self.id
+        attribs['name'] = self.name
+        attribs['ID_Groupe'] = self.groupe().id
         return attribs
 
-    def setSelected (self, flag):
+    def setSelected (self, flag, first_selection):
         if flag != self.selected :
             self.selected = flag
-            self.selection_changed.emit(flag,self)
+            self.selection_changed.emit(flag,self,first_selection)
 
     def groupe (self):
         return self.parent

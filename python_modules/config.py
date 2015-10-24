@@ -19,11 +19,12 @@ class Config:
             return os.path.join(self.settings.value("global/resources_path"),self.settings.value("global/resources_texture"))
         def path_to_icons(self):
             return os.path.join(self.settings.value("global/resources_path"),self.settings.value("global/resources_icons"))
-
+        def path_to_sqlite(self):
+            return os.path.join(self.settings.value("global/resources_path"),self.settings.value("global/resources_sqlite"))
         def model_database (self):
-            return os.path.join(self.settings.value("global/current_dir"),self.settings.value("global/default_database"))
+            return os.path.join(self.path_to_sqlite(),self.settings.value("global/default_database"))
         def current_database (self):
-            return os.path.join(self.settings.value("global/current_dir"),self.settings.value("global/current_database"))        
+            return os.path.join(self.path_to_sqlite(),self.settings.value("global/current_database"))        
     
     instance = None
     def __init__(self, arg=None):
